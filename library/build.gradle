@@ -1,0 +1,71 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.3"
+
+    defaultConfig {
+        minSdkVersion 3
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets {
+        main {
+            java.srcDirs = ['src/main/jni/sevenzipjbinding/jbinding-java/src']
+            // Disable default NdkCompile task
+            jni.srcDirs = []
+            // Set new jni lib dir
+            jniLibs.srcDir 'src/main/libs'
+        }
+    }
+}
+
+clean {
+    delete file('src/main/obj').absolutePath
+    delete file('src/main/libs').absolutePath
+    delete file('src/main/jni/sevenzipjbinding/jbinding-cpp/javah').absolutePath
+}
+
+task javah(type: Exec, dependsOn: 'compileReleaseJavaWithJavac') {
+    commandLine 'javah', '-jni',
+            '-d', 'src/main/jni/sevenzipjbinding/jbinding-cpp/javah',
+            '-cp', 'build/intermediates/classes/release',
+            'net.sf.sevenzipjbinding.SevenZip',
+            'net.sf.sevenzipjbinding.impl.InArchiveImpl',
+            'net.sf.sevenzipjbinding.impl.OutArchiveImpl'
+}
+
+// call regular ndk-build(.cmd) script from app directory
+task ndkBuild(type: Exec) {
+    def ndkBuilder
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        ndkBuilder = 'ndk-build.cmd'
+    } else {
+        ndkBuilder = 'ndk-build'
+    }
+    commandLine "$ndkBuilder",
+            '-C', file('src/main/jni').absolutePath,
+            '-j', Runtime.runtime.availableProcessors()
+}
+
+tasks.withType(JavaCompile) {
+    compileTask -> compileTask.finalizedBy javah
+}
+
+javah.finalizedBy(ndkBuild)
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+}
