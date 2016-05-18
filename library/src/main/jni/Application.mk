@@ -1,5 +1,5 @@
 APP_ABI := all
-APP_PLATFORM := android-3
+APP_PLATFORM := android-9
 APP_OPTIM := release
 
 APP_CFLAGS += -ffunction-sections -fdata-sections -fvisibility=hidden -fPIC
