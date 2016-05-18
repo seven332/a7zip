@@ -12,6 +12,7 @@ import net.sf.sevenzipjbinding.IOutItemBase;
 import net.sf.sevenzipjbinding.ISequentialInStream;
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.SevenZipException;
+import net.sf.sevenzipjbinding.SevenZipNativeInitializationException;
 import net.sf.sevenzipjbinding.impl.OutItemFactory;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileOutStream;
@@ -42,8 +43,13 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         mLogView = (LogView) findViewById(R.id.log);
         mRandom = new Random(System.currentTimeMillis());
 
-        // Start test
-        new Thread(this).start();
+        try {
+            SevenZip.initSevenZipFromPlatformJAR();
+            // Start test
+            new Thread(this).start();
+        } catch (SevenZipNativeInitializationException e) {
+            mLogView.println(Log.ERROR, "FAILED", e);
+        }
     }
 
     // Test body
@@ -79,11 +85,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         File randomFile = createRandomFile(randomDir);
 
         for (ArchiveFormat format : ArchiveFormat.values()) {
-
-            //if (format == ArchiveFormat.SEVEN_ZIP) {
-            //    continue;
-            //}
-
             testArchiveFormat(format, testDir, randomFile);
         }
     }
@@ -113,7 +114,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         IInArchive iArchive = SevenZip.openInArchive(format, new RandomAccessFileInStream(raf));
         ISimpleInArchive isArchive = iArchive.getSimpleInterface();
         File file = new File(dir, "file");
-        isArchive.getArchiveItem(0).extractSlow(new RandomAccessFileOutStream(new RandomAccessFile(file, "rw")));
+        file.delete();
+        RandomAccessFile raf2 = new RandomAccessFile(file, "rw");
+        isArchive.getArchiveItem(0).extractSlow(new RandomAccessFileOutStream(raf2));
+        raf2.close();
 
         mLogView.println("Compare file");
         compareFiles(randomFile, file);
