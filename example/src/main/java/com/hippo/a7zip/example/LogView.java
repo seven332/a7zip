@@ -23,24 +23,37 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.util.*;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 /** Simple TextView which is used to output log data received through the LogNode interface.
  */
-public class LogView extends TextView {
+public class LogView extends ScrollView {
 
     private static final String TAG = "a7zip";
 
+    private TextView mTextView;
+
     public LogView(Context context) {
         super(context);
+        init(context);
     }
 
     public LogView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        init(context);
     }
 
     public LogView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        init(context);
+    }
+
+    private void init(Context context) {
+        mTextView = new TextView(context);
+        addView(mTextView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
     }
 
     public void println(String msg) {
@@ -103,13 +116,19 @@ public class LogView extends TextView {
 
         // In case this was originally called from an AsyncTask or some other off-UI thread,
         // make sure the update occurs within the UI thread.
-        ((Activity) getContext()).runOnUiThread( (new Thread(new Runnable() {
+        ((Activity) getContext()).runOnUiThread((new Runnable() {
             @Override
             public void run() {
                 // Display the text we just generated within the LogView.
-                append(string);
+                mTextView.append(string);
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        fullScroll(View.FOCUS_DOWN);
+                    }
+                });
             }
-        })));
+        }));
 
         // logcat
         String logMsg;
