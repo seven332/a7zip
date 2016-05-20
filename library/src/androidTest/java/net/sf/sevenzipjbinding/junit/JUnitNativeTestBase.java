@@ -118,6 +118,8 @@ public class JUnitNativeTestBase extends JUnitTestBase {
                     out = new FileOutputStream(outFile);
                     copyFile(in, out);
                 } catch (IOException e) {
+                    // Ignore
+                } finally {
                     close(in);
                     close(out);
                 }
