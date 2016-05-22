@@ -5,6 +5,8 @@ import android.content.res.AssetManager;
 import android.support.test.InstrumentationRegistry;
 import android.test.RenamingDelegatingContext;
 
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.SevenZipException;
 import net.sf.sevenzipjbinding.SevenZipNativeInitializationException;
@@ -22,7 +24,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
@@ -82,53 +83,8 @@ public class JUnitNativeTestBase extends JUnitTestBase {
         return file;
     }
 
-    public void copy(AssetManager assetManager, String path) {
-        String[] files;
-        try {
-            files = assetManager.list(path);
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to get asset file list.", e);
-        }
-
-        if (files != null && files.length > 0) {
-
-            System.out.println(Arrays.toString(files));
-
-            File dir = getDataDir();
-            for (String filename : files) {
-
-                String filePath = (path.length() == 0 ? "" : (path + "/")) + filename;
-
-                System.out.println("Copy " + filePath);
-
-                InputStream in;
-                OutputStream out = null;
-
-                try {
-                    in = assetManager.open(filePath);
-                } catch (IOException e) {
-                    // It is a dir
-                    copy(assetManager, filePath);
-                    continue;
-                }
-
-                try {
-                    File outFile = new File(dir, filePath);
-                    outFile.getParentFile().mkdirs();
-                    out = new FileOutputStream(outFile);
-                    copyFile(in, out);
-                } catch (IOException e) {
-                    // Ignore
-                } finally {
-                    close(in);
-                    close(out);
-                }
-            }
-        }
-    }
-
     @Before
-    public void copyAssets() {
+    public void copyAssets() throws IOException, ZipException {
         mMockContext = new RenamingDelegatingContext(InstrumentationRegistry.getInstrumentation().getTargetContext(), "test_");
 
         if (!initializeAssets) {
@@ -137,14 +93,20 @@ public class JUnitNativeTestBase extends JUnitTestBase {
 
         initializeAssets = false;
 
+        File dir = getDataDir();
+        File zipFile = new File(dir, "testdata.zip");
+
         AssetManager assetManager = mMockContext.getAssets();
         Assert.assertNotNull(assetManager);
 
-        copy(assetManager, "bug");
-        copy(assetManager, "encoding");
-        copy(assetManager, "multiple-files");
-        copy(assetManager, "simple");
-        copy(assetManager, "snippets");
+        InputStream is = assetManager.open("testdata.zip");
+        OutputStream os = new FileOutputStream(zipFile);
+        copyFile(is, os);
+        is.close();
+        os.close();
+
+        ZipFile zip = new ZipFile(zipFile);
+        zip.extractAll(dir.getPath());
     }
 
     private static void copyFile(InputStream in, OutputStream out) throws IOException {
