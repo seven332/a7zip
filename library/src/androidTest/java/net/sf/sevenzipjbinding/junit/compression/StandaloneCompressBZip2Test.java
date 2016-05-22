@@ -82,11 +82,11 @@ public class StandaloneCompressBZip2Test extends JUnitNativeTestBase {
 
         assertEquals(ArchiveFormat.BZIP2, outNewArchiveBZip2.getArchiveFormat());
 
-        outNewArchiveBZip2.createArchive(byteArrayStream, virtualContent.getItemCount(),
-                callbackTesterCreateArchive.getProxyInstance());
+        outNewArchiveBZip2.createArchive(byteArrayStream, virtualContent.getItemCount(), new OutCreateArchiveBZip2());
+                //callbackTesterCreateArchive.getProxyInstance());
 
-        assertEquals("Methods called: " + callbackTesterCreateArchive, 5,
-                callbackTesterCreateArchive.getDifferentMethodsCalled());
+        //assertEquals("Methods called: " + callbackTesterCreateArchive, 5,
+        //        callbackTesterCreateArchive.getDifferentMethodsCalled());
 
         byteArrayStream.rewind();
 

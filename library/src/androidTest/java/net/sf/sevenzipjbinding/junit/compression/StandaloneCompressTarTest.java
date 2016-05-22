@@ -87,10 +87,10 @@ public class StandaloneCompressTarTest extends JUnitNativeTestBase {
 
         assertEquals(ArchiveFormat.TAR, outNewArchiveTar.getArchiveFormat());
 
-        outNewArchiveTar.createArchive(byteArrayStream, virtualContent.getItemCount(), //new OutCreateArchiveTar()
-                callbackTesterArchive.getProxyInstance());
+        outNewArchiveTar.createArchive(byteArrayStream, virtualContent.getItemCount(), new OutCreateArchiveTar());
+                //callbackTesterArchive.getProxyInstance());
 
-        assertEquals(5, callbackTesterArchive.getDifferentMethodsCalled());
+        //assertEquals(5, callbackTesterArchive.getDifferentMethodsCalled());
 
         byteArrayStream.rewind();
 

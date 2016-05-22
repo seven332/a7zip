@@ -1,11 +1,5 @@
 package net.sf.sevenzipjbinding.junit.compression;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Date;
-
 import net.sf.sevenzipjbinding.ArchiveFormat;
 import net.sf.sevenzipjbinding.IInArchive;
 import net.sf.sevenzipjbinding.IOutCreateCallback;
@@ -21,13 +15,18 @@ import net.sf.sevenzipjbinding.PropID;
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.SevenZipException;
 import net.sf.sevenzipjbinding.junit.tools.AssertOutputStream;
-import net.sf.sevenzipjbinding.junit.tools.CallbackTester;
 import net.sf.sevenzipjbinding.junit.tools.RandomContext;
 import net.sf.sevenzipjbinding.util.ByteArrayStream;
 
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.Date;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public abstract class CompressSingleFileAbstractTest<T extends IOutItemBase> extends CompressAbstractTest {
     protected abstract class SingleFileCreateArchiveCallback implements IOutCreateCallback<T> {
@@ -234,7 +233,8 @@ public abstract class CompressSingleFileAbstractTest<T extends IOutItemBase> ext
 
     protected class TestContext {
         RandomContext randomContext;
-        CallbackTester<? extends IOutCreateCallback<?>> callbackTester;
+        //CallbackTester<? extends IOutCreateCallback<?>> callbackTester;
+        IOutCreateCallback<?> callback;
 
         boolean groupSet;
         boolean userSet;

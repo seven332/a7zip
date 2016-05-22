@@ -86,10 +86,10 @@ public class StandaloneCompressZipTest extends JUnitNativeTestBase {
 
         assertEquals(ArchiveFormat.ZIP, outNewArchiveZip.getArchiveFormat());
 
-        outNewArchiveZip.createArchive(byteArrayStream, virtualContent.getItemCount(),
-                callbackTesterCreateArchive.getProxyInstance());
+        outNewArchiveZip.createArchive(byteArrayStream, virtualContent.getItemCount(), new OutCreateArchiveZip());
+                //callbackTesterCreateArchive.getProxyInstance());
 
-        assertEquals(5, callbackTesterCreateArchive.getDifferentMethodsCalled());
+        //assertEquals(5, callbackTesterCreateArchive.getDifferentMethodsCalled());
 
         byteArrayStream.rewind();
 
