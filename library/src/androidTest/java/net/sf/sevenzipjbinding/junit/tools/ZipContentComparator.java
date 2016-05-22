@@ -1,6 +1,16 @@
 package net.sf.sevenzipjbinding.junit.tools;
 
-import static org.junit.Assert.assertEquals;
+import net.sf.sevenzipjbinding.ArchiveFormat;
+import net.sf.sevenzipjbinding.ExtractAskMode;
+import net.sf.sevenzipjbinding.ExtractOperationResult;
+import net.sf.sevenzipjbinding.IArchiveExtractCallback;
+import net.sf.sevenzipjbinding.ICryptoGetTextPassword;
+import net.sf.sevenzipjbinding.IInArchive;
+import net.sf.sevenzipjbinding.ISequentialOutStream;
+import net.sf.sevenzipjbinding.PropID;
+import net.sf.sevenzipjbinding.SevenZipException;
+import net.sf.sevenzipjbinding.simple.ISimpleInArchive;
+import net.sf.sevenzipjbinding.simple.ISimpleInArchiveItem;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,17 +25,7 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import net.sf.sevenzipjbinding.ArchiveFormat;
-import net.sf.sevenzipjbinding.ExtractAskMode;
-import net.sf.sevenzipjbinding.ExtractOperationResult;
-import net.sf.sevenzipjbinding.IArchiveExtractCallback;
-import net.sf.sevenzipjbinding.ICryptoGetTextPassword;
-import net.sf.sevenzipjbinding.ISequentialOutStream;
-import net.sf.sevenzipjbinding.IInArchive;
-import net.sf.sevenzipjbinding.PropID;
-import net.sf.sevenzipjbinding.SevenZipException;
-import net.sf.sevenzipjbinding.simple.ISimpleInArchive;
-import net.sf.sevenzipjbinding.simple.ISimpleInArchiveItem;
+import static org.junit.Assert.assertEquals;
 
 public class ZipContentComparator {
     private class UniversalFileEntryInfo implements Comparable<UniversalFileEntryInfo> {
@@ -385,10 +385,12 @@ public class ZipContentComparator {
 
         public int write(byte[] data) {
             try {
+                // On Android, inputStream.available() is always 0 or 1
+                /*
                 if (inputStream.available() < data.length) {
                     dataError("More data as expected for file '" + filename + "'");
                     throw new RuntimeException("More data as expected for file '" + filename + "'");
-                } else {
+                } else {*/
                     byte[] expectedData = new byte[data.length];
                     int readBytes = 0;
                     do {
@@ -404,7 +406,7 @@ public class ZipContentComparator {
                         dataError("Extracted data missmatched for file '" + filename + "'");
                         throw new RuntimeException("Extracted data missmatched for file '" + filename + "'");
                     }
-                }
+                /*}*/
             } catch (IOException e) {
                 e.printStackTrace();
                 error("Unexpected exception: " + e);
