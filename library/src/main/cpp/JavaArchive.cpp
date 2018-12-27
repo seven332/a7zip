@@ -251,7 +251,7 @@ static JNINativeMethod archive_methods[] = {
 };
 
 static HRESULT RegisterMethods(JNIEnv* env) {
-  jclass clazz = env->FindClass("com/hippo/a7zip/Archive");
+  jclass clazz = env->FindClass("com/hippo/a7zip/InArchive");
   if (clazz == nullptr) return E_CLASS_NOT_FOUND;
 
   jint result = env->RegisterNatives(clazz, archive_methods, std::extent<decltype(archive_methods)>::value);

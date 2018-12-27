@@ -23,17 +23,17 @@ import okio.BufferedStore;
 import okio.Okio;
 import okio.Store;
 
-public class Archive implements Closeable {
+public class InArchive implements Closeable {
 
   private long nativePtr;
 
-  private Archive(long nativePtr) {
+  private InArchive(long nativePtr) {
     this.nativePtr = nativePtr;
   }
 
   private void checkClose() {
     if (nativePtr == 0) {
-      throw new IllegalStateException("This Archive is closed");
+      throw new IllegalStateException("This InArchive is closed.");
     }
   }
 
@@ -105,7 +105,7 @@ public class Archive implements Closeable {
     }
   }
 
-  public static Archive create(Store store) throws ArchiveException {
+  public static InArchive create(Store store) throws ArchiveException {
     if (store instanceof BufferedStore) {
       return create((BufferedStore) store);
     } else {
@@ -113,7 +113,7 @@ public class Archive implements Closeable {
     }
   }
 
-  public static Archive create(BufferedStore store) throws ArchiveException {
+  public static InArchive create(BufferedStore store) throws ArchiveException {
     long nativePtr = nativeCreate(store);
 
     if (nativePtr == 0) {
@@ -121,7 +121,7 @@ public class Archive implements Closeable {
       throw new ArchiveException("a7zip is buggy");
     }
 
-    return new Archive(nativePtr);
+    return new InArchive(nativePtr);
   }
 
   private static native long nativeCreate(BufferedStore store) throws ArchiveException;
