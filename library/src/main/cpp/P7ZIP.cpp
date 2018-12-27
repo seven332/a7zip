@@ -317,16 +317,23 @@ static HRESULT OpenInArchive(
     CMyComPtr<IInArchive>& in_archive
 ) {
   RETURN_SAME_IF_NOT_ZERO(create_object(&class_id, &IID_IInArchive, reinterpret_cast<void **>(&in_archive)));
-  if (in_stream->Seek(0, STREAM_SEEK_SET, nullptr) != S_OK) {
+
+  // FIXME nullptr parameter
+  HRESULT result = in_stream->Seek(0, STREAM_SEEK_SET, nullptr);
+  if (result != S_OK) {
     in_archive->Close();
     in_archive = nullptr;
-    return E_FAIL;
+    return result;
   }
-  if (in_archive->Open(in_stream, nullptr, nullptr) != S_OK) {
+
+  // FIXME nullptr parameter
+  result = in_archive->Open(in_stream, nullptr, nullptr);
+  if (result != S_OK) {
     in_archive->Close();
     in_archive = nullptr;
-    return E_FAIL;
+    return result;
   }
+
   return S_OK;
 }
 
@@ -362,7 +369,7 @@ static HRESULT OpenInArchive(
         continue;
       }
 
-      // The signature matched
+      // The signature matched, try to open it
       if (OpenInArchive(format.class_id, in_stream, in_archive) == S_OK) {
         format_name = format.name;
         return S_OK;
@@ -385,7 +392,7 @@ static HRESULT OpenInArchive(
     }
   }
 
-  return E_FAIL;
+  return E_UNKNOWN_FORMAT;
 }
 
 HRESULT P7Zip::OpenArchive(CMyComPtr<IInStream> in_stream, InArchive** archive) {
@@ -407,7 +414,6 @@ HRESULT P7Zip::OpenArchive(CMyComPtr<IInStream> in_stream, InArchive** archive) 
   if (result != S_OK) {
     return result;
   } else {
-    // TODO Internal error
-    return E_FAIL;
+    return E_INTERNAL;
   }
 }
