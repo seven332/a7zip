@@ -27,6 +27,7 @@ namespace a7zip {
 class InArchive {
  public:
   InArchive(CMyComPtr<IInArchive> in_archive, AString format_name);
+  ~InArchive();
 
  public:
   const AString& GetFormatName();

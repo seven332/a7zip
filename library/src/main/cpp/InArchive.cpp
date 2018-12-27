@@ -97,6 +97,10 @@ InArchive::InArchive(CMyComPtr<IInArchive> in_archive, AString format_name) {
   this->format_name = format_name;
 }
 
+InArchive::~InArchive() {
+  this->in_archive->Close();
+}
+
 const AString& InArchive::GetFormatName() {
   return this->format_name;
 }
