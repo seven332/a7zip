@@ -149,7 +149,7 @@ HRESULT BufferedStoreInStream::Initialize(JNIEnv* env) {
 HRESULT BufferedStoreInStream::Create(
     JNIEnv* env,
     jobject store,
-    BufferedStoreInStream** in_stream
+    CMyComPtr<IInStream>& in_stream
 ) {
   if (!initialized) {
     return E_NOT_INITIALIZED;
@@ -172,7 +172,7 @@ HRESULT BufferedStoreInStream::Create(
     return E_OUTOFMEMORY;
   }
 
-  *in_stream = new BufferedStoreInStream(env, g_store, g_array);
+  in_stream = new BufferedStoreInStream(env, g_store, g_array);
 
   return S_OK;
 }

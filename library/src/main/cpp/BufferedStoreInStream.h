@@ -50,7 +50,7 @@ class BufferedStoreInStream:
 
  public:
   static HRESULT Initialize(JNIEnv* env);
-  static HRESULT Create(JNIEnv* env, jobject store, BufferedStoreInStream** in_stream);
+  static HRESULT Create(JNIEnv* env, jobject store, CMyComPtr<IInStream>& in_stream);
 
  private:
   static bool initialized;

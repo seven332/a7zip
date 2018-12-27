@@ -121,26 +121,19 @@ jlong a7zip_NativeCreate(
     jclass,
     jobject store
 ) {
-  BufferedStoreInStream* stream = nullptr;
-  HRESULT result = BufferedStoreInStream::Create(env, store, &stream);
-  if (result != S_OK) {
-    if (stream != nullptr) delete stream;
+  CMyComPtr<IInStream> stream = nullptr;
+  HRESULT result = BufferedStoreInStream::Create(env, store, stream);
+  if (result != S_OK || stream == nullptr) {
     THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, result, 0);
   }
-  if (stream == nullptr) {
-    THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, E_INTERNAL, 0);
-  }
 
-  CMyComPtr<IInStream> inStream(stream);
   InArchive* archive = nullptr;
-
   result = P7Zip::OpenArchive(stream, &archive);
-
-  if (result == S_OK && archive != nullptr) {
-    return reinterpret_cast<jlong>(archive);
-  } else {
+  if (result != S_OK || archive == nullptr) {
     THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, result, 0);
   }
+
+  return reinterpret_cast<jlong>(archive);
 }
 
 jstring a7zip_NativeGetFormatName(
@@ -149,9 +142,7 @@ jstring a7zip_NativeGetFormatName(
     jlong nativePtr
 ) {
   CHECK_CLOSED_RETURN_VALUE(env, nativePtr, nullptr);
-
   InArchive* archive = reinterpret_cast<InArchive*>(nativePtr);
-
   return env->NewStringUTF(archive->GetFormatName());
 }
 
@@ -161,17 +152,15 @@ jint a7zip_NativeGetNumberOfEntries(
     jlong nativePtr
 ) {
   CHECK_CLOSED_RETURN_VALUE(env, nativePtr, 0);
-
   InArchive* archive = reinterpret_cast<InArchive*>(nativePtr);
 
   UInt32 number;
   HRESULT result = archive->GetNumberOfEntries(number);
-
-  if (result == S_OK) {
-    return number;
-  } else {
+  if (result != S_OK) {
     THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, result, 0);
   }
+
+  return number;
 }
 
 static void shrink(BSTR bstr) {
@@ -190,24 +179,19 @@ jstring a7zip_NativeGetEntryPath(
     jint index
 ) {
   CHECK_CLOSED_RETURN_VALUE(env, nativePtr, 0);
-
   InArchive* archive = reinterpret_cast<InArchive*>(nativePtr);
 
   BSTR path = nullptr;
   HRESULT result = archive->GetEntryPath(static_cast<UInt32>(index), &path);
-
-  if (result == S_OK && path != nullptr) {
-    shrink(path);
-    jstring jstr = env->NewString(reinterpret_cast<const jchar*>(path), ::SysStringLen(path));
-    ::SysFreeString(path);
-    return jstr;
+  if (result != S_OK || path == nullptr) {
+    if (path != nullptr) ::SysFreeString(path);
+    THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, result, nullptr);
   }
 
-  if (path != nullptr) {
-    ::SysFreeString(path);
-  }
-
-  THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, result, nullptr);
+  shrink(path);
+  jstring jstr = env->NewString(reinterpret_cast<const jchar*>(path), ::SysStringLen(path));
+  ::SysFreeString(path);
+  return jstr;
 }
 
 void a7zip_NativeClose(
@@ -216,7 +200,6 @@ void a7zip_NativeClose(
     jlong nativePtr
 ) {
   CHECK_CLOSED_RETURN(env, nativePtr);
-
   InArchive* archive = reinterpret_cast<InArchive*>(nativePtr);
   delete archive;
 }
