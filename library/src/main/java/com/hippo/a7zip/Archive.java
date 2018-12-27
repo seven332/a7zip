@@ -86,7 +86,7 @@ public class Archive implements Closeable {
     }
   }
 
-  public static Archive create(Store store) {
+  public static Archive create(Store store) throws ArchiveException {
     if (store instanceof BufferedStore) {
       return create((BufferedStore) store);
     } else {
@@ -94,7 +94,7 @@ public class Archive implements Closeable {
     }
   }
 
-  public static Archive create(BufferedStore store) {
+  public static Archive create(BufferedStore store) throws ArchiveException {
     long nativePtr = nativeCreate(store);
 
     if (nativePtr == 0) {
@@ -104,7 +104,7 @@ public class Archive implements Closeable {
     return new Archive(nativePtr);
   }
 
-  private static native long nativeCreate(BufferedStore store);
+  private static native long nativeCreate(BufferedStore store) throws ArchiveException;
 
   private static native String nativeGetFormatName(long nativePtr);
 

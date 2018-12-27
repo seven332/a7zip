@@ -16,6 +16,7 @@
 
 #include "JavaArchive.h"
 
+#include <cstdio>
 #include <type_traits>
 
 #include <include_windows/windows.h>
@@ -28,10 +29,92 @@
 
 #ifdef LOG_TAG
 #  undef LOG_TAG
-#  define LOG_TAG "JavaArchive"
-#endif
+#endif //LOG_TAG
+#define LOG_TAG "JavaArchive"
 
 using namespace a7zip;
+
+#define MAX_MSG_SIZE 1024
+
+static jint ThrowExceptionInternal(
+    JNIEnv* env,
+    const char* exception_name,
+    const char* message,
+    va_list va_args
+) {
+  char formatted_message[MAX_MSG_SIZE];
+  vsnprintf(formatted_message, MAX_MSG_SIZE, message, va_args);
+  jclass exception_class = env->FindClass(exception_name);
+  return env->ThrowNew(exception_class, formatted_message);
+}
+
+static jint ThrowException(
+    JNIEnv* env,
+    const char* exception_name,
+    const char* message,
+    ...
+) {
+  va_list va_args;
+  va_start(va_args, message);
+  jint result = ThrowExceptionInternal(env, exception_name, message, va_args);
+  va_end(va_args);
+  return result;
+}
+
+// const string
+static const char* GetMessageForCode(HRESULT code) {
+  switch (code) {
+    case E_NOT_INITIALIZED:
+      return "The module is not initialized.";
+    case S_OK:
+    case E_INTERNAL:
+      return "a7zip is buggy.";
+    case E_CLASS_NOT_FOUND:
+      return "Can't find the class.";
+    case E_METHOD_NOT_FOUND:
+      return "Can't find the method.";
+    case E_JAVA_EXCEPTION:
+      return "Catch a java exception.";
+    case E_FAILED_CONSTRUCT:
+      return "Failed to create new class.";
+    case E_FAILED_REGISTER:
+      return "Failed to register methods.";
+    case E_INCONSISTENT_PROP_TYPE:
+      return "Inconsistent property type.";
+    case E_UNKNOWN_FORMAT:
+      return "Unknown archive format.";
+    default:
+      return "Unknown error.";
+  }
+}
+
+#define THROW_ARCHIVE_EXCEPTION_RETURN(ENV, CODE)                                         \
+  do {                                                                                    \
+    ThrowException(ENV, "com/hippo/a7zip/ArchiveException", GetMessageForCode(CODE));     \
+    return;                                                                               \
+  } while (0)
+
+#define THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(ENV, CODE, VALUE)                            \
+  do {                                                                                    \
+    ThrowException(ENV, "com/hippo/a7zip/ArchiveException", GetMessageForCode(CODE));     \
+    return VALUE;                                                                         \
+  } while (0)
+
+#define CHECK_CLOSED_RETURN(ENV, NATIVE_PTR)                                              \
+  do {                                                                                    \
+    if (NATIVE_PTR == 0) {                                                                \
+      ThrowException(ENV, "java/lang/IllegalStateException", "This Archive is closed.");  \
+      return;                                                                             \
+    }                                                                                     \
+  } while (0)
+
+#define CHECK_CLOSED_RETURN_VALUE(ENV, NATIVE_PTR, VALUE)                                 \
+  do {                                                                                    \
+    if (NATIVE_PTR == 0) {                                                                \
+      ThrowException(ENV, "java/lang/IllegalStateException", "This Archive is closed.");  \
+      return VALUE;                                                                       \
+    }                                                                                     \
+  } while (0)
 
 jlong a7zip_NativeCreate(
     JNIEnv* env,
@@ -41,12 +124,11 @@ jlong a7zip_NativeCreate(
   BufferedStoreInStream* stream = nullptr;
   HRESULT result = BufferedStoreInStream::Create(env, store, &stream);
   if (result != S_OK) {
-    // TODO throw exception
-    return 0;
+    if (stream != nullptr) delete stream;
+    THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, result, 0);
   }
   if (stream == nullptr) {
-    // TODO throw exception
-    return 0;
+    THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, E_INTERNAL, 0);
   }
 
   CMyComPtr<IInStream> inStream(stream);
@@ -54,11 +136,10 @@ jlong a7zip_NativeCreate(
 
   result = P7Zip::OpenArchive(stream, &archive);
 
-  if (result == S_OK) {
+  if (result == S_OK && archive != nullptr) {
     return reinterpret_cast<jlong>(archive);
   } else {
-    // TODO throw exception
-    return 0;
+    THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, result, 0);
   }
 }
 
@@ -67,10 +148,7 @@ jstring a7zip_NativeGetFormatName(
     jclass,
     jlong nativePtr
 ) {
-  if (nativePtr == 0) {
-    // TODO throw exception
-    return nullptr;
-  }
+  CHECK_CLOSED_RETURN_VALUE(env, nativePtr, nullptr);
 
   InArchive* archive = reinterpret_cast<InArchive*>(nativePtr);
 
@@ -78,14 +156,11 @@ jstring a7zip_NativeGetFormatName(
 }
 
 jint a7zip_NativeGetNumberOfEntries(
-    JNIEnv*,
+    JNIEnv* env,
     jclass,
     jlong nativePtr
 ) {
-  if (nativePtr == 0) {
-    // TODO throw exception
-    return 0;
-  }
+  CHECK_CLOSED_RETURN_VALUE(env, nativePtr, 0);
 
   InArchive* archive = reinterpret_cast<InArchive*>(nativePtr);
 
@@ -95,8 +170,7 @@ jint a7zip_NativeGetNumberOfEntries(
   if (result == S_OK) {
     return number;
   } else {
-    // TODO throw exception
-    return 0;
+    THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, result, 0);
   }
 }
 
@@ -115,10 +189,7 @@ jstring a7zip_NativeGetEntryPath(
     jlong nativePtr,
     jint index
 ) {
-  if (nativePtr == 0) {
-    // TODO throw exception
-    return 0;
-  }
+  CHECK_CLOSED_RETURN_VALUE(env, nativePtr, 0);
 
   InArchive* archive = reinterpret_cast<InArchive*>(nativePtr);
 
@@ -136,19 +207,15 @@ jstring a7zip_NativeGetEntryPath(
     ::SysFreeString(path);
   }
 
-  // TODO throw exception
-
-  return nullptr;
+  THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, result, nullptr);
 }
 
 void a7zip_NativeClose(
-    JNIEnv*,
+    JNIEnv* env,
     jclass,
     jlong nativePtr
 ) {
-  if (nativePtr == 0) {
-    return;
-  }
+  CHECK_CLOSED_RETURN(env, nativePtr);
 
   InArchive* archive = reinterpret_cast<InArchive*>(nativePtr);
   delete archive;

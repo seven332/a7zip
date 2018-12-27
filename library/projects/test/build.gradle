@@ -57,6 +57,7 @@ android {
 dependencies {
     api 'com.github.seven332.okio:okio:1.16.0'
     implementation 'com.getkeepsafe.relinker:relinker:1.3.0'
+    implementation 'androidx.annotation:annotation:1.0.1'
     androidTestImplementation 'androidx.test:runner:1.1.1'
     androidTestImplementation 'org.jsoup:jsoup:1.11.3'
     androidTestImplementation 'commons-io:commons-io:2.5'
