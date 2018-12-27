@@ -180,7 +180,6 @@ HRESULT METHOD_NAME(                                                           \
   return S_OK;                                                                 \
 }
 
-// TODO It might wrong for different charset
 GET_PROP_METHOD(GetAString, AString, VT_BSTR, value.SetFromWStr_if_Ascii(prop.bstrVal));
 
 GET_PROP_METHOD(GetGUID, GUID, VT_BSTR, value = *reinterpret_cast<const GUID*>(prop.bstrVal));
@@ -205,6 +204,7 @@ static HRESULT LoadMethods() {
       continue;                                                                 \
     }
 
+    // It's ok to assume all characters in method name are in ascii charset
     GET_PROP(GetAString, NMethodPropID::kName, method.name, method.has_name);
     GET_PROP(GetGUID, NMethodPropID::kDecoder, method.decoder, method.has_decoder);
     GET_PROP(GetGUID, NMethodPropID::kEncoder, method.encoder, method.has_encoder);
@@ -257,6 +257,7 @@ static HRESULT LoadFormats() {
       continue;
     }
 
+    // It's ok to assume all characters in format name are in ascii charset
     GET_PROP(GetAString, NArchive::NHandlerPropID::kName, format.name, format.has_name);
 
     bool has_signature;
