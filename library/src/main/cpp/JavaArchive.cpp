@@ -172,6 +172,31 @@ static void shrink(BSTR bstr) {
   jstr[n] = 0;
 }
 
+jstring a7zip_NativeGetArchiveStringProperty(
+    JNIEnv* env,
+    jclass,
+    jlong native_ptr,
+    jint prop_id
+) {
+  CHECK_CLOSED_RETURN_VALUE(env, native_ptr, 0);
+  InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
+
+  BSTR path = nullptr;
+  HRESULT result = archive->GetArchiveStringProperty(static_cast<PROPID>(prop_id), &path);
+  if (result != S_OK) {
+    THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, result, nullptr);
+  }
+
+  if (path == nullptr) {
+    return nullptr;
+  }
+
+  shrink(path);
+  jstring jstr = env->NewString(reinterpret_cast<const jchar*>(path), ::SysStringLen(path));
+  ::SysFreeString(path);
+  return jstr;
+}
+
 jstring a7zip_NativeGetEntryPath(
     JNIEnv* env,
     jclass,
@@ -214,6 +239,9 @@ static JNINativeMethod archive_methods[] = {
     { "nativeGetNumberOfEntries",
       "(J)I",
       reinterpret_cast<void *>(a7zip_NativeGetNumberOfEntries) },
+    { "nativeGetArchiveStringProperty",
+      "(JI)Ljava/lang/String;",
+      reinterpret_cast<void *>(a7zip_NativeGetArchiveStringProperty) },
     { "nativeGetEntryPath",
       "(JI)Ljava/lang/String;",
       reinterpret_cast<void *>(a7zip_NativeGetEntryPath) },

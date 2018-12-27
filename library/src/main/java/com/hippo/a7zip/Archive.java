@@ -16,6 +16,7 @@
 
 package com.hippo.a7zip;
 
+import androidx.annotation.Nullable;
 import java.io.Closeable;
 import java.nio.charset.Charset;
 import okio.BufferedStore;
@@ -68,6 +69,24 @@ public class Archive implements Closeable {
     return nativeGetNumberOfEntries(nativePtr);
   }
 
+  /**
+   * TODO
+   */
+  @Nullable
+  public String getArchiveStringProperty(int propID) throws ArchiveException {
+    return getArchiveStringProperty(propID, null);
+  }
+
+  /**
+   * TODO
+   */
+  @Nullable
+  public String getArchiveStringProperty(int propID, Charset charset) throws ArchiveException {
+    checkClose();
+    String str = nativeGetArchiveStringProperty(nativePtr, propID);
+    return applyCharsetToString(str, charset);
+  }
+
   public String getEntryPath(int index) {
     return getEntryPath(index, null);
   }
@@ -98,7 +117,8 @@ public class Archive implements Closeable {
     long nativePtr = nativeCreate(store);
 
     if (nativePtr == 0) {
-      return null;
+      // It should not be 0
+      throw new ArchiveException("a7zip is buggy");
     }
 
     return new Archive(nativePtr);
@@ -109,6 +129,8 @@ public class Archive implements Closeable {
   private static native String nativeGetFormatName(long nativePtr);
 
   private static native int nativeGetNumberOfEntries(long nativePtr);
+
+  private static native String nativeGetArchiveStringProperty(long nativePtr, int propID) throws ArchiveException;
 
   private static native String nativeGetEntryPath(long nativePtr, int index);
 
