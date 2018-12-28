@@ -156,13 +156,9 @@ jint a7zip_NativeGetNumberOfEntries(
   CHECK_CLOSED_RETURN_VALUE(env, nativePtr, 0);
   InArchive* archive = reinterpret_cast<InArchive*>(nativePtr);
 
-  UInt32 number;
+  UInt32 number = 0;
   HRESULT result = archive->GetNumberOfEntries(number);
-  if (result != S_OK) {
-    THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, result, 0);
-  }
-
-  return number;
+  return result == S_OK ? number : -1;
 }
 
 jint a7zip_NativeGetArchivePropertyType(

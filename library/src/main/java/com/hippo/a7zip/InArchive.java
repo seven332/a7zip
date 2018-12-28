@@ -64,6 +64,10 @@ public class InArchive implements Closeable {
     return nativeGetFormatName(nativePtr);
   }
 
+  /**
+   * Returns the number of entries in this archive.
+   * {@code -1} if get error.
+   */
   public int getNumberOfEntries() {
     checkClose();
     return nativeGetNumberOfEntries(nativePtr);
