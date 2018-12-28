@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "JavaArchive.h"
+#include "JavaInArchive.h"
 
 #include <cstdio>
 #include <type_traits>
@@ -263,7 +263,7 @@ static HRESULT RegisterMethods(JNIEnv* env) {
   return S_OK;
 }
 
-HRESULT JavaArchive::Initialize(JNIEnv* env) {
+HRESULT JavaInArchive::Initialize(JNIEnv* env) {
   RETURN_SAME_IF_NOT_ZERO(RegisterMethods(env));
   return S_OK;
 }
