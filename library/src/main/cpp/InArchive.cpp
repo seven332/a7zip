@@ -109,6 +109,40 @@ HRESULT InArchive::GetNumberOfEntries(UInt32& number) {
   return this->in_archive->GetNumberOfItems(&number);
 }
 
+static PropType VarTypeToPropType(VARTYPE var_enum) {
+  // TODO VT_ERROR
+  switch (var_enum) {
+    case VT_EMPTY:
+      return PT_EMPTY;
+    case VT_BOOL:
+      return PT_BOOL;
+    case VT_I1:
+    case VT_I2:
+    case VT_I4:
+    case VT_INT:
+    case VT_UI1:
+    case VT_UI2:
+    case VT_UI4:
+    case VT_UINT:
+      return PT_INT;
+    case VT_I8:
+    case VT_UI8:
+    case VT_FILETIME:
+      return PT_LONG;
+    case VT_BSTR:
+      return PT_STRING;
+    default:
+      return PT_UNKNOWN;
+  }
+}
+
+HRESULT InArchive::GetArchivePropertyType(PROPID prop_id, PropType* prop_type) {
+  NWindows::NCOM::CPropVariant prop;
+  RETURN_SAME_IF_NOT_ZERO(this->in_archive->GetArchiveProperty(prop_id, &prop));
+  *prop_type = VarTypeToPropType(prop.vt);
+  return S_OK;
+}
+
 HRESULT InArchive::GetArchiveStringProperty(PROPID prop_id, BSTR* bstr) {
   NWindows::NCOM::CPropVariant prop;
   RETURN_SAME_IF_NOT_ZERO(this->in_archive->GetArchiveProperty(prop_id, &prop));
@@ -122,6 +156,13 @@ HRESULT InArchive::GetArchiveStringProperty(PROPID prop_id, BSTR* bstr) {
     default:
       return E_INCONSISTENT_PROP_TYPE;
   }
+}
+
+HRESULT InArchive::GetEntryPropertyType(UInt32 index, PROPID prop_id, a7zip::PropType *prop_type) {
+  NWindows::NCOM::CPropVariant prop;
+  RETURN_SAME_IF_NOT_ZERO(this->in_archive->GetProperty(index, prop_id, &prop));
+  *prop_type = VarTypeToPropType(prop.vt);
+  return S_OK;
 }
 
 HRESULT InArchive::GetEntryStringProperty(UInt32 index, PROPID prop_id, BSTR* bstr) {

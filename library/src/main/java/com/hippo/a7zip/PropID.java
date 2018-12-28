@@ -113,5 +113,4 @@ public enum PropID {
   READ_ONLY,
   OUT_NAME,
   COPY_LINK,
-  NUM_DEFINED,
 }

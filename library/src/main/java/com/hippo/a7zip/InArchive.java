@@ -69,6 +69,15 @@ public class InArchive implements Closeable {
     return nativeGetNumberOfEntries(nativePtr);
   }
 
+  public PropType getArchivePropertyType(PropID propID) {
+    int type = nativeGetArchivePropertyType(nativePtr, propID.ordinal());
+    if (type >= 0 || type < PropType.values().length) {
+      return PropType.values()[type];
+    } else {
+      return PropType.UNKNOWN;
+    }
+  }
+
   /**
    * TODO
    */
@@ -85,6 +94,15 @@ public class InArchive implements Closeable {
     checkClose();
     String str = nativeGetArchiveStringProperty(nativePtr, propID.ordinal());
     return applyCharsetToString(str, charset);
+  }
+
+  public PropType getEntryPropertyType(int index, PropID propID) {
+    int type = nativeGetEntryPropertyType(nativePtr, index, propID.ordinal());
+    if (type >= 0 || type < PropType.values().length) {
+      return PropType.values()[type];
+    } else {
+      return PropType.UNKNOWN;
+    }
   }
 
   /**
@@ -148,7 +166,11 @@ public class InArchive implements Closeable {
 
   private static native int nativeGetNumberOfEntries(long nativePtr);
 
+  private static native int nativeGetArchivePropertyType(long nativePtr, int propID);
+
   private static native String nativeGetArchiveStringProperty(long nativePtr, int propID) throws ArchiveException;
+
+  private static native int nativeGetEntryPropertyType(long nativePtr, int index, int propID);
 
   private static native String nativeGetEntryStringProperty(long nativePtr, int index, int propID) throws ArchiveException;
 

@@ -22,6 +22,8 @@
 #include <Common/MyString.h>
 #include <7zip/Archive/IArchive.h>
 
+#include "PropType.h"
+
 namespace a7zip {
 
 class InArchive {
@@ -32,8 +34,13 @@ class InArchive {
  public:
   const AString& GetFormatName();
   HRESULT GetNumberOfEntries(UInt32& number);
+
+  HRESULT GetArchivePropertyType(PROPID prop_id, PropType* prop_type);
   HRESULT GetArchiveStringProperty(PROPID prop_id, BSTR* bstr);
+
+  HRESULT GetEntryPropertyType(UInt32 index, PROPID prop_id, PropType* prop_type);
   HRESULT GetEntryStringProperty(UInt32 index, PROPID prop_id, BSTR* bstr);
+
   HRESULT GetEntryPath(UInt32 index, BSTR* name);
   HRESULT ExtractEntry(UInt32 index, CMyComPtr<ISequentialOutStream> out_stream);
 

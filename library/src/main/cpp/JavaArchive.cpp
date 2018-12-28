@@ -165,6 +165,22 @@ jint a7zip_NativeGetNumberOfEntries(
   return number;
 }
 
+jint a7zip_NativeGetArchivePropertyType(
+    JNIEnv* env,
+    jclass,
+    jlong native_ptr,
+    jint prop_id
+) {
+  CHECK_CLOSED_RETURN_VALUE(env, native_ptr, 0);
+  InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
+
+  PropType prop_type;
+  HRESULT result = archive->GetArchivePropertyType(static_cast<PROPID>(prop_id), &prop_type);
+  if (result != S_OK) return PT_UNKNOWN;
+
+  return prop_type;
+}
+
 static void shrink(BSTR bstr) {
   jchar* jstr = reinterpret_cast<jchar*>(bstr);
   UINT n = ::SysStringLen(bstr);
@@ -197,6 +213,23 @@ jstring a7zip_NativeGetArchiveStringProperty(
   jstring jstr = env->NewString(reinterpret_cast<const jchar*>(path), ::SysStringLen(path));
   ::SysFreeString(path);
   return jstr;
+}
+
+jint a7zip_NativeGetEntryPropertyType(
+    JNIEnv* env,
+    jclass,
+    jlong native_ptr,
+    jint index,
+    jint prop_id
+) {
+  CHECK_CLOSED_RETURN_VALUE(env, native_ptr, 0);
+  InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
+
+  PropType prop_type;
+  HRESULT result = archive->GetEntryPropertyType(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &prop_type);
+  if (result != S_OK) return PT_UNKNOWN;
+
+  return prop_type;
 }
 
 jstring a7zip_NativeGetEntryStringProperty(
@@ -267,9 +300,15 @@ static JNINativeMethod archive_methods[] = {
     { "nativeGetNumberOfEntries",
       "(J)I",
       reinterpret_cast<void *>(a7zip_NativeGetNumberOfEntries) },
+    { "nativeGetArchivePropertyType",
+      "(JI)I",
+      reinterpret_cast<void *>(a7zip_NativeGetArchivePropertyType) },
     { "nativeGetArchiveStringProperty",
       "(JI)Ljava/lang/String;",
       reinterpret_cast<void *>(a7zip_NativeGetArchiveStringProperty) },
+    { "nativeGetEntryPropertyType",
+      "(JII)I",
+      reinterpret_cast<void *>(a7zip_NativeGetEntryPropertyType) },
     { "nativeGetEntryStringProperty",
       "(JII)Ljava/lang/String;",
       reinterpret_cast<void *>(a7zip_NativeGetEntryStringProperty) },
