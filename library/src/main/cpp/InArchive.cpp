@@ -125,6 +125,22 @@ HRESULT InArchive::GetArchiveStringProperty(PROPID prop_id, BSTR* bstr) {
   }
 }
 
+HRESULT InArchive::GetEntryStringProperty(UInt32 index, PROPID prop_id, BSTR* bstr) {
+  NWindows::NCOM::CPropVariant prop;
+  RETURN_SAME_IF_NOT_ZERO(this->in_archive->GetProperty(index, prop_id, &prop));
+
+  switch (prop.vt) {
+    case VT_BSTR:
+      *bstr = ::SysAllocString(prop.bstrVal);
+      return S_OK;
+    case VT_EMPTY:
+      *bstr = nullptr;
+      return S_OK;
+    default:
+      return E_INCONSISTENT_PROP_TYPE;
+  }
+}
+
 HRESULT InArchive::GetEntryPath(UInt32 index, BSTR* name) {
   NWindows::NCOM::CPropVariant prop;
   RETURN_SAME_IF_NOT_ZERO(this->in_archive->GetProperty(index, kpidPath, &prop));

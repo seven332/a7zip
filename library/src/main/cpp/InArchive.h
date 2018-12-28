@@ -33,6 +33,7 @@ class InArchive {
   const AString& GetFormatName();
   HRESULT GetNumberOfEntries(UInt32& number);
   HRESULT GetArchiveStringProperty(PROPID prop_id, BSTR* bstr);
+  HRESULT GetEntryStringProperty(UInt32 index, PROPID prop_id, BSTR* bstr);
   HRESULT GetEntryPath(UInt32 index, BSTR* name);
   HRESULT ExtractEntry(UInt32 index, CMyComPtr<ISequentialOutStream> out_stream);
 

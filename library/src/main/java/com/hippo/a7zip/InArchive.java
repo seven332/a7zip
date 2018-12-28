@@ -73,7 +73,7 @@ public class InArchive implements Closeable {
    * TODO
    */
   @Nullable
-  public String getArchiveStringProperty(int propID) throws ArchiveException {
+  public String getArchiveStringProperty(PropID propID) throws ArchiveException {
     return getArchiveStringProperty(propID, null);
   }
 
@@ -81,9 +81,34 @@ public class InArchive implements Closeable {
    * TODO
    */
   @Nullable
-  public String getArchiveStringProperty(int propID, Charset charset) throws ArchiveException {
+  public String getArchiveStringProperty(PropID propID, Charset charset) throws ArchiveException {
     checkClose();
-    String str = nativeGetArchiveStringProperty(nativePtr, propID);
+    String str = nativeGetArchiveStringProperty(nativePtr, propID.ordinal());
+    return applyCharsetToString(str, charset);
+  }
+
+  /**
+   * TODO
+   */
+  @Nullable
+  public String getEntryStringProperty(int index, PropID propID) throws ArchiveException {
+    return getEntryStringProperty(index, propID, null);
+  }
+
+  // DEL
+  public String getEntryStringProperty(int index, int propID, Charset charset) throws ArchiveException {
+    checkClose();
+    String str = nativeGetEntryStringProperty(nativePtr, index, propID);
+    return applyCharsetToString(str, charset);
+  }
+
+  /**
+   * TODO
+   */
+  @Nullable
+  public String getEntryStringProperty(int index, PropID propID, Charset charset) throws ArchiveException {
+    checkClose();
+    String str = nativeGetEntryStringProperty(nativePtr, index, propID.ordinal());
     return applyCharsetToString(str, charset);
   }
 
@@ -131,6 +156,8 @@ public class InArchive implements Closeable {
   private static native int nativeGetNumberOfEntries(long nativePtr);
 
   private static native String nativeGetArchiveStringProperty(long nativePtr, int propID) throws ArchiveException;
+
+  private static native String nativeGetEntryStringProperty(long nativePtr, int index, int propID) throws ArchiveException;
 
   private static native String nativeGetEntryPath(long nativePtr, int index);
 
