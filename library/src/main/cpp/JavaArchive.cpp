@@ -90,12 +90,6 @@ static const char* GetMessageForCode(HRESULT code) {
   }
 }
 
-#define THROW_ARCHIVE_EXCEPTION_RETURN(ENV, CODE)                                         \
-  do {                                                                                    \
-    ThrowException(ENV, "com/hippo/a7zip/ArchiveException", GetMessageForCode(CODE));     \
-    return;                                                                               \
-  } while (0)
-
 #define THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(ENV, CODE, VALUE)                            \
   do {                                                                                    \
     ThrowException(ENV, "com/hippo/a7zip/ArchiveException", GetMessageForCode(CODE));     \
@@ -161,21 +155,34 @@ jint a7zip_NativeGetNumberOfEntries(
   return result == S_OK ? number : -1;
 }
 
-jint a7zip_NativeGetArchivePropertyType(
-    JNIEnv* env,
-    jclass,
-    jlong native_ptr,
-    jint prop_id
-) {
-  CHECK_CLOSED_RETURN_VALUE(env, native_ptr, 0);
+#define GET_ARCHIVE_PROPERTY_START(METHOD_NAME, RETURN_TYPE)                              \
+RETURN_TYPE METHOD_NAME(JNIEnv* env, jclass, jlong native_ptr, jint prop_id) {            \
+  CHECK_CLOSED_RETURN_VALUE(env, native_ptr, 0);                                          \
   InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
 
-  PropType prop_type;
-  HRESULT result = archive->GetArchivePropertyType(static_cast<PROPID>(prop_id), &prop_type);
-  if (result != S_OK) return PT_UNKNOWN;
-
-  return prop_type;
+#define GET_ARCHIVE_PROPERTY_END                                                          \
 }
+
+#define GET_ENTRY_PROPERTY_START(METHOD_NAME, RETURN_TYPE)                                \
+RETURN_TYPE METHOD_NAME(JNIEnv* env, jclass, jlong native_ptr, jint index, jint prop_id) {\
+  CHECK_CLOSED_RETURN_VALUE(env, native_ptr, 0);                                          \
+  InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
+
+#define GET_ENTRY_PROPERTY_END                                                            \
+}
+
+#define GET_PROPERTY_TYPE(GETTER)                                                         \
+  PropType prop_type;                                                                     \
+  HRESULT result = (GETTER);                                                              \
+  return result == S_OK ? prop_type : PT_UNKNOWN;
+
+GET_ARCHIVE_PROPERTY_START(a7zip_NativeGetArchivePropertyType, jint)
+  GET_PROPERTY_TYPE(archive->GetArchivePropertyType(static_cast<PROPID>(prop_id), &prop_type))
+GET_ARCHIVE_PROPERTY_END
+
+GET_ENTRY_PROPERTY_START(a7zip_NativeGetEntryPropertyType, jint)
+  GET_PROPERTY_TYPE(archive->GetEntryPropertyType(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &prop_type))
+GET_ENTRY_PROPERTY_END
 
 static void shrink(BSTR bstr) {
   jchar* jstr = reinterpret_cast<jchar*>(bstr);
@@ -186,73 +193,25 @@ static void shrink(BSTR bstr) {
   jstr[n] = 0;
 }
 
-jstring a7zip_NativeGetArchiveStringProperty(
-    JNIEnv* env,
-    jclass,
-    jlong native_ptr,
-    jint prop_id
-) {
-  CHECK_CLOSED_RETURN_VALUE(env, native_ptr, 0);
-  InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
-
-  BSTR path = nullptr;
-  HRESULT result = archive->GetArchiveStringProperty(static_cast<PROPID>(prop_id), &path);
-  if (result != S_OK) {
-    THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, result, nullptr);
-  }
-
-  if (path == nullptr) {
-    return nullptr;
-  }
-
-  shrink(path);
-  jstring jstr = env->NewString(reinterpret_cast<const jchar*>(path), ::SysStringLen(path));
-  ::SysFreeString(path);
+#define GET_STRING_PROPERTY(GETTER)                                                       \
+  BSTR str = nullptr;                                                                     \
+  HRESULT result = (GETTER);                                                              \
+  if (result != S_OK || str == nullptr) {                                                 \
+    if (str != nullptr) ::SysFreeString(str);                                             \
+    return nullptr;                                                                       \
+  }                                                                                       \
+  shrink(str);                                                                            \
+  jstring jstr = env->NewString(reinterpret_cast<const jchar*>(str), ::SysStringLen(str));\
+  ::SysFreeString(str);                                                                   \
   return jstr;
-}
 
-jint a7zip_NativeGetEntryPropertyType(
-    JNIEnv* env,
-    jclass,
-    jlong native_ptr,
-    jint index,
-    jint prop_id
-) {
-  CHECK_CLOSED_RETURN_VALUE(env, native_ptr, 0);
-  InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
+GET_ARCHIVE_PROPERTY_START(a7zip_NativeGetArchiveStringProperty, jstring)
+  GET_STRING_PROPERTY(archive->GetArchiveStringProperty(static_cast<PROPID>(prop_id), &str))
+GET_ARCHIVE_PROPERTY_END
 
-  PropType prop_type;
-  HRESULT result = archive->GetEntryPropertyType(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &prop_type);
-  if (result != S_OK) return PT_UNKNOWN;
-
-  return prop_type;
-}
-
-jstring a7zip_NativeGetEntryStringProperty(
-    JNIEnv* env,
-    jclass,
-    jlong native_ptr,
-    jint index,
-    jint prop_id
-) {
-  CHECK_CLOSED_RETURN_VALUE(env, native_ptr, 0);
-  InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
-
-  BSTR path = nullptr;
-  HRESULT result = archive->GetEntryStringProperty(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &path);
-  if (result != S_OK) {
-    THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, result, nullptr);
-  }
-
-  if (path == nullptr) {
-    return nullptr;
-  }
-
-  shrink(path);
-  jstring jstr = env->NewString(reinterpret_cast<const jchar*>(path), ::SysStringLen(path));
-  ::SysFreeString(path);
-  return jstr;
-}
+GET_ENTRY_PROPERTY_START(a7zip_NativeGetEntryStringProperty, jstring)
+  GET_STRING_PROPERTY(archive->GetEntryStringProperty(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &str))
+GET_ENTRY_PROPERTY_END
 
 void a7zip_NativeClose(
     JNIEnv* env,

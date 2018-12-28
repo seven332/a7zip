@@ -142,7 +142,7 @@ HRESULT InArchive::METHOD_NAME(PROPID prop_id, VALUE_TYPE value) {              
   RETURN_SAME_IF_NOT_ZERO(this->in_archive->GetArchiveProperty(prop_id, &prop));
 
 #define GET_ARCHIVE_PROPERTY_END                                                          \
-  }
+}
 
 #define GET_ENTRY_PROPERTY_START(METHOD_NAME, VALUE_TYPE)                                 \
 HRESULT InArchive::METHOD_NAME(UInt32 index, PROPID prop_id, VALUE_TYPE value) {          \
@@ -150,11 +150,19 @@ HRESULT InArchive::METHOD_NAME(UInt32 index, PROPID prop_id, VALUE_TYPE value) {
   RETURN_SAME_IF_NOT_ZERO(this->in_archive->GetProperty(index, prop_id, &prop));
 
 #define GET_ENTRY_PROPERTY_END                                                            \
-  }
+}
 
 #define GET_PROPERTY_TYPE                                                                 \
   *value = VarTypeToPropType(prop.vt);                                                    \
   return S_OK;
+
+GET_ARCHIVE_PROPERTY_START(GetArchivePropertyType, PropType*)
+  GET_PROPERTY_TYPE
+GET_ARCHIVE_PROPERTY_END
+
+GET_ENTRY_PROPERTY_START(GetEntryPropertyType, PropType*)
+  GET_PROPERTY_TYPE
+GET_ENTRY_PROPERTY_END
 
 #define GET_STRING_PROPERTY                                                               \
   switch (prop.vt) {                                                                      \
@@ -167,21 +175,20 @@ HRESULT InArchive::METHOD_NAME(UInt32 index, PROPID prop_id, VALUE_TYPE value) {
       return E_INCONSISTENT_PROP_TYPE;                                                    \
   }
 
-GET_ARCHIVE_PROPERTY_START(GetArchivePropertyType, PropType*)
-  GET_PROPERTY_TYPE
-GET_ARCHIVE_PROPERTY_END
-
 GET_ARCHIVE_PROPERTY_START(GetArchiveStringProperty, BSTR*)
   GET_STRING_PROPERTY
 GET_ARCHIVE_PROPERTY_END
 
-GET_ENTRY_PROPERTY_START(GetEntryPropertyType, PropType*)
-  GET_PROPERTY_TYPE
-GET_ENTRY_PROPERTY_END
-
 GET_ENTRY_PROPERTY_START(GetEntryStringProperty, BSTR*)
   GET_STRING_PROPERTY
 GET_ENTRY_PROPERTY_END
+
+#undef GET_ARCHIVE_PROPERTY_START
+#undef GET_ARCHIVE_PROPERTY_END
+#undef GET_ENTRY_PROPERTY_START
+#undef GET_ENTRY_PROPERTY_END
+#undef GET_PROPERTY_TYPE
+#undef GET_STRING_PROPERTY
 
 HRESULT InArchive::ExtractEntry(UInt32 index, CMyComPtr<ISequentialOutStream> out_stream) {
   CMyComPtr<ArchiveExtractCallback> callback(new ArchiveExtractCallback(out_stream));
