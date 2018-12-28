@@ -123,14 +123,17 @@ public class InArchive implements Closeable {
     return applyCharsetToString(str, charset);
   }
 
-  public String getEntryPath(int index) {
+  public String getEntryPath(int index) throws ArchiveException {
     return getEntryPath(index, null);
   }
 
-  public String getEntryPath(int index, Charset charset) {
-    checkClose();
-    String path = nativeGetEntryPath(nativePtr, index);
-    return applyCharsetToString(path, charset);
+  public String getEntryPath(int index, Charset charset) throws ArchiveException {
+    PropID propID = PropID.PATH;
+    PropType propType = getEntryPropertyType(index, propID);
+    if (propType == PropType.STRING) {
+      return getEntryStringProperty(index, propID, charset);
+    }
+    return null;
   }
 
   @Override
@@ -173,8 +176,6 @@ public class InArchive implements Closeable {
   private static native int nativeGetEntryPropertyType(long nativePtr, int index, int propID);
 
   private static native String nativeGetEntryStringProperty(long nativePtr, int index, int propID) throws ArchiveException;
-
-  private static native String nativeGetEntryPath(long nativePtr, int index);
 
   private static native void nativeClose(long nativePtr);
 }

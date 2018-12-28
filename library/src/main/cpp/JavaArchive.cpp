@@ -258,28 +258,6 @@ jstring a7zip_NativeGetEntryStringProperty(
   return jstr;
 }
 
-jstring a7zip_NativeGetEntryPath(
-    JNIEnv* env,
-    jclass,
-    jlong nativePtr,
-    jint index
-) {
-  CHECK_CLOSED_RETURN_VALUE(env, nativePtr, 0);
-  InArchive* archive = reinterpret_cast<InArchive*>(nativePtr);
-
-  BSTR path = nullptr;
-  HRESULT result = archive->GetEntryPath(static_cast<UInt32>(index), &path);
-  if (result != S_OK || path == nullptr) {
-    if (path != nullptr) ::SysFreeString(path);
-    THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, result, nullptr);
-  }
-
-  shrink(path);
-  jstring jstr = env->NewString(reinterpret_cast<const jchar*>(path), ::SysStringLen(path));
-  ::SysFreeString(path);
-  return jstr;
-}
-
 void a7zip_NativeClose(
     JNIEnv* env,
     jclass,
@@ -312,9 +290,6 @@ static JNINativeMethod archive_methods[] = {
     { "nativeGetEntryStringProperty",
       "(JII)Ljava/lang/String;",
       reinterpret_cast<void *>(a7zip_NativeGetEntryStringProperty) },
-    { "nativeGetEntryPath",
-      "(JI)Ljava/lang/String;",
-      reinterpret_cast<void *>(a7zip_NativeGetEntryPath) },
     { "nativeClose",
       "(J)V",
       reinterpret_cast<void *>(a7zip_NativeClose) }

@@ -180,18 +180,6 @@ HRESULT InArchive::GetEntryStringProperty(UInt32 index, PROPID prop_id, BSTR* bs
   }
 }
 
-HRESULT InArchive::GetEntryPath(UInt32 index, BSTR* name) {
-  NWindows::NCOM::CPropVariant prop;
-  RETURN_SAME_IF_NOT_ZERO(this->in_archive->GetProperty(index, kpidPath, &prop));
-
-  if (prop.vt == VT_BSTR) {
-    *name = ::SysAllocString(prop.bstrVal);
-    return S_OK;
-  } else {
-    return E_INCONSISTENT_PROP_TYPE;
-  }
-}
-
 HRESULT InArchive::ExtractEntry(UInt32 index, CMyComPtr<ISequentialOutStream> out_stream) {
   CMyComPtr<ArchiveExtractCallback> callback(new ArchiveExtractCallback(out_stream));
   return this->in_archive->Extract(&index, 1, false, callback);
