@@ -32,7 +32,7 @@ public class InArchive implements Closeable {
     this.nativePtr = nativePtr;
   }
 
-  private void checkClose() {
+  private void checkClosed() {
     if (nativePtr == 0) {
       throw new IllegalStateException("This InArchive is closed.");
     }
@@ -72,7 +72,7 @@ public class InArchive implements Closeable {
    */
   @NonNull
   public String getFormatName() {
-    checkClose();
+    checkClosed();
     return nativeGetFormatName(nativePtr);
   }
 
@@ -81,7 +81,7 @@ public class InArchive implements Closeable {
    * {@code -1} if get error.
    */
   public int getNumberOfEntries() {
-    checkClose();
+    checkClosed();
     return nativeGetNumberOfEntries(nativePtr);
   }
 
@@ -120,7 +120,7 @@ public class InArchive implements Closeable {
    */
   @NonNull
   public String getArchiveStringProperty(PropID propID, @Nullable Charset charset) {
-    checkClose();
+    checkClosed();
     String str = nativeGetArchiveStringProperty(nativePtr, propID.ordinal());
     str = applyCharsetToString(str, charset);
     return str != null ? str : "";
@@ -163,7 +163,7 @@ public class InArchive implements Closeable {
    */
   @NonNull
   public String getEntryStringProperty(int index, PropID propID, @Nullable Charset charset) {
-    checkClose();
+    checkClosed();
     String str = nativeGetEntryStringProperty(nativePtr, index, propID.ordinal());
     str = applyCharsetToString(str, charset);
     return str != null ? str : "";
