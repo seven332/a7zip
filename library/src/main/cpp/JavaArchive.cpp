@@ -135,20 +135,20 @@ jlong a7zip_NativeCreate(
 jstring a7zip_NativeGetFormatName(
     JNIEnv* env,
     jclass,
-    jlong nativePtr
+    jlong native_ptr
 ) {
-  CHECK_CLOSED_RETURN_VALUE(env, nativePtr, nullptr);
-  InArchive* archive = reinterpret_cast<InArchive*>(nativePtr);
+  CHECK_CLOSED_RETURN_VALUE(env, native_ptr, nullptr);
+  InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
   return env->NewStringUTF(archive->GetFormatName());
 }
 
 jint a7zip_NativeGetNumberOfEntries(
     JNIEnv* env,
     jclass,
-    jlong nativePtr
+    jlong native_ptr
 ) {
-  CHECK_CLOSED_RETURN_VALUE(env, nativePtr, 0);
-  InArchive* archive = reinterpret_cast<InArchive*>(nativePtr);
+  CHECK_CLOSED_RETURN_VALUE(env, native_ptr, 0);
+  InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
 
   UInt32 number = 0;
   HRESULT result = archive->GetNumberOfEntries(number);
@@ -216,10 +216,10 @@ GET_ENTRY_PROPERTY_END
 void a7zip_NativeClose(
     JNIEnv* env,
     jclass,
-    jlong nativePtr
+    jlong native_ptr
 ) {
-  CHECK_CLOSED_RETURN(env, nativePtr);
-  InArchive* archive = reinterpret_cast<InArchive*>(nativePtr);
+  CHECK_CLOSED_RETURN(env, native_ptr);
+  InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
   delete archive;
 }
 
