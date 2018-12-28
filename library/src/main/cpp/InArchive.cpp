@@ -175,11 +175,11 @@ GET_ENTRY_PROPERTY_END
       return E_INCONSISTENT_PROP_TYPE;                                                    \
   }
 
-GET_ARCHIVE_PROPERTY_START(GetArchiveBoolProperty, bool*)
+GET_ARCHIVE_PROPERTY_START(GetArchiveBooleanProperty, bool*)
   GET_BOOL_PROPERTY
 GET_ARCHIVE_PROPERTY_END
 
-GET_ENTRY_PROPERTY_START(GetEntryBoolProperty, bool*)
+GET_ENTRY_PROPERTY_START(GetEntryBooleanProperty, bool*)
   GET_BOOL_PROPERTY
 GET_ENTRY_PROPERTY_END
 

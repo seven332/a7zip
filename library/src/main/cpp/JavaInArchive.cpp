@@ -190,11 +190,11 @@ GET_ENTRY_PROPERTY_END
   return result == S_OK ? bool_prop : false;
 
 GET_ARCHIVE_PROPERTY_START(a7zip_NativeGetArchiveBooleanProperty, jboolean)
-  GET_BOOL_TYPE(archive->GetArchiveBoolProperty(static_cast<PROPID>(prop_id), &bool_prop))
+  GET_BOOL_TYPE(archive->GetArchiveBooleanProperty(static_cast<PROPID>(prop_id), &bool_prop))
 GET_ARCHIVE_PROPERTY_END
 
 GET_ENTRY_PROPERTY_START(a7zip_NativeGetEntryBooleanProperty, jboolean)
-  GET_BOOL_TYPE(archive->GetEntryBoolProperty(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &bool_prop))
+  GET_BOOL_TYPE(archive->GetEntryBooleanProperty(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &bool_prop))
 GET_ENTRY_PROPERTY_END
 
 static void shrink(BSTR bstr) {
