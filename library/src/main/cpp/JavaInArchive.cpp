@@ -210,6 +210,19 @@ GET_ENTRY_PROPERTY_START(a7zip_NativeGetEntryIntProperty, jint)
   GET_INT_TYPE(archive->GetEntryIntProperty(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &int_prop))
 GET_ENTRY_PROPERTY_END
 
+#define GET_LONG_TYPE(GETTER)                                                             \
+  Int64 long_prop;                                                                        \
+  HRESULT result = (GETTER);                                                              \
+  return result == S_OK ? long_prop : 0;
+
+GET_ARCHIVE_PROPERTY_START(a7zip_NativeGetArchiveLongProperty, jlong)
+  GET_LONG_TYPE(archive->GetArchiveLongProperty(static_cast<PROPID>(prop_id), &long_prop))
+GET_ARCHIVE_PROPERTY_END
+
+GET_ENTRY_PROPERTY_START(a7zip_NativeGetEntryLongProperty, jlong)
+  GET_LONG_TYPE(archive->GetEntryLongProperty(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &long_prop))
+GET_ENTRY_PROPERTY_END
+
 static void shrink(BSTR bstr) {
   jchar* jstr = reinterpret_cast<jchar*>(bstr);
   UINT n = ::SysStringLen(bstr);
@@ -269,6 +282,9 @@ static JNINativeMethod archive_methods[] = {
     { "nativeGetArchiveIntProperty",
       "(JI)I",
       reinterpret_cast<void *>(a7zip_NativeGetArchiveIntProperty) },
+    { "nativeGetArchiveLongProperty",
+      "(JI)J",
+      reinterpret_cast<void *>(a7zip_NativeGetArchiveLongProperty) },
     { "nativeGetArchiveStringProperty",
       "(JI)Ljava/lang/String;",
       reinterpret_cast<void *>(a7zip_NativeGetArchiveStringProperty) },
@@ -281,6 +297,9 @@ static JNINativeMethod archive_methods[] = {
     { "nativeGetEntryIntProperty",
       "(JII)I",
       reinterpret_cast<void *>(a7zip_NativeGetEntryIntProperty) },
+    { "nativeGetEntryLongProperty",
+      "(JII)J",
+      reinterpret_cast<void *>(a7zip_NativeGetEntryLongProperty) },
     { "nativeGetEntryStringProperty",
       "(JII)Ljava/lang/String;",
       reinterpret_cast<void *>(a7zip_NativeGetEntryStringProperty) },

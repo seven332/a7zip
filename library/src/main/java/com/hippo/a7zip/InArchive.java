@@ -115,11 +115,22 @@ public class InArchive implements Closeable {
    * Returns int property for the archive.
    *
    * @param propID the id of the property
-   * @return the int property, {@code false} if get error
+   * @return the int property, {@code 0} if get error
    */
   public int getArchiveIntProperty(PropID propID) {
     checkClosed();
     return nativeGetArchiveIntProperty(nativePtr, propID.ordinal());
+  }
+
+  /**
+   * Returns long property for the archive.
+   *
+   * @param propID the id of the property
+   * @return the long property, {@code 0} if get error
+   */
+  public long getArchiveLongProperty(PropID propID) {
+    checkClosed();
+    return nativeGetArchiveLongProperty(nativePtr, propID.ordinal());
   }
 
   /**
@@ -180,11 +191,23 @@ public class InArchive implements Closeable {
    *
    * @param index the index of the entry
    * @param propID the id of the property
-   * @return the int property, {@code false} if get error
+   * @return the int property, {@code 0} if get error
    */
   public int getEntryIntProperty(int index, PropID propID) {
     checkClosed();
     return nativeGetEntryIntProperty(nativePtr, index, propID.ordinal());
+  }
+
+  /**
+   * Returns long property for the entry.
+   *
+   * @param index the index of the entry
+   * @param propID the id of the property
+   * @return the long property, {@code 0} if get error
+   */
+  public long getEntryLongProperty(int index, PropID propID) {
+    checkClosed();
+    return nativeGetEntryLongProperty(nativePtr, index, propID.ordinal());
   }
 
   /**
@@ -277,6 +300,8 @@ public class InArchive implements Closeable {
 
   private static native int nativeGetArchiveIntProperty(long nativePtr, int propID);
 
+  private static native long nativeGetArchiveLongProperty(long nativePtr, int propID);
+
   @Nullable
   private static native String nativeGetArchiveStringProperty(long nativePtr, int propID);
 
@@ -285,6 +310,8 @@ public class InArchive implements Closeable {
   private static native boolean nativeGetEntryBooleanProperty(long nativePtr, int index, int propID);
 
   private static native int nativeGetEntryIntProperty(long nativePtr, int index, int propID);
+
+  private static native long nativeGetEntryLongProperty(long nativePtr, int index, int propID);
 
   @Nullable
   private static native String nativeGetEntryStringProperty(long nativePtr, int index, int propID);

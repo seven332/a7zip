@@ -223,6 +223,35 @@ GET_ENTRY_PROPERTY_START(GetEntryIntProperty, Int32*)
   GET_INT_PROPERTY
 GET_ENTRY_PROPERTY_END
 
+static const UInt64 FILE_TIME_OFFSET = (369 * 365 + 89) * 86400ULL * 10000000ULL;
+static const UInt64 FILE_TIME_MULTIPLE = 10000ULL;
+
+#define GET_LONG_PROPERTY                                                                 \
+  switch (prop.vt) {                                                                      \
+    case VT_I8:                                                                           \
+      *value = prop.hVal.QuadPart;                                                        \
+      return S_OK;                                                                        \
+    case VT_UI8:                                                                          \
+      *value = prop.uhVal.QuadPart;                                                       \
+      return S_OK;                                                                        \
+    case VT_FILETIME:                                                                     \
+      *value = (*reinterpret_cast<UInt64*>(&prop.filetime) - FILE_TIME_OFFSET) /          \
+                   FILE_TIME_MULTIPLE;                                                    \
+      return S_OK;                                                                        \
+    case VT_EMPTY:                                                                        \
+      return E_EMPTY_PROP;                                                                \
+    default:                                                                              \
+      return E_INCONSISTENT_PROP_TYPE;                                                    \
+  }
+
+GET_ARCHIVE_PROPERTY_START(GetArchiveLongProperty, Int64*)
+  GET_LONG_PROPERTY
+GET_ARCHIVE_PROPERTY_END
+
+GET_ENTRY_PROPERTY_START(GetEntryLongProperty, Int64*)
+  GET_LONG_PROPERTY
+GET_ENTRY_PROPERTY_END
+
 #define GET_STRING_PROPERTY                                                               \
   switch (prop.vt) {                                                                      \
     case VT_BSTR:                                                                         \
