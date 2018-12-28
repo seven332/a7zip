@@ -136,49 +136,52 @@ static PropType VarTypeToPropType(VARTYPE var_enum) {
   }
 }
 
-HRESULT InArchive::GetArchivePropertyType(PROPID prop_id, PropType* prop_type) {
-  NWindows::NCOM::CPropVariant prop;
-  RETURN_SAME_IF_NOT_ZERO(this->in_archive->GetArchiveProperty(prop_id, &prop));
-  *prop_type = VarTypeToPropType(prop.vt);
-  return S_OK;
-}
-
-HRESULT InArchive::GetArchiveStringProperty(PROPID prop_id, BSTR* bstr) {
-  NWindows::NCOM::CPropVariant prop;
+#define GET_ARCHIVE_PROPERTY_START(METHOD_NAME, VALUE_TYPE)                               \
+HRESULT InArchive::METHOD_NAME(PROPID prop_id, VALUE_TYPE value) {                        \
+  NWindows::NCOM::CPropVariant prop;                                                      \
   RETURN_SAME_IF_NOT_ZERO(this->in_archive->GetArchiveProperty(prop_id, &prop));
 
-  switch (prop.vt) {
-    case VT_BSTR:
-      *bstr = ::SysAllocString(prop.bstrVal);
-      return S_OK;
-    case VT_EMPTY:
-      return E_EMPTY_PROP;
-    default:
-      return E_INCONSISTENT_PROP_TYPE;
+#define GET_ARCHIVE_PROPERTY_END                                                          \
   }
-}
 
-HRESULT InArchive::GetEntryPropertyType(UInt32 index, PROPID prop_id, a7zip::PropType *prop_type) {
-  NWindows::NCOM::CPropVariant prop;
+#define GET_ENTRY_PROPERTY_START(METHOD_NAME, VALUE_TYPE)                                 \
+HRESULT InArchive::METHOD_NAME(UInt32 index, PROPID prop_id, VALUE_TYPE value) {          \
+  NWindows::NCOM::CPropVariant prop;                                                      \
   RETURN_SAME_IF_NOT_ZERO(this->in_archive->GetProperty(index, prop_id, &prop));
-  *prop_type = VarTypeToPropType(prop.vt);
+
+#define GET_ENTRY_PROPERTY_END                                                            \
+  }
+
+#define GET_PROPERTY_TYPE                                                                 \
+  *value = VarTypeToPropType(prop.vt);                                                    \
   return S_OK;
-}
 
-HRESULT InArchive::GetEntryStringProperty(UInt32 index, PROPID prop_id, BSTR* bstr) {
-  NWindows::NCOM::CPropVariant prop;
-  RETURN_SAME_IF_NOT_ZERO(this->in_archive->GetProperty(index, prop_id, &prop));
-
-  switch (prop.vt) {
-    case VT_BSTR:
-      *bstr = ::SysAllocString(prop.bstrVal);
-      return S_OK;
-    case VT_EMPTY:
-      return E_EMPTY_PROP;
-    default:
-      return E_INCONSISTENT_PROP_TYPE;
+#define GET_STRING_PROPERTY                                                               \
+  switch (prop.vt) {                                                                      \
+    case VT_BSTR:                                                                         \
+      *value = ::SysAllocString(prop.bstrVal);                                            \
+      return S_OK;                                                                        \
+    case VT_EMPTY:                                                                        \
+      return E_EMPTY_PROP;                                                                \
+    default:                                                                              \
+      return E_INCONSISTENT_PROP_TYPE;                                                    \
   }
-}
+
+GET_ARCHIVE_PROPERTY_START(GetArchivePropertyType, PropType*)
+  GET_PROPERTY_TYPE
+GET_ARCHIVE_PROPERTY_END
+
+GET_ARCHIVE_PROPERTY_START(GetArchiveStringProperty, BSTR*)
+  GET_STRING_PROPERTY
+GET_ARCHIVE_PROPERTY_END
+
+GET_ENTRY_PROPERTY_START(GetEntryPropertyType, PropType*)
+  GET_PROPERTY_TYPE
+GET_ENTRY_PROPERTY_END
+
+GET_ENTRY_PROPERTY_START(GetEntryStringProperty, BSTR*)
+  GET_STRING_PROPERTY
+GET_ENTRY_PROPERTY_END
 
 HRESULT InArchive::ExtractEntry(UInt32 index, CMyComPtr<ISequentialOutStream> out_stream) {
   CMyComPtr<ArchiveExtractCallback> callback(new ArchiveExtractCallback(out_stream));
