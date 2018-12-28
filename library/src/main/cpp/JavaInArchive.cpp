@@ -193,6 +193,19 @@ static void shrink(BSTR bstr) {
   jstr[n] = 0;
 }
 
+#define GET_BOOL_TYPE(GETTER)                                                             \
+  bool prop;                                                                              \
+  HRESULT result = (GETTER);                                                              \
+  return result == S_OK ? prop : false;
+
+GET_ARCHIVE_PROPERTY_START(a7zip_NativeGetArchiveBooleanProperty, jboolean)
+  GET_BOOL_TYPE(archive->GetArchiveBoolProperty(static_cast<PROPID>(prop_id), &prop))
+GET_ARCHIVE_PROPERTY_END
+
+GET_ENTRY_PROPERTY_START(a7zip_NativeGetEntryBooleanProperty, jboolean)
+  GET_BOOL_TYPE(archive->GetEntryBoolProperty(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &prop))
+GET_ENTRY_PROPERTY_END
+
 #define GET_STRING_PROPERTY(GETTER)                                                       \
   BSTR str = nullptr;                                                                     \
   HRESULT result = (GETTER);                                                              \
@@ -236,12 +249,18 @@ static JNINativeMethod archive_methods[] = {
     { "nativeGetArchivePropertyType",
       "(JI)I",
       reinterpret_cast<void *>(a7zip_NativeGetArchivePropertyType) },
+    { "nativeGetArchiveBooleanProperty",
+      "(JI)Z",
+      reinterpret_cast<void *>(a7zip_NativeGetArchiveBooleanProperty) },
     { "nativeGetArchiveStringProperty",
       "(JI)Ljava/lang/String;",
       reinterpret_cast<void *>(a7zip_NativeGetArchiveStringProperty) },
     { "nativeGetEntryPropertyType",
       "(JII)I",
       reinterpret_cast<void *>(a7zip_NativeGetEntryPropertyType) },
+    { "nativeGetEntryBooleanProperty",
+      "(JII)Z",
+      reinterpret_cast<void *>(a7zip_NativeGetEntryBooleanProperty) },
     { "nativeGetEntryStringProperty",
       "(JII)Ljava/lang/String;",
       reinterpret_cast<void *>(a7zip_NativeGetEntryStringProperty) },

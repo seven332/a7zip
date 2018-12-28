@@ -164,6 +164,25 @@ GET_ENTRY_PROPERTY_START(GetEntryPropertyType, PropType*)
   GET_PROPERTY_TYPE
 GET_ENTRY_PROPERTY_END
 
+#define GET_BOOL_PROPERTY                                                                 \
+  switch (prop.vt) {                                                                      \
+    case VT_BOOL:                                                                         \
+      *value = prop.boolVal != 0;                                                         \
+      return S_OK;                                                                        \
+    case VT_EMPTY:                                                                        \
+      return E_EMPTY_PROP;                                                                \
+    default:                                                                              \
+      return E_INCONSISTENT_PROP_TYPE;                                                    \
+  }
+
+GET_ARCHIVE_PROPERTY_START(GetArchiveBoolProperty, bool*)
+  GET_BOOL_PROPERTY
+GET_ARCHIVE_PROPERTY_END
+
+GET_ENTRY_PROPERTY_START(GetEntryBoolProperty, bool*)
+  GET_BOOL_PROPERTY
+GET_ENTRY_PROPERTY_END
+
 #define GET_STRING_PROPERTY                                                               \
   switch (prop.vt) {                                                                      \
     case VT_BSTR:                                                                         \
