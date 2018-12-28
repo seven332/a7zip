@@ -17,6 +17,7 @@
 package com.hippo.a7zip;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import java.io.Closeable;
 import java.nio.charset.Charset;
 import okio.BufferedStore;
@@ -37,6 +38,12 @@ public class InArchive implements Closeable {
     }
   }
 
+  // Sometimes p7zip returns string in the original charset, sometimes in utf-16.
+  // If it in unknown charset, each byte stores in each char,
+  // so every char in the string is smaller than 0xFF.
+  // But if every char in the string is smaller than 0xFF,
+  // it's hard to tell the string is in utf-16 or the original charset.
+  // TODO Let p7zip tell whether it have encoded the string.
   private String applyCharsetToString(String str, Charset charset) {
     if (str == null || charset == null) {
       return str;
@@ -59,6 +66,11 @@ public class InArchive implements Closeable {
     return new String(bytes, charset);
   }
 
+  /**
+   * Returns the format name of this archive.
+   * Empty string if can't get the name.
+   */
+  @NonNull
   public String getFormatName() {
     checkClose();
     return nativeGetFormatName(nativePtr);
@@ -73,6 +85,12 @@ public class InArchive implements Closeable {
     return nativeGetNumberOfEntries(nativePtr);
   }
 
+  /**
+   * Returns the type of the property for the archive.
+   *
+   * @param propID the id of the property
+   * @return one of {@link PropType}
+   */
   public PropType getArchivePropertyType(PropID propID) {
     int type = nativeGetArchivePropertyType(nativePtr, propID.ordinal());
     if (type >= 0 || type < PropType.values().length) {
@@ -83,23 +101,37 @@ public class InArchive implements Closeable {
   }
 
   /**
-   * TODO
+   * Returns string property for the archive.
+   *
+   * @param propID the id of the property
+   * @return the string property, empty string if get error
    */
   @NonNull
-  public String getArchiveStringProperty(PropID propID) throws ArchiveException {
+  public String getArchiveStringProperty(PropID propID) {
     return getArchiveStringProperty(propID, null);
   }
 
   /**
-   * TODO
+   * Returns string property for the archive.
+   *
+   * @param propID the id of the property
+   * @param charset the charset of the string, {@code null} to let p7zip handle it
+   * @return the string property, empty string if get error
    */
   @NonNull
-  public String getArchiveStringProperty(PropID propID, Charset charset) throws ArchiveException {
+  public String getArchiveStringProperty(PropID propID, @Nullable Charset charset) {
     checkClose();
     String str = nativeGetArchiveStringProperty(nativePtr, propID.ordinal());
-    return applyCharsetToString(str, charset);
+    str = applyCharsetToString(str, charset);
+    return str != null ? str : "";
   }
 
+  /**
+   * Returns the type of the property for the archive.
+   *
+   * @param propID the id of the property
+   * @return one of {@link PropType}
+   */
   public PropType getEntryPropertyType(int index, PropID propID) {
     int type = nativeGetEntryPropertyType(nativePtr, index, propID.ordinal());
     if (type >= 0 || type < PropType.values().length) {
@@ -110,34 +142,54 @@ public class InArchive implements Closeable {
   }
 
   /**
-   * TODO
+   * Returns string property for the entry.
+   *
+   * @param index the index of the entry
+   * @param propID the id of the property
+   * @return the string property, empty string if get error
    */
   @NonNull
-  public String getEntryStringProperty(int index, PropID propID) throws ArchiveException {
+  public String getEntryStringProperty(int index, PropID propID) {
     return getEntryStringProperty(index, propID, null);
   }
 
   /**
-   * TODO
+   * Returns string property for the entry.
+   *
+   * @param index the index of the entry
+   * @param propID the id of the property
+   * @param charset the charset of the string, {@code null} to let p7zip handle it
+   * @return the string property, empty string if get error
    */
   @NonNull
-  public String getEntryStringProperty(int index, PropID propID, Charset charset) throws ArchiveException {
+  public String getEntryStringProperty(int index, PropID propID, @Nullable Charset charset) {
     checkClose();
     String str = nativeGetEntryStringProperty(nativePtr, index, propID.ordinal());
-    return applyCharsetToString(str, charset);
+    str = applyCharsetToString(str, charset);
+    return str != null ? str : "";
   }
 
-  public String getEntryPath(int index) throws ArchiveException {
+  /**
+   * Returns the path of the entry.
+   *
+   * @param index the index of the entry
+   * @return the path, empty string if get error
+   */
+  @NonNull
+  public String getEntryPath(int index) {
     return getEntryPath(index, null);
   }
 
-  public String getEntryPath(int index, Charset charset) throws ArchiveException {
-    PropID propID = PropID.PATH;
-    PropType propType = getEntryPropertyType(index, propID);
-    if (propType == PropType.STRING) {
-      return getEntryStringProperty(index, propID, charset);
-    }
-    return null;
+  /**
+   * Returns the path of the entry.
+   *
+   * @param index the index of the entry
+   * @param charset the charset of the string, {@code null} to let p7zip handle it
+   * @return the path, empty string if get error
+   */
+  @NonNull
+  public String getEntryPath(int index, Charset charset) {
+    return getEntryStringProperty(index, PropID.PATH, charset);
   }
 
   @Override
@@ -175,11 +227,13 @@ public class InArchive implements Closeable {
 
   private static native int nativeGetArchivePropertyType(long nativePtr, int propID);
 
-  private static native String nativeGetArchiveStringProperty(long nativePtr, int propID) throws ArchiveException;
+  @Nullable
+  private static native String nativeGetArchiveStringProperty(long nativePtr, int propID);
 
   private static native int nativeGetEntryPropertyType(long nativePtr, int index, int propID);
 
-  private static native String nativeGetEntryStringProperty(long nativePtr, int index, int propID) throws ArchiveException;
+  @Nullable
+  private static native String nativeGetEntryStringProperty(long nativePtr, int index, int propID);
 
   private static native void nativeClose(long nativePtr);
 }
