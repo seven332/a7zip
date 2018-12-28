@@ -184,6 +184,19 @@ GET_ENTRY_PROPERTY_START(a7zip_NativeGetEntryPropertyType, jint)
   GET_PROPERTY_TYPE(archive->GetEntryPropertyType(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &prop_type))
 GET_ENTRY_PROPERTY_END
 
+#define GET_BOOL_TYPE(GETTER)                                                             \
+  bool bool_prop;                                                                         \
+  HRESULT result = (GETTER);                                                              \
+  return result == S_OK ? bool_prop : false;
+
+GET_ARCHIVE_PROPERTY_START(a7zip_NativeGetArchiveBooleanProperty, jboolean)
+  GET_BOOL_TYPE(archive->GetArchiveBoolProperty(static_cast<PROPID>(prop_id), &bool_prop))
+GET_ARCHIVE_PROPERTY_END
+
+GET_ENTRY_PROPERTY_START(a7zip_NativeGetEntryBooleanProperty, jboolean)
+  GET_BOOL_TYPE(archive->GetEntryBoolProperty(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &bool_prop))
+GET_ENTRY_PROPERTY_END
+
 static void shrink(BSTR bstr) {
   jchar* jstr = reinterpret_cast<jchar*>(bstr);
   UINT n = ::SysStringLen(bstr);
@@ -193,37 +206,25 @@ static void shrink(BSTR bstr) {
   jstr[n] = 0;
 }
 
-#define GET_BOOL_TYPE(GETTER)                                                             \
-  bool prop;                                                                              \
-  HRESULT result = (GETTER);                                                              \
-  return result == S_OK ? prop : false;
-
-GET_ARCHIVE_PROPERTY_START(a7zip_NativeGetArchiveBooleanProperty, jboolean)
-  GET_BOOL_TYPE(archive->GetArchiveBoolProperty(static_cast<PROPID>(prop_id), &prop))
-GET_ARCHIVE_PROPERTY_END
-
-GET_ENTRY_PROPERTY_START(a7zip_NativeGetEntryBooleanProperty, jboolean)
-  GET_BOOL_TYPE(archive->GetEntryBoolProperty(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &prop))
-GET_ENTRY_PROPERTY_END
-
 #define GET_STRING_PROPERTY(GETTER)                                                       \
-  BSTR str = nullptr;                                                                     \
+  BSTR str_prop = nullptr;                                                                \
   HRESULT result = (GETTER);                                                              \
-  if (result != S_OK || str == nullptr) {                                                 \
-    if (str != nullptr) ::SysFreeString(str);                                             \
+  if (result != S_OK || str_prop == nullptr) {                                            \
+    if (str_prop != nullptr) ::SysFreeString(str_prop);                                   \
     return nullptr;                                                                       \
   }                                                                                       \
-  shrink(str);                                                                            \
-  jstring jstr = env->NewString(reinterpret_cast<const jchar*>(str), ::SysStringLen(str));\
-  ::SysFreeString(str);                                                                   \
+  shrink(str_prop);                                                                       \
+  jstring jstr =                                                                          \
+      env->NewString(reinterpret_cast<const jchar*>(str_prop), ::SysStringLen(str_prop)); \
+  ::SysFreeString(str_prop);                                                              \
   return jstr;
 
 GET_ARCHIVE_PROPERTY_START(a7zip_NativeGetArchiveStringProperty, jstring)
-  GET_STRING_PROPERTY(archive->GetArchiveStringProperty(static_cast<PROPID>(prop_id), &str))
+  GET_STRING_PROPERTY(archive->GetArchiveStringProperty(static_cast<PROPID>(prop_id), &str_prop))
 GET_ARCHIVE_PROPERTY_END
 
 GET_ENTRY_PROPERTY_START(a7zip_NativeGetEntryStringProperty, jstring)
-  GET_STRING_PROPERTY(archive->GetEntryStringProperty(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &str))
+  GET_STRING_PROPERTY(archive->GetEntryStringProperty(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &str_prop))
 GET_ENTRY_PROPERTY_END
 
 void a7zip_NativeClose(

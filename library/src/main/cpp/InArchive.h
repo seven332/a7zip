@@ -36,12 +36,12 @@ class InArchive {
   HRESULT GetNumberOfEntries(UInt32& number);
 
   HRESULT GetArchivePropertyType(PROPID prop_id, PropType* prop_type);
-  HRESULT GetArchiveBoolProperty(PROPID prop_id, bool* prop);
-  HRESULT GetArchiveStringProperty(PROPID prop_id, BSTR* bstr);
+  HRESULT GetArchiveBoolProperty(PROPID prop_id, bool* bool_prop);
+  HRESULT GetArchiveStringProperty(PROPID prop_id, BSTR* str_prop);
 
   HRESULT GetEntryPropertyType(UInt32 index, PROPID prop_id, PropType* prop_type);
-  HRESULT GetEntryBoolProperty(UInt32 index, PROPID prop_id, bool* prop);
-  HRESULT GetEntryStringProperty(UInt32 index, PROPID prop_id, BSTR* bstr);
+  HRESULT GetEntryBoolProperty(UInt32 index, PROPID prop_id, bool* bool_prop);
+  HRESULT GetEntryStringProperty(UInt32 index, PROPID prop_id, BSTR* str_prop);
 
   HRESULT ExtractEntry(UInt32 index, CMyComPtr<ISequentialOutStream> out_stream);
 
