@@ -16,7 +16,7 @@
 
 package com.hippo.a7zip;
 
-import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 import java.io.Closeable;
 import java.nio.charset.Charset;
 import okio.BufferedStore;
@@ -72,7 +72,7 @@ public class InArchive implements Closeable {
   /**
    * TODO
    */
-  @Nullable
+  @NonNull
   public String getArchiveStringProperty(PropID propID) throws ArchiveException {
     return getArchiveStringProperty(propID, null);
   }
@@ -80,7 +80,7 @@ public class InArchive implements Closeable {
   /**
    * TODO
    */
-  @Nullable
+  @NonNull
   public String getArchiveStringProperty(PropID propID, Charset charset) throws ArchiveException {
     checkClose();
     String str = nativeGetArchiveStringProperty(nativePtr, propID.ordinal());
@@ -90,22 +90,15 @@ public class InArchive implements Closeable {
   /**
    * TODO
    */
-  @Nullable
+  @NonNull
   public String getEntryStringProperty(int index, PropID propID) throws ArchiveException {
     return getEntryStringProperty(index, propID, null);
-  }
-
-  // DEL
-  public String getEntryStringProperty(int index, int propID, Charset charset) throws ArchiveException {
-    checkClose();
-    String str = nativeGetEntryStringProperty(nativePtr, index, propID);
-    return applyCharsetToString(str, charset);
   }
 
   /**
    * TODO
    */
-  @Nullable
+  @NonNull
   public String getEntryStringProperty(int index, PropID propID, Charset charset) throws ArchiveException {
     checkClose();
     String str = nativeGetEntryStringProperty(nativePtr, index, propID.ordinal());

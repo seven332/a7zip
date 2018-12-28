@@ -81,6 +81,8 @@ static const char* GetMessageForCode(HRESULT code) {
       return "Failed to register methods.";
     case E_INCONSISTENT_PROP_TYPE:
       return "Inconsistent property type.";
+    case E_EMPTY_PROP:
+      return "Empty property.";
     case E_UNKNOWN_FORMAT:
       return "Unknown archive format.";
     default:

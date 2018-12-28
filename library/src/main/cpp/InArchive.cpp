@@ -118,8 +118,7 @@ HRESULT InArchive::GetArchiveStringProperty(PROPID prop_id, BSTR* bstr) {
       *bstr = ::SysAllocString(prop.bstrVal);
       return S_OK;
     case VT_EMPTY:
-      *bstr = nullptr;
-      return S_OK;
+      return E_EMPTY_PROP;
     default:
       return E_INCONSISTENT_PROP_TYPE;
   }
@@ -134,8 +133,7 @@ HRESULT InArchive::GetEntryStringProperty(UInt32 index, PROPID prop_id, BSTR* bs
       *bstr = ::SysAllocString(prop.bstrVal);
       return S_OK;
     case VT_EMPTY:
-      *bstr = nullptr;
-      return S_OK;
+      return E_EMPTY_PROP;
     default:
       return E_INCONSISTENT_PROP_TYPE;
   }
