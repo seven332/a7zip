@@ -112,6 +112,17 @@ public class InArchive implements Closeable {
   }
 
   /**
+   * Returns int property for the archive.
+   *
+   * @param propID the id of the property
+   * @return the int property, {@code false} if get error
+   */
+  public int getArchiveIntProperty(PropID propID) {
+    checkClosed();
+    return nativeGetArchiveIntProperty(nativePtr, propID.ordinal());
+  }
+
+  /**
    * Returns string property for the archive.
    *
    * @param propID the id of the property
@@ -162,6 +173,18 @@ public class InArchive implements Closeable {
   public boolean getEntryBooleanProperty(int index, PropID propID) {
     checkClosed();
     return nativeGetEntryBooleanProperty(nativePtr, index, propID.ordinal());
+  }
+
+  /**
+   * Returns int property for the entry.
+   *
+   * @param index the index of the entry
+   * @param propID the id of the property
+   * @return the int property, {@code false} if get error
+   */
+  public int getEntryIntProperty(int index, PropID propID) {
+    checkClosed();
+    return nativeGetEntryIntProperty(nativePtr, index, propID.ordinal());
   }
 
   /**
@@ -252,12 +275,16 @@ public class InArchive implements Closeable {
 
   private static native boolean nativeGetArchiveBooleanProperty(long nativePtr, int propID);
 
+  private static native int nativeGetArchiveIntProperty(long nativePtr, int propID);
+
   @Nullable
   private static native String nativeGetArchiveStringProperty(long nativePtr, int propID);
 
   private static native int nativeGetEntryPropertyType(long nativePtr, int index, int propID);
 
   private static native boolean nativeGetEntryBooleanProperty(long nativePtr, int index, int propID);
+
+  private static native int nativeGetEntryIntProperty(long nativePtr, int index, int propID);
 
   @Nullable
   private static native String nativeGetEntryStringProperty(long nativePtr, int index, int propID);

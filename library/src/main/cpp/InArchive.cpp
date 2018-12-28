@@ -164,7 +164,7 @@ GET_ENTRY_PROPERTY_START(GetEntryPropertyType, PropType*)
   GET_PROPERTY_TYPE
 GET_ENTRY_PROPERTY_END
 
-#define GET_BOOL_PROPERTY                                                                 \
+#define GET_BOOLEAN_PROPERTY                                                              \
   switch (prop.vt) {                                                                      \
     case VT_BOOL:                                                                         \
       *value = prop.boolVal != 0;                                                         \
@@ -176,11 +176,51 @@ GET_ENTRY_PROPERTY_END
   }
 
 GET_ARCHIVE_PROPERTY_START(GetArchiveBooleanProperty, bool*)
-  GET_BOOL_PROPERTY
+  GET_BOOLEAN_PROPERTY
 GET_ARCHIVE_PROPERTY_END
 
 GET_ENTRY_PROPERTY_START(GetEntryBooleanProperty, bool*)
-  GET_BOOL_PROPERTY
+  GET_BOOLEAN_PROPERTY
+GET_ENTRY_PROPERTY_END
+
+#define GET_INT_PROPERTY                                                                  \
+  switch (prop.vt) {                                                                      \
+    case VT_I1:                                                                           \
+      *value = prop.cVal;                                                                 \
+      return S_OK;                                                                        \
+    case VT_I2:                                                                           \
+      *value = prop.iVal;                                                                 \
+      return S_OK;                                                                        \
+    case VT_I4:                                                                           \
+      *value = prop.lVal;                                                                 \
+      return S_OK;                                                                        \
+    case VT_INT:                                                                          \
+      *value = prop.intVal;                                                               \
+      return S_OK;                                                                        \
+    case VT_UI1:                                                                          \
+      *value = prop.bVal;                                                                 \
+      return S_OK;                                                                        \
+    case VT_UI2:                                                                          \
+      *value = prop.uiVal;                                                                \
+      return S_OK;                                                                        \
+    case VT_UI4:                                                                          \
+      *value = prop.ulVal;                                                                \
+      return S_OK;                                                                        \
+    case VT_UINT:                                                                         \
+      *value = prop.uintVal;                                                              \
+      return S_OK;                                                                        \
+    case VT_EMPTY:                                                                        \
+      return E_EMPTY_PROP;                                                                \
+    default:                                                                              \
+      return E_INCONSISTENT_PROP_TYPE;                                                    \
+  }
+
+GET_ARCHIVE_PROPERTY_START(GetArchiveIntProperty, Int32*)
+  GET_INT_PROPERTY
+GET_ARCHIVE_PROPERTY_END
+
+GET_ENTRY_PROPERTY_START(GetEntryIntProperty, Int32*)
+  GET_INT_PROPERTY
 GET_ENTRY_PROPERTY_END
 
 #define GET_STRING_PROPERTY                                                               \
@@ -201,13 +241,6 @@ GET_ARCHIVE_PROPERTY_END
 GET_ENTRY_PROPERTY_START(GetEntryStringProperty, BSTR*)
   GET_STRING_PROPERTY
 GET_ENTRY_PROPERTY_END
-
-#undef GET_ARCHIVE_PROPERTY_START
-#undef GET_ARCHIVE_PROPERTY_END
-#undef GET_ENTRY_PROPERTY_START
-#undef GET_ENTRY_PROPERTY_END
-#undef GET_PROPERTY_TYPE
-#undef GET_STRING_PROPERTY
 
 HRESULT InArchive::ExtractEntry(UInt32 index, CMyComPtr<ISequentialOutStream> out_stream) {
   CMyComPtr<ArchiveExtractCallback> callback(new ArchiveExtractCallback(out_stream));
