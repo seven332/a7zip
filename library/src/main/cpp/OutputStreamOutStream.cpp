@@ -57,7 +57,7 @@ HRESULT OutStreamOutStream::Write(const void* data, UInt32 size, UInt32* process
   RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(this->env);
 
   // Write data to sink
-  this->env->CallObjectMethod(this->os, method_write, this->array, 0, size);
+  this->env->CallVoidMethod(this->os, method_write, this->array, 0, size);
   RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(this->env);
 
   if (processedSize != nullptr) {
