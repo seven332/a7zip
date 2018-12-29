@@ -22,17 +22,17 @@
 
 using namespace a7zip;
 
-bool OutStreamOutStream::initialized = false;
-jmethodID OutStreamOutStream::method_write = nullptr;
-jmethodID OutStreamOutStream::method_close = nullptr;
+bool OutputStreamOutStream::initialized = false;
+jmethodID OutputStreamOutStream::method_write = nullptr;
+jmethodID OutputStreamOutStream::method_close = nullptr;
 
-OutStreamOutStream::OutStreamOutStream(JNIEnv* env, jobject os, jbyteArray array) {
+OutputStreamOutStream::OutputStreamOutStream(JNIEnv* env, jobject os, jbyteArray array) {
   this->env = env;
   this->os = os;
   this->array = array;
 }
 
-OutStreamOutStream::~OutStreamOutStream() {
+OutputStreamOutStream::~OutputStreamOutStream() {
   this->env->CallVoidMethod(this->os, method_close);
   CLEAR_IF_EXCEPTION_PENDING(this->env);
 
@@ -40,7 +40,7 @@ OutStreamOutStream::~OutStreamOutStream() {
   this->env->DeleteGlobalRef(this->array);
 }
 
-HRESULT OutStreamOutStream::Write(const void* data, UInt32 size, UInt32* processedSize) {
+HRESULT OutputStreamOutStream::Write(const void* data, UInt32 size, UInt32* processedSize) {
   if (processedSize != nullptr) {
     *processedSize = 0;
   }
@@ -67,7 +67,7 @@ HRESULT OutStreamOutStream::Write(const void* data, UInt32 size, UInt32* process
   return S_OK;
 }
 
-HRESULT OutStreamOutStream::Initialize(JNIEnv* env) {
+HRESULT OutputStreamOutStream::Initialize(JNIEnv* env) {
   if (initialized) {
     return S_OK;
   }
@@ -84,10 +84,10 @@ HRESULT OutStreamOutStream::Initialize(JNIEnv* env) {
   return S_OK;
 }
 
-HRESULT OutStreamOutStream::Create(
+HRESULT OutputStreamOutStream::Create(
     JNIEnv* env,
     jobject os,
-    OutStreamOutStream** out_stream
+    CMyComPtr<ISequentialOutStream>& out_stream
 ) {
   if (!initialized) {
     return E_NOT_INITIALIZED;
@@ -110,7 +110,7 @@ HRESULT OutStreamOutStream::Create(
     return E_OUTOFMEMORY;
   }
 
-  *out_stream = new OutStreamOutStream(env, g_os, g_array);
+  out_stream = new OutputStreamOutStream(env, g_os, g_array);
 
   return S_OK;
 }
