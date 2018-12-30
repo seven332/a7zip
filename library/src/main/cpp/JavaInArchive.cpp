@@ -120,12 +120,21 @@ jlong a7zip_NativeCreate(
   CMyComPtr<IInStream> stream = nullptr;
   HRESULT result = BufferedStoreInStream::Create(env, store, stream);
   if (result != S_OK || stream == nullptr) {
+    // Call java methods before throw exception
+    if (stream != nullptr) {
+      stream.Release();
+    }
     THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, result, 0);
   }
 
   InArchive* archive = nullptr;
   result = P7Zip::OpenArchive(stream, &archive);
   if (result != S_OK || archive == nullptr) {
+    // Call java methods before throw exception
+    stream.Release();
+    if (archive != nullptr) {
+      delete archive;
+    }
     THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, result, 0);
   }
 
