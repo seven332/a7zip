@@ -19,6 +19,7 @@ package com.hippo.a7zip;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import java.io.Closeable;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import okio.BufferedStore;
 import okio.Okio;
@@ -257,8 +258,20 @@ public class InArchive implements Closeable {
    * @return the path, empty string if get error
    */
   @NonNull
-  public String getEntryPath(int index, Charset charset) {
+  public String getEntryPath(int index, @Nullable Charset charset) {
     return getEntryStringProperty(index, PropID.PATH, charset);
+  }
+
+  /**
+   * Extracts the context of the entry into the output stream.
+   *
+   * @param index the index of the entry
+   * @param os the output steam to receive the content
+   * @throws ArchiveException if get error
+   */
+  public void extractEntry(int index, @NonNull OutputStream os) throws ArchiveException {
+    checkClosed();
+    nativeExtractEntry(nativePtr, index, os);
   }
 
   @Override
@@ -315,6 +328,8 @@ public class InArchive implements Closeable {
 
   @Nullable
   private static native String nativeGetEntryStringProperty(long nativePtr, int index, int propID);
+
+  private static native void nativeExtractEntry(long nativePtr, int index, OutputStream os) throws ArchiveException;
 
   private static native void nativeClose(long nativePtr);
 }

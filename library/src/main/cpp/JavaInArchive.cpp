@@ -24,6 +24,7 @@
 
 #include "BufferedStoreInStream.h"
 #include "Log.h"
+#include "OutputStreamOutStream.h"
 #include "P7Zip.h"
 #include "Utils.h"
 
@@ -65,30 +66,65 @@ static jint ThrowException(
 static const char* GetMessageForCode(HRESULT code) {
   switch (code) {
     case E_NOT_INITIALIZED:
-      return "The module is not initialized.";
+      return "The module is not initialized";
     case S_OK:
     case E_INTERNAL:
-      return "a7zip is buggy.";
+      return "a7zip is buggy";
     case E_CLASS_NOT_FOUND:
-      return "Can't find the class.";
+      return "Can't find the class";
     case E_METHOD_NOT_FOUND:
-      return "Can't find the method.";
+      return "Can't find the method";
     case E_JAVA_EXCEPTION:
-      return "Catch a java exception.";
+      return "Catch a java exception";
     case E_FAILED_CONSTRUCT:
-      return "Failed to create new class.";
+      return "Failed to create new class";
     case E_FAILED_REGISTER:
-      return "Failed to register methods.";
+      return "Failed to register methods";
     case E_INCONSISTENT_PROP_TYPE:
-      return "Inconsistent property type.";
+      return "Inconsistent property type";
     case E_EMPTY_PROP:
-      return "Empty property.";
+      return "Empty property";
     case E_UNKNOWN_FORMAT:
-      return "Unknown archive format.";
+      return "Unknown archive format";
+    case E_UNSUPPORTED_EXTRACT_MODE:
+      return "Unsupported extract mode";
+    case E_NO_OUT_STREAM:
+      return "No out stream";
+    case E_UNSUPPORTED_METHOD:
+      return "Unsupported method";
+    case E_DATA_ERROR:
+      return "Data error";
+    case E_DATA_ERROR_ENCRYPTED:
+      return "Data Error in encrypted file. Wrong password?";
+    case E_CRC_ERROR:
+      return "CRC failed";
+    case E_CRC_ERROR_ENCRYPTED:
+      return "CRC Failed in encrypted file. Wrong password?";
+    case E_UNAVAILABLE:
+      return "Unavailable data";
+    case E_UNEXPECTED_END:
+      return "Unexpected end of data";
+    case E_DATA_AFTER_END:
+      return "There are some data after the end of the payload data";
+    case E_IS_NOT_ARC:
+      return "Is not archive";
+    case E_HEADERS_ERROR:
+      return "Headers Error";
+    case E_WRONG_PASSWORD:
+      return "Wrong password";
+    case E_NO_PASSWORD:
+      return "No password";
+    case E_UNKNOWN_ERROR:
     default:
       return "Unknown error.";
   }
 }
+
+#define THROW_ARCHIVE_EXCEPTION_RETURN(ENV, CODE)                                         \
+  do {                                                                                    \
+    ThrowException(ENV, "com/hippo/a7zip/ArchiveException", GetMessageForCode(CODE));     \
+    return;                                                                               \
+  } while (0)
 
 #define THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(ENV, CODE, VALUE)                            \
   do {                                                                                    \
@@ -262,6 +298,36 @@ GET_ENTRY_PROPERTY_START(a7zip_NativeGetEntryStringProperty, jstring)
   GET_STRING_PROPERTY(archive->GetEntryStringProperty(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &str_prop))
 GET_ENTRY_PROPERTY_END
 
+void a7zip_NativeExtractEntry(
+    JNIEnv* env,
+    jclass,
+    jlong native_ptr,
+    jint index,
+    jobject os
+) {
+  CHECK_CLOSED_RETURN(env, native_ptr);
+  InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
+
+  CMyComPtr<ISequentialOutStream> stream = nullptr;
+  HRESULT result = OutputStreamOutStream::Create(env, os, stream);
+  if (result != S_OK || stream == nullptr) {
+    if (stream != nullptr) {
+      // Call java methods before throw exception
+      stream.Release();
+    } else {
+      // TODO close os
+    }
+    THROW_ARCHIVE_EXCEPTION_RETURN(env, result);
+  }
+
+  result = archive->ExtractEntry(static_cast<UInt32>(index), stream);
+  if (result != S_OK) {
+    // Call java methods before throw exception
+    stream.Release();
+    THROW_ARCHIVE_EXCEPTION_RETURN(env, result);
+  }
+}
+
 void a7zip_NativeClose(
     JNIEnv* env,
     jclass,
@@ -312,6 +378,9 @@ static JNINativeMethod archive_methods[] = {
     { "nativeGetEntryStringProperty",
       "(JII)Ljava/lang/String;",
       reinterpret_cast<void *>(a7zip_NativeGetEntryStringProperty) },
+    { "nativeExtractEntry",
+      "(JILjava/io/OutputStream;)V",
+      reinterpret_cast<void *>(a7zip_NativeExtractEntry) },
     { "nativeClose",
       "(J)V",
       reinterpret_cast<void *>(a7zip_NativeClose) }

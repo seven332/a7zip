@@ -69,7 +69,11 @@ HRESULT ArchiveExtractCallback::GetStream(
     Int32 askExtractMode
 ) {
   if (askExtractMode != NArchive::NExtract::NAskMode::kExtract) {
-    return S_OK;
+    return E_UNSUPPORTED_EXTRACT_MODE;
+  }
+
+  if (out_stream == nullptr) {
+    return E_NO_OUT_STREAM;
   }
 
   *outStream = out_stream.Detach();
@@ -78,16 +82,39 @@ HRESULT ArchiveExtractCallback::GetStream(
 }
 
 HRESULT ArchiveExtractCallback::PrepareOperation(Int32 askExtractMode) {
-  // Ignored
-  return S_OK;
+  // kTest and kSkip should be excluded
+  return askExtractMode == NArchive::NExtract::NAskMode::kExtract ? S_OK : E_UNSUPPORTED_EXTRACT_MODE;
 }
 
 HRESULT ArchiveExtractCallback::SetOperationResult(Int32 opRes) {
-  // Ignored
-  return S_OK;
+  // Stop extracting action if operation result is not OK
+  switch (opRes) {
+    case NArchive::NExtract::NOperationResult::kOK:
+      return S_OK;
+    case NArchive::NExtract::NOperationResult::kUnsupportedMethod:
+      return E_UNSUPPORTED_METHOD;
+    case NArchive::NExtract::NOperationResult::kDataError:
+      return E_DATA_ERROR;
+    case NArchive::NExtract::NOperationResult::kCRCError:
+      return E_CRC_ERROR;
+    case NArchive::NExtract::NOperationResult::kUnavailable:
+      return E_UNAVAILABLE;
+    case NArchive::NExtract::NOperationResult::kUnexpectedEnd:
+      return E_UNEXPECTED_END;
+    case NArchive::NExtract::NOperationResult::kDataAfterEnd:
+      return E_DATA_AFTER_END;
+    case NArchive::NExtract::NOperationResult::kIsNotArc:
+      return E_IS_NOT_ARC;
+    case NArchive::NExtract::NOperationResult::kHeadersError:
+      return E_HEADERS_ERROR;
+    case NArchive::NExtract::NOperationResult::kWrongPassword:
+      return E_WRONG_PASSWORD;
+    default:
+      return E_UNKNOWN_ERROR;
+  }
 }
 
-HRESULT ArchiveExtractCallback::CryptoGetTextPassword(BSTR *password) {
+HRESULT ArchiveExtractCallback::CryptoGetTextPassword(BSTR* password) {
   // TODO
   return S_OK;
 }

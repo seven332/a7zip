@@ -18,6 +18,7 @@
 
 #include "BufferedStoreInStream.h"
 #include "JavaInArchive.h"
+#include "OutputStreamOutStream.h"
 #include "P7Zip.h"
 #include "Utils.h"
 
@@ -32,6 +33,7 @@ jint JNI_OnLoad(JavaVM* vm, void*) {
 
   RETURN_JNI_ERR_IF_NOT_ZERO(JavaInArchive::Initialize(env));
   RETURN_JNI_ERR_IF_NOT_ZERO(BufferedStoreInStream::Initialize(env));
+  RETURN_JNI_ERR_IF_NOT_ZERO(OutputStreamOutStream::Initialize(env));
   RETURN_JNI_ERR_IF_NOT_ZERO(P7Zip::Initialize("libp7zip.so"));
 
   return JNI_VERSION_1_6;
