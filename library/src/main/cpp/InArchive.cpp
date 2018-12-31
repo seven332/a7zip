@@ -68,7 +68,7 @@ HRESULT ArchiveExtractCallback::GetStream(
     ISequentialOutStream** outStream,
     Int32 askExtractMode
 ) {
-  if (askExtractMode != NArchive::NExtract::NAskMode::kExtract) {
+  if (askExtractMode == NArchive::NExtract::NAskMode::kTest) {
     return E_UNSUPPORTED_EXTRACT_MODE;
   }
 
@@ -83,7 +83,7 @@ HRESULT ArchiveExtractCallback::GetStream(
 
 HRESULT ArchiveExtractCallback::PrepareOperation(Int32 askExtractMode) {
   // kTest and kSkip should be excluded
-  return askExtractMode == NArchive::NExtract::NAskMode::kExtract ? S_OK : E_UNSUPPORTED_EXTRACT_MODE;
+  return askExtractMode != NArchive::NExtract::NAskMode::kTest ? S_OK : E_UNSUPPORTED_EXTRACT_MODE;
 }
 
 HRESULT ArchiveExtractCallback::SetOperationResult(Int32 opRes) {
