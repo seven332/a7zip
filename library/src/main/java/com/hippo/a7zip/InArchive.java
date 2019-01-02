@@ -19,6 +19,7 @@ package com.hippo.a7zip;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import java.io.Closeable;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import okio.BufferedStore;
@@ -266,12 +267,22 @@ public class InArchive implements Closeable {
    * Extracts the context of the entry into the output stream.
    *
    * @param index the index of the entry
-   * @param os the output steam to receive the content
+   * @param os the output steam to receive the content,
+   *           it will be closed at the end of this method
    * @throws ArchiveException if get error
    */
+  @SuppressWarnings("ThrowFromFinallyBlock")
   public void extractEntry(int index, @NonNull OutputStream os) throws ArchiveException {
-    checkClosed();
-    nativeExtractEntry(nativePtr, index, os);
+    try {
+      checkClosed();
+      nativeExtractEntry(nativePtr, index, os);
+    } finally {
+      try {
+        os.close();
+      } catch (IOException e) {
+        throw new ArchiveException("Catch IOException while closing the OutputStream", e);
+      }
+    }
   }
 
   @Override

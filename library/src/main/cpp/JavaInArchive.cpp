@@ -315,7 +315,7 @@ void a7zip_NativeExtractEntry(
       // Call java methods before throw exception
       stream.Release();
     } else {
-      // TODO close os
+      // Let java code closes the OutStream
     }
     THROW_ARCHIVE_EXCEPTION_RETURN(env, result);
   }
