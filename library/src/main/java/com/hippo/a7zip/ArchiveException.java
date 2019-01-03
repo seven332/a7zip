@@ -16,7 +16,7 @@
 
 package com.hippo.a7zip;
 
-import androidx.annotation.Keep;
+import android.support.annotation.Keep;
 
 @Keep
 public class ArchiveException extends Exception {
