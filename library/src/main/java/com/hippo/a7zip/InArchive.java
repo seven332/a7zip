@@ -293,6 +293,7 @@ public class InArchive implements Closeable {
     }
   }
 
+  @NonNull
   public static InArchive create(Store store) throws ArchiveException {
     if (store instanceof BufferedStore) {
       return create((BufferedStore) store);
@@ -301,6 +302,7 @@ public class InArchive implements Closeable {
     }
   }
 
+  @NonNull
   public static InArchive create(BufferedStore store) throws ArchiveException {
     long nativePtr = nativeCreate(store);
 
