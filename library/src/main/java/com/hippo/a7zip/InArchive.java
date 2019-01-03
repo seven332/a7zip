@@ -293,6 +293,13 @@ public class InArchive implements Closeable {
     }
   }
 
+  /**
+   * Returns {@code true} if the archive is closed.
+   */
+  public boolean isClosed() {
+    return nativePtr == 0;
+  }
+
   @NonNull
   public static InArchive create(Store store) throws ArchiveException {
     if (store instanceof BufferedStore) {
