@@ -22,6 +22,7 @@ import com.getkeepsafe.relinker.ReLinker;
 public class A7Zip {
 
   public static void initialize(Context context) {
+    ReLinker.loadLibrary(context, "p7zip");
     ReLinker.loadLibrary(context, "a7zip");
   }
 }
