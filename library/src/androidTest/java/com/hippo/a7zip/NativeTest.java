@@ -16,8 +16,8 @@
 
 package com.hippo.a7zip;
 
+import android.support.test.InstrumentationRegistry;
 import android.util.Log;
-import androidx.test.InstrumentationRegistry;
 import com.getkeepsafe.relinker.ReLinker;
 import java.io.File;
 import java.io.IOException;
