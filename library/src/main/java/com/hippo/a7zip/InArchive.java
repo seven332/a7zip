@@ -29,9 +29,11 @@ import okio.Store;
 public class InArchive implements Closeable {
 
   private long nativePtr;
+  private Charset charset;
 
-  private InArchive(long nativePtr) {
+  private InArchive(long nativePtr, Charset charset) {
     this.nativePtr = nativePtr;
+    this.charset = charset;
   }
 
   private void checkClosed() {
@@ -143,7 +145,7 @@ public class InArchive implements Closeable {
    */
   @NonNull
   public String getArchiveStringProperty(PropID propID) {
-    return getArchiveStringProperty(propID, null);
+    return getArchiveStringProperty(propID, charset);
   }
 
   /**
@@ -221,7 +223,7 @@ public class InArchive implements Closeable {
    */
   @NonNull
   public String getEntryStringProperty(int index, PropID propID) {
-    return getEntryStringProperty(index, propID, null);
+    return getEntryStringProperty(index, propID, charset);
   }
 
   /**
@@ -248,7 +250,7 @@ public class InArchive implements Closeable {
    */
   @NonNull
   public String getEntryPath(int index) {
-    return getEntryPath(index, null);
+    return getEntryPath(index, charset);
   }
 
   /**
@@ -302,15 +304,20 @@ public class InArchive implements Closeable {
 
   @NonNull
   public static InArchive create(Store store) throws ArchiveException {
+    return create(store, null);
+  }
+
+  @NonNull
+  public static InArchive create(Store store, @Nullable Charset charset) throws ArchiveException {
     if (store instanceof BufferedStore) {
-      return create((BufferedStore) store);
+      return create((BufferedStore) store, charset);
     } else {
-      return create(Okio.buffer(store));
+      return create(Okio.buffer(store), charset);
     }
   }
 
   @NonNull
-  public static InArchive create(BufferedStore store) throws ArchiveException {
+  private static InArchive create(BufferedStore store, @Nullable Charset charset) throws ArchiveException {
     long nativePtr = nativeCreate(store);
 
     if (nativePtr == 0) {
@@ -318,7 +325,7 @@ public class InArchive implements Closeable {
       throw new ArchiveException("a7zip is buggy");
     }
 
-    return new InArchive(nativePtr);
+    return new InArchive(nativePtr, charset);
   }
 
   private static native long nativeCreate(BufferedStore store) throws ArchiveException;
