@@ -20,6 +20,7 @@
 #include <7zip/ICoder.h>
 #include <7zip/IPassword.h>
 
+#include "BlackHoleOutStream.h"
 #include "Log.h"
 #include "Utils.h"
 
@@ -31,7 +32,7 @@ class ArchiveExtractCallback :
     public CMyUnknownImp
 {
  public:
-  ArchiveExtractCallback(CMyComPtr<ISequentialOutStream> out_stream);
+  ArchiveExtractCallback(UInt32 index, CMyComPtr<ISequentialOutStream> out_stream);
 
  public:
   MY_UNKNOWN_IMP1(ICryptoGetTextPassword)
@@ -46,10 +47,12 @@ class ArchiveExtractCallback :
   STDMETHOD(CryptoGetTextPassword)(BSTR *password);
 
  private:
+  UInt32 index;
   CMyComPtr<ISequentialOutStream> out_stream;
 };
 
-ArchiveExtractCallback::ArchiveExtractCallback(CMyComPtr<ISequentialOutStream> out_stream) {
+ArchiveExtractCallback::ArchiveExtractCallback(UInt32 index, CMyComPtr<ISequentialOutStream> out_stream) {
+  this->index = index;
   this->out_stream = out_stream;
 }
 
@@ -64,7 +67,7 @@ HRESULT ArchiveExtractCallback::SetCompleted(const UInt64 *completeValue) {
 }
 
 HRESULT ArchiveExtractCallback::GetStream(
-    UInt32,
+    UInt32 index,
     ISequentialOutStream** outStream,
     Int32 askExtractMode
 ) {
@@ -72,11 +75,19 @@ HRESULT ArchiveExtractCallback::GetStream(
     return E_UNSUPPORTED_EXTRACT_MODE;
   }
 
+  if (this->index != index) {
+    // The index is different, return a black hole to skip data
+    CMyComPtr<ISequentialOutStream> black_hole(new BlackHoleOutStream());
+    *outStream = black_hole.Detach();
+    return S_OK;
+  }
+
   if (out_stream == nullptr) {
     return E_NO_OUT_STREAM;
   }
 
-  *outStream = out_stream.Detach();
+  CMyComPtr<ISequentialOutStream> steam_copy(out_stream);
+  *outStream = steam_copy.Detach();
 
   return S_OK;
 }
@@ -299,6 +310,6 @@ GET_ENTRY_PROPERTY_START(GetEntryStringProperty, BSTR*)
 GET_ENTRY_PROPERTY_END
 
 HRESULT InArchive::ExtractEntry(UInt32 index, CMyComPtr<ISequentialOutStream> out_stream) {
-  CMyComPtr<ArchiveExtractCallback> callback(new ArchiveExtractCallback(out_stream));
+  CMyComPtr<ArchiveExtractCallback> callback(new ArchiveExtractCallback(index, out_stream));
   return this->in_archive->Extract(&index, 1, false, callback);
 }
