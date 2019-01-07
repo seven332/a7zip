@@ -10,6 +10,7 @@ add_subdirectory(p7zip)
 set(A_SEVEN_ZIP_SOURCES
         src/main/cpp/BufferedStoreInStream.cpp
         src/main/cpp/InArchive.cpp
+        src/main/cpp/JavaEnv.cpp
         src/main/cpp/JavaInArchive.cpp
         src/main/cpp/JavaInit.cpp
         src/main/cpp/OutputStreamOutStream.cpp
