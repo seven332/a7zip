@@ -37,27 +37,30 @@ public class InArchiveTest extends BaseTestCase {
 
   @Test
   public void testZip() throws IOException, ArchiveException {
-    testArchive("zip.zip");
+    testArchive("archive.zip", "zip");
   }
 
   @Test
   public void test7z() throws IOException, ArchiveException {
-    testArchive("7z.7z");
+    testArchive("archive.7z", "7z");
   }
 
   @Test
   public void testRar() throws IOException, ArchiveException {
-    testArchive("rar.rar");
+    testArchive("archive.rar", "Rar");
   }
 
   @Test
   public void testRar5() throws IOException, ArchiveException {
-    testArchive("rar5.rar");
+    testArchive("archive.rar5", "Rar5");
   }
 
-  private void testArchive(String name) throws IOException, ArchiveException {
+  private void testArchive(String name, String format) throws IOException, ArchiveException {
     try (InArchive archive = openInArchiveFromAsset(name)) {
       int size = archive.getNumberOfEntries();
+
+      // Check format name
+      assertEquals(format, archive.getFormatName());
 
       // Check path
       String[] paths = new String[size];
