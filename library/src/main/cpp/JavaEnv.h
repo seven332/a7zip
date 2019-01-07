@@ -26,7 +26,7 @@ class JavaEnv {
  public:
   JavaEnv();
   ~JavaEnv();
-  bool is_valid();
+  bool IsValid();
   JNIEnv* operator->() const { return env; }
 
  private:

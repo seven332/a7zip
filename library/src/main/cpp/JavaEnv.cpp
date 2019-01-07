@@ -41,6 +41,6 @@ JavaEnv::~JavaEnv() {
   }
 }
 
-bool JavaEnv::is_valid() {
+bool JavaEnv::IsValid() {
   return env != nullptr;
 }

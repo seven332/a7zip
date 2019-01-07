@@ -34,7 +34,7 @@ OutputStreamOutStream::OutputStreamOutStream(jobject os, jbyteArray array) {
 
 OutputStreamOutStream::~OutputStreamOutStream() {
   JavaEnv env;
-  if (!env.is_valid()) return;
+  if (!env.IsValid()) return;
 
   env->CallVoidMethod(this->os, method_close);
   CLEAR_IF_EXCEPTION_PENDING(env);
@@ -53,7 +53,7 @@ HRESULT OutputStreamOutStream::Write(const void* data, UInt32 size, UInt32* proc
   }
 
   JavaEnv env;
-  if (!env.is_valid()) return E_JAVA_EXCEPTION;
+  if (!env.IsValid()) return E_JAVA_EXCEPTION;
 
   // Make size not bigger than ARRAY_SIZE
   size = MIN(ARRAY_SIZE, size);

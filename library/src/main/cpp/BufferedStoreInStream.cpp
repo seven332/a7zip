@@ -38,7 +38,7 @@ BufferedStoreInStream::BufferedStoreInStream(jobject store, jbyteArray array) {
 
 BufferedStoreInStream::~BufferedStoreInStream() {
   JavaEnv env;
-  if (!env.is_valid()) return;
+  if (!env.IsValid()) return;
 
   env->CallVoidMethod(this->store, method_close);
   CLEAR_IF_EXCEPTION_PENDING(env);
@@ -57,7 +57,7 @@ HRESULT BufferedStoreInStream::Read(void* data, UInt32 size, UInt32* processedSi
   }
 
   JavaEnv env;
-  if (!env.is_valid()) return E_JAVA_EXCEPTION;
+  if (!env.IsValid()) return E_JAVA_EXCEPTION;
 
   // Make size not bigger than ARRAY_SIZE
   size = MIN(ARRAY_SIZE, size);
@@ -82,7 +82,7 @@ HRESULT BufferedStoreInStream::Read(void* data, UInt32 size, UInt32* processedSi
 
 HRESULT BufferedStoreInStream::Seek(Int64 offset, UInt32 seekOrigin, UInt64* newPosition) {
   JavaEnv env;
-  if (!env.is_valid()) return E_JAVA_EXCEPTION;
+  if (!env.IsValid()) return E_JAVA_EXCEPTION;
 
   jlong actual_offset;
 
@@ -124,7 +124,7 @@ HRESULT BufferedStoreInStream::Seek(Int64 offset, UInt32 seekOrigin, UInt64* new
 
 HRESULT BufferedStoreInStream::GetSize(UInt64* size) {
   JavaEnv env;
-  if (!env.is_valid()) return E_JAVA_EXCEPTION;
+  if (!env.IsValid()) return E_JAVA_EXCEPTION;
 
   jlong store_size = env->CallLongMethod(this->store, method_size);
   RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(env);
