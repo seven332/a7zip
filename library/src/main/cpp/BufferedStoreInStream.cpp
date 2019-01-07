@@ -15,6 +15,8 @@
  */
 
 #include "BufferedStoreInStream.h"
+
+#include "JavaEnv.h"
 #include "Log.h"
 #include "Utils.h"
 
@@ -29,18 +31,20 @@ jmethodID BufferedStoreInStream::method_tell = nullptr;
 jmethodID BufferedStoreInStream::method_size = nullptr;
 jmethodID BufferedStoreInStream::method_close = nullptr;
 
-BufferedStoreInStream::BufferedStoreInStream(JNIEnv* env, jobject store, jbyteArray array) {
-  this->env = env;
+BufferedStoreInStream::BufferedStoreInStream(jobject store, jbyteArray array) {
   this->store = store;
   this->array = array;
 }
 
 BufferedStoreInStream::~BufferedStoreInStream() {
-  this->env->CallVoidMethod(this->store, method_close);
-  CLEAR_IF_EXCEPTION_PENDING(this->env);
+  JavaEnv env;
+  if (!env.is_valid()) return;
 
-  this->env->DeleteGlobalRef(this->store);
-  this->env->DeleteGlobalRef(this->array);
+  env->CallVoidMethod(this->store, method_close);
+  CLEAR_IF_EXCEPTION_PENDING(env);
+
+  env->DeleteGlobalRef(this->store);
+  env->DeleteGlobalRef(this->array);
 }
 
 HRESULT BufferedStoreInStream::Read(void* data, UInt32 size, UInt32* processedSize) {
@@ -52,19 +56,22 @@ HRESULT BufferedStoreInStream::Read(void* data, UInt32 size, UInt32* processedSi
     return S_OK;
   }
 
+  JavaEnv env;
+  if (!env.is_valid()) return E_JAVA_EXCEPTION;
+
   // Make size not bigger than ARRAY_SIZE
   size = MIN(ARRAY_SIZE, size);
 
-  jint read = this->env->CallIntMethod(this->store, method_read, this->array, 0, size);
-  RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(this->env);
+  jint read = env->CallIntMethod(this->store, method_read, this->array, 0, size);
+  RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(env);
 
   // Check EOF
   if (read <= 0) {
     return S_OK;
   }
 
-  this->env->GetByteArrayRegion(this->array, 0, read, static_cast<jbyte*>(data));
-  RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(this->env);
+  env->GetByteArrayRegion(this->array, 0, read, static_cast<jbyte*>(data));
+  RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(env);
 
   if (processedSize != nullptr) {
     *processedSize = static_cast<UInt32>(read);
@@ -74,6 +81,9 @@ HRESULT BufferedStoreInStream::Read(void* data, UInt32 size, UInt32* processedSi
 }
 
 HRESULT BufferedStoreInStream::Seek(Int64 offset, UInt32 seekOrigin, UInt64* newPosition) {
+  JavaEnv env;
+  if (!env.is_valid()) return E_JAVA_EXCEPTION;
+
   jlong actual_offset;
 
   switch (seekOrigin) {
@@ -82,14 +92,14 @@ HRESULT BufferedStoreInStream::Seek(Int64 offset, UInt32 seekOrigin, UInt64* new
       break;
     }
     case STREAM_SEEK_CUR: {
-      jlong position = this->env->CallLongMethod(this->store, method_tell);
-      RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(this->env);
+      jlong position = env->CallLongMethod(this->store, method_tell);
+      RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(env);
       actual_offset = position + offset;
       break;
     }
     case STREAM_SEEK_END: {
-      jlong size = this->env->CallLongMethod(this->store, method_size);
-      RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(this->env);
+      jlong size = env->CallLongMethod(this->store, method_size);
+      RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(env);
       actual_offset = size + offset;
       break;
     }
@@ -102,8 +112,8 @@ HRESULT BufferedStoreInStream::Seek(Int64 offset, UInt32 seekOrigin, UInt64* new
     return E_INVALIDARG;
   }
 
-  this->env->CallVoidMethod(this->store, method_seek, actual_offset);
-  RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(this->env);
+  env->CallVoidMethod(this->store, method_seek, actual_offset);
+  RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(env);
 
   if (newPosition != nullptr) {
     *newPosition = static_cast<UInt64>(actual_offset);
@@ -113,8 +123,11 @@ HRESULT BufferedStoreInStream::Seek(Int64 offset, UInt32 seekOrigin, UInt64* new
 }
 
 HRESULT BufferedStoreInStream::GetSize(UInt64* size) {
-  jlong store_size = this->env->CallLongMethod(this->store, method_size);
-  RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(this->env);
+  JavaEnv env;
+  if (!env.is_valid()) return E_JAVA_EXCEPTION;
+
+  jlong store_size = env->CallLongMethod(this->store, method_size);
+  RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(env);
 
   if (size != nullptr) {
     *size = static_cast<UInt64>(store_size);
@@ -172,7 +185,7 @@ HRESULT BufferedStoreInStream::Create(
     return E_OUTOFMEMORY;
   }
 
-  in_stream = new BufferedStoreInStream(env, g_store, g_array);
+  in_stream = new BufferedStoreInStream(g_store, g_array);
 
   return S_OK;
 }

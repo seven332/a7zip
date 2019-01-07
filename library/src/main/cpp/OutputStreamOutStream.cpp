@@ -16,6 +16,7 @@
 
 #include "OutputStreamOutStream.h"
 
+#include "JavaEnv.h"
 #include "Utils.h"
 
 #define ARRAY_SIZE DEFAULT_BUFFER_SIZE
@@ -26,18 +27,20 @@ bool OutputStreamOutStream::initialized = false;
 jmethodID OutputStreamOutStream::method_write = nullptr;
 jmethodID OutputStreamOutStream::method_close = nullptr;
 
-OutputStreamOutStream::OutputStreamOutStream(JNIEnv* env, jobject os, jbyteArray array) {
-  this->env = env;
+OutputStreamOutStream::OutputStreamOutStream(jobject os, jbyteArray array) {
   this->os = os;
   this->array = array;
 }
 
 OutputStreamOutStream::~OutputStreamOutStream() {
-  this->env->CallVoidMethod(this->os, method_close);
-  CLEAR_IF_EXCEPTION_PENDING(this->env);
+  JavaEnv env;
+  if (!env.is_valid()) return;
 
-  this->env->DeleteGlobalRef(this->os);
-  this->env->DeleteGlobalRef(this->array);
+  env->CallVoidMethod(this->os, method_close);
+  CLEAR_IF_EXCEPTION_PENDING(env);
+
+  env->DeleteGlobalRef(this->os);
+  env->DeleteGlobalRef(this->array);
 }
 
 HRESULT OutputStreamOutStream::Write(const void* data, UInt32 size, UInt32* processedSize) {
@@ -49,16 +52,19 @@ HRESULT OutputStreamOutStream::Write(const void* data, UInt32 size, UInt32* proc
     return S_OK;
   }
 
+  JavaEnv env;
+  if (!env.is_valid()) return E_JAVA_EXCEPTION;
+
   // Make size not bigger than ARRAY_SIZE
   size = MIN(ARRAY_SIZE, size);
 
   // Copy data from native buffer to java buffer
-  this->env->SetByteArrayRegion(this->array, 0, size, reinterpret_cast<const jbyte*>(data));
-  RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(this->env);
+  env->SetByteArrayRegion(this->array, 0, size, reinterpret_cast<const jbyte*>(data));
+  RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(env);
 
   // Write data to sink
-  this->env->CallVoidMethod(this->os, method_write, this->array, 0, size);
-  RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(this->env);
+  env->CallVoidMethod(this->os, method_write, this->array, 0, size);
+  RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(env);
 
   if (processedSize != nullptr) {
     *processedSize = size;
@@ -110,7 +116,7 @@ HRESULT OutputStreamOutStream::Create(
     return E_OUTOFMEMORY;
   }
 
-  out_stream = new OutputStreamOutStream(env, g_os, g_array);
+  out_stream = new OutputStreamOutStream(g_os, g_array);
 
   return S_OK;
 }

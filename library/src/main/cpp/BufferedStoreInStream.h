@@ -30,7 +30,7 @@ class BufferedStoreInStream:
     public CMyUnknownImp
 {
  private:
-  BufferedStoreInStream(JNIEnv* env, jobject store, jbyteArray array);
+  BufferedStoreInStream(jobject store, jbyteArray array);
 
  public:
   virtual ~BufferedStoreInStream();
@@ -44,7 +44,6 @@ class BufferedStoreInStream:
   STDMETHOD(GetSize)(UInt64* size);
 
  private:
-  JNIEnv* env;
   jobject store;
   jbyteArray array;
 

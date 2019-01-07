@@ -29,7 +29,7 @@ class OutputStreamOutStream :
     public CMyUnknownImp
 {
  private:
-  OutputStreamOutStream(JNIEnv* env, jobject os, jbyteArray array);
+  OutputStreamOutStream(jobject os, jbyteArray array);
 
  public:
   virtual ~OutputStreamOutStream();
@@ -39,7 +39,6 @@ class OutputStreamOutStream :
   STDMETHOD(Write)(const void *data, UInt32 size, UInt32 *processedSize);
 
  private:
-  JNIEnv* env;
   jobject os;
   jbyteArray array;
 

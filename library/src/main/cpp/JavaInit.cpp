@@ -17,6 +17,7 @@
 #include <jni.h>
 
 #include "BufferedStoreInStream.h"
+#include "JavaEnv.h"
 #include "JavaInArchive.h"
 #include "OutputStreamOutStream.h"
 #include "P7Zip.h"
@@ -31,6 +32,7 @@ jint JNI_OnLoad(JavaVM* vm, void*) {
     return JNI_ERR;
   }
 
+  JavaEnv::Initialize(vm);
   RETURN_JNI_ERR_IF_NOT_ZERO(JavaInArchive::Initialize(env));
   RETURN_JNI_ERR_IF_NOT_ZERO(BufferedStoreInStream::Initialize(env));
   RETURN_JNI_ERR_IF_NOT_ZERO(OutputStreamOutStream::Initialize(env));
