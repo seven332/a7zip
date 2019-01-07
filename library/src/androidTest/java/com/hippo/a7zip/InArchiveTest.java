@@ -101,6 +101,39 @@ public class InArchiveTest extends BaseTestCase {
   }
 
   @Test
+  public void testPathZip() throws IOException, ArchiveException {
+    testPath("path.zip");
+  }
+
+  @Test
+  public void testPath7z() throws IOException, ArchiveException {
+    testPath("path.7z");
+  }
+
+  @Test
+  public void testPathRar() throws IOException, ArchiveException {
+    testPath("path.rar");
+  }
+
+  @Test
+  public void testPathRar5() throws IOException, ArchiveException {
+    testPath("path.rar5");
+  }
+
+  private void testPath(String name) throws IOException, ArchiveException {
+    try (InArchive archive = openInArchiveFromAsset(name)) {
+      assertEquals("\uD83E\uDD23测试.txt", archive.getEntryPath(0));
+    }
+  }
+
+  @Test
+  public void testPathZipGB18030() throws IOException, ArchiveException {
+    try (InArchive archive = openInArchiveFromAsset("path-gb18030.zip")) {
+      assertEquals("新建文本文档.txt", archive.getEntryPath(0, Charset.forName("GB18030")));
+    }
+  }
+
+  @Test
   public void testCommentZipGB18030() throws IOException, ArchiveException {
     try (InArchive archive = openInArchiveFromAsset("comment-gb18030.zip")) {
       assertEquals("我是注释", archive.getArchiveStringProperty(PropID.COMMENT, Charset.forName("GB18030")));
