@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import android.support.test.InstrumentationRegistry;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import okio.Okio;
 import org.junit.BeforeClass;
@@ -96,6 +97,27 @@ public class InArchiveTest extends BaseTestCase {
             break;
         }
       }
+    }
+  }
+
+  @Test
+  public void testCommentZipGB18030() throws IOException, ArchiveException {
+    try (InArchive archive = openInArchiveFromAsset("comment-gb18030.zip")) {
+      assertEquals("我是注释", archive.getArchiveStringProperty(PropID.COMMENT, Charset.forName("GB18030")));
+    }
+  }
+
+  @Test
+  public void testCommentZipUTF8() throws IOException, ArchiveException {
+    try (InArchive archive = openInArchiveFromAsset("comment-utf-8.zip")) {
+      assertEquals("\uFEFF我是注释", archive.getArchiveStringProperty(PropID.COMMENT, Charset.forName("UTF-8")));
+    }
+  }
+
+  @Test
+  public void testCommentEntryZipGB18030() throws IOException, ArchiveException {
+    try (InArchive archive = openInArchiveFromAsset("comment-entry-gb18030.zip")) {
+      assertEquals("我是注释", archive.getEntryStringProperty(0, PropID.COMMENT, Charset.forName("GB18030")));
     }
   }
 
