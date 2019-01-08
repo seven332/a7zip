@@ -47,7 +47,7 @@ class InArchive {
   HRESULT GetEntryLongProperty(UInt32 index, PROPID prop_id, Int64* long_prop);
   HRESULT GetEntryStringProperty(UInt32 index, PROPID prop_id, BSTR* str_prop);
 
-  HRESULT ExtractEntry(UInt32 index, CMyComPtr<ISequentialOutStream> out_stream);
+  HRESULT ExtractEntry(UInt32 index, BSTR password, CMyComPtr<ISequentialOutStream> out_stream);
 
  private:
   CMyComPtr<IInArchive> in_archive;

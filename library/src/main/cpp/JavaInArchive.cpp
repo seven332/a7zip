@@ -148,10 +148,18 @@ static const char* GetMessageForCode(HRESULT code) {
     }                                                                                     \
   } while (0)
 
+static void CopyJStringToBSTR(BSTR bstr, const jchar* jstr, int length) {
+  for (int i = 0; i < length; i++) {
+    *bstr++ = *jstr++;
+  }
+  *bstr = 0;
+}
+
 jlong a7zip_NativeCreate(
     JNIEnv* env,
     jclass,
-    jobject store
+    jobject store,
+    jstring password
 ) {
   CMyComPtr<IInStream> stream = nullptr;
   HRESULT result = BufferedStoreInStream::Create(env, store, stream);
@@ -163,8 +171,23 @@ jlong a7zip_NativeCreate(
     THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, result, 0);
   }
 
+  const jchar* j_password = nullptr;
+  BSTR bstr_password = nullptr;
+  if (password != nullptr) {
+    jsize length = env->GetStringLength(password);
+    j_password = env->GetStringChars(password, nullptr);
+    bstr_password = ::SysAllocStringLen(nullptr, static_cast<UINT>(length));
+    CopyJStringToBSTR(bstr_password, j_password, length);
+  }
+
   InArchive* archive = nullptr;
-  result = P7Zip::OpenArchive(stream, &archive);
+  result = P7Zip::OpenArchive(stream, bstr_password, &archive);
+
+  if (password != nullptr) {
+    ::SysFreeString(bstr_password);
+    env->ReleaseStringChars(password, j_password);
+  }
+
   if (result != S_OK || archive == nullptr) {
     // Call java methods before throw exception
     stream.Release();
@@ -303,6 +326,7 @@ void a7zip_NativeExtractEntry(
     jclass,
     jlong native_ptr,
     jint index,
+    jstring password,
     jobject os
 ) {
   CHECK_CLOSED_RETURN(env, native_ptr);
@@ -320,7 +344,22 @@ void a7zip_NativeExtractEntry(
     THROW_ARCHIVE_EXCEPTION_RETURN(env, result);
   }
 
-  result = archive->ExtractEntry(static_cast<UInt32>(index), stream);
+  const jchar* j_password = nullptr;
+  BSTR bstr_password = nullptr;
+  if (password != nullptr) {
+    jsize length = env->GetStringLength(password);
+    j_password = env->GetStringChars(password, nullptr);
+    bstr_password = ::SysAllocStringLen(nullptr, static_cast<UINT>(length));
+    CopyJStringToBSTR(bstr_password, j_password, length);
+  }
+
+  result = archive->ExtractEntry(static_cast<UInt32>(index), bstr_password, stream);
+
+  if (password != nullptr) {
+    ::SysFreeString(bstr_password);
+    env->ReleaseStringChars(password, j_password);
+  }
+
   if (result != S_OK) {
     // Call java methods before throw exception
     stream.Release();
@@ -340,7 +379,7 @@ void a7zip_NativeClose(
 
 static JNINativeMethod archive_methods[] = {
     { "nativeCreate",
-      "(Lokio/BufferedStore;)J",
+      "(Lokio/BufferedStore;Ljava/lang/String;)J",
       reinterpret_cast<void *>(a7zip_NativeCreate) },
     { "nativeGetFormatName",
       "(J)Ljava/lang/String;",
@@ -379,7 +418,7 @@ static JNINativeMethod archive_methods[] = {
       "(JII)Ljava/lang/String;",
       reinterpret_cast<void *>(a7zip_NativeGetEntryStringProperty) },
     { "nativeExtractEntry",
-      "(JILjava/io/OutputStream;)V",
+      "(JILjava/lang/String;Ljava/io/OutputStream;)V",
       reinterpret_cast<void *>(a7zip_NativeExtractEntry) },
     { "nativeClose",
       "(J)V",

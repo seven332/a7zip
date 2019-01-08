@@ -29,11 +29,15 @@ import okio.Store;
 public class InArchive implements Closeable {
 
   private long nativePtr;
+  @Nullable
   private Charset charset;
+  @Nullable
+  private String password;
 
-  private InArchive(long nativePtr, Charset charset) {
+  private InArchive(long nativePtr, @Nullable Charset charset, @Nullable String password) {
     this.nativePtr = nativePtr;
     this.charset = charset;
+    this.password = password;
   }
 
   private void checkClosed() {
@@ -273,11 +277,24 @@ public class InArchive implements Closeable {
    *           it will be closed at the end of this method
    * @throws ArchiveException if get error
    */
-  @SuppressWarnings("ThrowFromFinallyBlock")
   public void extractEntry(int index, @NonNull OutputStream os) throws ArchiveException {
+    extractEntry(index, password, os);
+  }
+
+  /**
+   * Extracts the context of the entry into the output stream.
+   *
+   * @param index the index of the entry
+   * @param password the password of the entry
+   * @param os the output steam to receive the content,
+   *           it will be closed at the end of this method
+   * @throws ArchiveException if get error
+   */
+  @SuppressWarnings("ThrowFromFinallyBlock")
+  public void extractEntry(int index, String password, @NonNull OutputStream os) throws ArchiveException {
     try {
       checkClosed();
-      nativeExtractEntry(nativePtr, index, os);
+      nativeExtractEntry(nativePtr, index, password, os);
     } finally {
       try {
         os.close();
@@ -304,31 +321,39 @@ public class InArchive implements Closeable {
 
   @NonNull
   public static InArchive create(Store store) throws ArchiveException {
-    return create(store, null);
+    return create(store, null, null);
   }
 
   @NonNull
-  public static InArchive create(Store store, @Nullable Charset charset) throws ArchiveException {
+  public static InArchive create(
+      Store store,
+      @Nullable Charset charset,
+      @Nullable String password
+  ) throws ArchiveException {
     if (store instanceof BufferedStore) {
-      return create((BufferedStore) store, charset);
+      return create((BufferedStore) store, charset, password);
     } else {
-      return create(Okio.buffer(store), charset);
+      return create(Okio.buffer(store), charset, password);
     }
   }
 
   @NonNull
-  private static InArchive create(BufferedStore store, @Nullable Charset charset) throws ArchiveException {
-    long nativePtr = nativeCreate(store);
+  private static InArchive create(
+      BufferedStore store,
+      @Nullable Charset charset,
+      @Nullable String password
+  ) throws ArchiveException {
+    long nativePtr = nativeCreate(store, password);
 
     if (nativePtr == 0) {
       // It should not be 0
       throw new ArchiveException("a7zip is buggy");
     }
 
-    return new InArchive(nativePtr, charset);
+    return new InArchive(nativePtr, charset, password);
   }
 
-  private static native long nativeCreate(BufferedStore store) throws ArchiveException;
+  private static native long nativeCreate(BufferedStore store, String password) throws ArchiveException;
 
   private static native String nativeGetFormatName(long nativePtr);
 
@@ -356,7 +381,7 @@ public class InArchive implements Closeable {
   @Nullable
   private static native String nativeGetEntryStringProperty(long nativePtr, int index, int propID);
 
-  private static native void nativeExtractEntry(long nativePtr, int index, OutputStream os) throws ArchiveException;
+  private static native void nativeExtractEntry(long nativePtr, int index, String password, OutputStream os) throws ArchiveException;
 
   private static native void nativeClose(long nativePtr);
 }

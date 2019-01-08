@@ -32,7 +32,8 @@ class ArchiveExtractCallback :
     public CMyUnknownImp
 {
  public:
-  ArchiveExtractCallback(UInt32 index, CMyComPtr<ISequentialOutStream> out_stream);
+  ArchiveExtractCallback(UInt32 index, BSTR password, CMyComPtr<ISequentialOutStream> out_stream);
+  ~ArchiveExtractCallback();
 
  public:
   MY_UNKNOWN_IMP1(ICryptoGetTextPassword)
@@ -48,12 +49,18 @@ class ArchiveExtractCallback :
 
  private:
   UInt32 index;
+  BSTR password;
   CMyComPtr<ISequentialOutStream> out_stream;
 };
 
-ArchiveExtractCallback::ArchiveExtractCallback(UInt32 index, CMyComPtr<ISequentialOutStream> out_stream) {
+ArchiveExtractCallback::ArchiveExtractCallback(UInt32 index, BSTR password, CMyComPtr<ISequentialOutStream> out_stream) {
   this->index = index;
+  this->password = ::SysAllocString(password);
   this->out_stream = out_stream;
+}
+
+ArchiveExtractCallback::~ArchiveExtractCallback() {
+  ::SysFreeString(password);
 }
 
 HRESULT ArchiveExtractCallback::SetTotal(UInt64 total) {
@@ -71,12 +78,8 @@ HRESULT ArchiveExtractCallback::GetStream(
     ISequentialOutStream** outStream,
     Int32 askExtractMode
 ) {
-  if (askExtractMode == NArchive::NExtract::NAskMode::kTest) {
-    return E_UNSUPPORTED_EXTRACT_MODE;
-  }
-
-  if (this->index != index) {
-    // The index is different, return a black hole to skip data
+  // If it's not extract mode or the index is different, return a black hole to skip data
+  if (askExtractMode != NArchive::NExtract::NAskMode::kExtract || this->index != index) {
     CMyComPtr<ISequentialOutStream> black_hole(new BlackHoleOutStream());
     *outStream = black_hole.Detach();
     return S_OK;
@@ -93,8 +96,8 @@ HRESULT ArchiveExtractCallback::GetStream(
 }
 
 HRESULT ArchiveExtractCallback::PrepareOperation(Int32 askExtractMode) {
-  // kTest and kSkip should be excluded
-  return askExtractMode != NArchive::NExtract::NAskMode::kTest ? S_OK : E_UNSUPPORTED_EXTRACT_MODE;
+  // Always return S_OK
+  return S_OK;
 }
 
 HRESULT ArchiveExtractCallback::SetOperationResult(Int32 opRes) {
@@ -126,8 +129,8 @@ HRESULT ArchiveExtractCallback::SetOperationResult(Int32 opRes) {
 }
 
 HRESULT ArchiveExtractCallback::CryptoGetTextPassword(BSTR* password) {
-  // TODO
-  return S_OK;
+  *password = ::SysAllocString(this->password);
+  return this->password != nullptr ? S_OK : E_NO_PASSWORD;
 }
 
 InArchive::InArchive(CMyComPtr<IInArchive> in_archive, AString format_name) {
@@ -309,7 +312,7 @@ GET_ENTRY_PROPERTY_START(GetEntryStringProperty, BSTR*)
   GET_STRING_PROPERTY
 GET_ENTRY_PROPERTY_END
 
-HRESULT InArchive::ExtractEntry(UInt32 index, CMyComPtr<ISequentialOutStream> out_stream) {
-  CMyComPtr<ArchiveExtractCallback> callback(new ArchiveExtractCallback(index, out_stream));
+HRESULT InArchive::ExtractEntry(UInt32 index, BSTR password, CMyComPtr<ISequentialOutStream> out_stream) {
+  CMyComPtr<ArchiveExtractCallback> callback(new ArchiveExtractCallback(index, password, out_stream));
   return this->in_archive->Extract(&index, 1, false, callback);
 }

@@ -154,7 +154,72 @@ public class InArchiveTest extends BaseTestCase {
     }
   }
 
+  @Test
+  public void testPasswordZip() throws IOException, ArchiveException {
+    assertPasswordArchive("password.zip", "123456");
+    assertPasswordPathArchive("password.zip", "123456");
+  }
+
+  @Test
+  public void testPassword7z() throws IOException, ArchiveException {
+    assertPasswordArchive("password.7z", "123456");
+    assertPasswordPathArchive("password.7z", "123456");
+  }
+
+  @Test
+  public void testPasswordRar() throws IOException, ArchiveException {
+    assertPasswordArchive("password.rar", "123456");
+    assertPasswordPathArchive("password.rar", "123456");
+  }
+
+  @Test
+  public void testPasswordRar5() throws IOException, ArchiveException {
+    assertPasswordArchive("password.rar5", "123456");
+    assertPasswordPathArchive("password.rar5", "123456");
+  }
+
+  private void assertPasswordArchive(String name, String password) throws IOException, ArchiveException {
+    try (InArchive archive = openInArchiveFromAsset(name)) {
+      assertEquals("password.txt", archive.getEntryPath(0));
+
+      ByteArrayOutputStream os = new ByteArrayOutputStream();
+      archive.extractEntry(0, password, os);
+      String content = new String(os.toByteArray(), "UTF-8");
+      assertEquals("password", content);
+    }
+  }
+
+  @Test
+  public void testPasswordPath7z() throws IOException, ArchiveException {
+    assertPasswordPathArchive("password-path.7z", "123456");
+  }
+
+  @Test
+  public void testPasswordPathRar() throws IOException, ArchiveException {
+    assertPasswordPathArchive("password-path.rar", "123456");
+  }
+
+  @Test
+  public void testPasswordPathRar5() throws IOException, ArchiveException {
+    assertPasswordPathArchive("password-path.rar5", "123456");
+  }
+
+  private void assertPasswordPathArchive(String name, String password) throws IOException, ArchiveException {
+    try (InArchive archive = openInArchiveFromAsset(name, null, password)) {
+      assertEquals("password.txt", archive.getEntryPath(0));
+
+      ByteArrayOutputStream os = new ByteArrayOutputStream();
+      archive.extractEntry(0, os);
+      String content = new String(os.toByteArray(), "UTF-8");
+      assertEquals("password", content);
+    }
+  }
+
   private InArchive openInArchiveFromAsset(String name) throws IOException, ArchiveException {
     return InArchive.create(Okio.store(getAsset(name)));
+  }
+
+  private InArchive openInArchiveFromAsset(String name, Charset charset, String password) throws IOException, ArchiveException {
+    return InArchive.create(Okio.store(getAsset(name)), charset, password);
   }
 }

@@ -32,7 +32,7 @@ namespace a7zip {
 namespace P7Zip {
 
 HRESULT Initialize(const char* library_name);
-HRESULT OpenArchive(CMyComPtr<IInStream> stream, InArchive** archive);
+HRESULT OpenArchive(CMyComPtr<IInStream> stream, BSTR password, InArchive** archive);
 
 }
 }

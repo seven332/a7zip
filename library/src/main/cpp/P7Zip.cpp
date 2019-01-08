@@ -20,6 +20,7 @@
 
 #include <Windows/PropVariant.h>
 #include <7zip/Archive/IArchive.h>
+#include <7zip/IPassword.h>
 
 #include "Log.h"
 #include "Utils.h"
@@ -132,6 +133,32 @@ HRESULT CompressCodecsInfo::CreateEncoder(
     return S_OK;
   }
 }
+
+class ArchiveOpenCallback :
+    public IArchiveOpenCallback,
+    public ICryptoGetTextPassword,
+    public CMyUnknownImp {
+ public:
+  ArchiveOpenCallback(BSTR password) {
+    this->password = ::SysAllocString(password);
+  }
+
+  ~ArchiveOpenCallback() {
+    ::SysFreeString(password);
+  }
+
+ public:
+  MY_UNKNOWN_IMP1(ICryptoGetTextPassword)
+  INTERFACE_IArchiveOpenCallback({ return S_OK; });
+
+  STDMETHOD(CryptoGetTextPassword)(BSTR *password) {
+    *password = ::SysAllocString(this->password);
+    return this->password != nullptr ? S_OK : E_NO_PASSWORD;
+  }
+
+ private:
+  BSTR password;
+};
 
 static HRESULT LoadLibrary(const char *library_name) {
   if (handle != nullptr) return S_OK;
@@ -315,20 +342,22 @@ static HRESULT ReadFully(CMyComPtr<IInStream>& stream, Byte* data, UInt32 size, 
 static HRESULT OpenInArchive(
     GUID& class_id,
     CMyComPtr<IInStream>& in_stream,
+    BSTR password,
     CMyComPtr<IInArchive>& in_archive
 ) {
   RETURN_SAME_IF_NOT_ZERO(create_object(&class_id, &IID_IInArchive, reinterpret_cast<void **>(&in_archive)));
 
-  // FIXME nullptr parameter
-  HRESULT result = in_stream->Seek(0, STREAM_SEEK_SET, nullptr);
+  UInt64 newPosition = 0;
+  HRESULT result = in_stream->Seek(0, STREAM_SEEK_SET, &newPosition);
   if (result != S_OK) {
     in_archive->Close();
     in_archive = nullptr;
     return result;
   }
 
-  // FIXME nullptr parameter
-  result = in_archive->Open(in_stream, nullptr, nullptr);
+  UInt64 maxCheckStartPosition = 1 << 22;
+  CMyComPtr<ArchiveOpenCallback> callback(new ArchiveOpenCallback(password));
+  result = in_archive->Open(in_stream, &maxCheckStartPosition, callback);
   if (result != S_OK) {
     in_archive->Close();
     in_archive = nullptr;
@@ -340,6 +369,7 @@ static HRESULT OpenInArchive(
 
 static HRESULT OpenInArchive(
     CMyComPtr<IInStream>& in_stream,
+    BSTR password,
     CMyComPtr<IInArchive>& in_archive,
     AString& format_name
 ) {
@@ -371,7 +401,7 @@ static HRESULT OpenInArchive(
       }
 
       // The signature matched, try to open it
-      if (OpenInArchive(format.class_id, in_stream, in_archive) == S_OK) {
+      if (OpenInArchive(format.class_id, in_stream, password, in_archive) == S_OK) {
         format_name = format.name;
         return S_OK;
       }
@@ -386,7 +416,7 @@ static HRESULT OpenInArchive(
   for (int i = 0; i < formats.Size(); i++) {
     if (!formats_checked[i]) {
       Format& format = formats[i];
-      if (OpenInArchive(format.class_id, in_stream, in_archive) == S_OK) {
+      if (OpenInArchive(format.class_id, in_stream, password, in_archive) == S_OK) {
         format_name = format.name;
         return S_OK;
       }
@@ -396,11 +426,11 @@ static HRESULT OpenInArchive(
   return E_UNKNOWN_FORMAT;
 }
 
-HRESULT P7Zip::OpenArchive(CMyComPtr<IInStream> in_stream, InArchive** archive) {
+HRESULT P7Zip::OpenArchive(CMyComPtr<IInStream> in_stream, BSTR password, InArchive** archive) {
   CMyComPtr<IInArchive> in_archive = nullptr;
   AString format_name;
 
-  HRESULT result = OpenInArchive(in_stream, in_archive, format_name);
+  HRESULT result = OpenInArchive(in_stream, password, in_archive, format_name);
 
   if (result == S_OK && in_archive != nullptr) {
     *archive = new InArchive(in_archive, format_name);
