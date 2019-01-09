@@ -19,6 +19,7 @@ package com.hippo.a7zip;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import android.support.test.InstrumentationRegistry;
 import java.io.ByteArrayOutputStream;
@@ -212,6 +213,77 @@ public class InArchiveTest extends BaseTestCase {
       archive.extractEntry(0, os);
       String content = new String(os.toByteArray(), "UTF-8");
       assertEquals("password", content);
+    }
+  }
+
+  @Test
+  public void testCreatePasswordException7z() throws IOException, ArchiveException {
+    assertCreatePasswordException("password-path.7z", "654321");
+  }
+
+  @Test
+  public void testCreatePasswordExceptionRar() throws IOException, ArchiveException {
+    assertCreatePasswordException("password-path.rar", "654321");
+  }
+
+  @Test
+  public void testCreatePasswordExceptionRar5() throws IOException, ArchiveException {
+    assertCreatePasswordException("password-path.rar5", "654321");
+  }
+
+  private void assertCreatePasswordException(String name, String wrongPassword) throws IOException, ArchiveException {
+    try {
+      openInArchiveFromAsset(name);
+      fail("Expected a PasswordException to be thrown");
+    } catch (PasswordException e) {
+      assertEquals("No password", e.getMessage());
+    }
+
+    try {
+      openInArchiveFromAsset(name, null, wrongPassword);
+      fail("Expected a PasswordException to be thrown");
+    } catch (PasswordException e) {
+      assertEquals("Wrong password", e.getMessage());
+    }
+  }
+
+  @Test
+  public void testExtractPasswordExceptionZip() throws IOException, ArchiveException {
+    assertExtractPasswordException("password.zip", "654321");
+  }
+
+  @Test
+  public void testExtractPasswordException7z() throws IOException, ArchiveException {
+    assertExtractPasswordException("password.7z", "654321");
+  }
+
+  @Test
+  public void testExtractPasswordExceptionRar() throws IOException, ArchiveException {
+    assertExtractPasswordException("password.rar", "654321");
+  }
+
+  @Test
+  public void testExtractPasswordExceptionRar5() throws IOException, ArchiveException {
+    assertExtractPasswordException("password.rar5", "654321");
+  }
+
+  private void assertExtractPasswordException(String name, String wrongPassword) throws IOException, ArchiveException {
+    try (InArchive archive = openInArchiveFromAsset(name)) {
+      ByteArrayOutputStream os = new ByteArrayOutputStream();
+
+      try {
+        archive.extractEntry(0, os);
+        fail("Expected a PasswordException to be thrown");
+      } catch (PasswordException e) {
+        assertEquals("No password", e.getMessage());
+      }
+
+      try {
+        archive.extractEntry(0, wrongPassword, os);
+        fail("Expected a PasswordException to be thrown");
+      } catch (PasswordException e) {
+        assertEquals("Wrong password", e.getMessage());
+      }
     }
   }
 

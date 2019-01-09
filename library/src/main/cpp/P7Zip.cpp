@@ -141,6 +141,7 @@ class ArchiveOpenCallback :
  public:
   ArchiveOpenCallback(BSTR password) {
     this->password = ::SysAllocString(password);
+    this->has_asked_password = false;
   }
 
   ~ArchiveOpenCallback() {
@@ -152,12 +153,28 @@ class ArchiveOpenCallback :
   INTERFACE_IArchiveOpenCallback({ return S_OK; });
 
   STDMETHOD(CryptoGetTextPassword)(BSTR *password) {
+    has_asked_password = true;
     *password = ::SysAllocString(this->password);
     return this->password != nullptr ? S_OK : E_NO_PASSWORD;
   }
 
+  HRESULT GetBetterResult(HRESULT result) {
+    if (result == S_OK) {
+      return S_OK;
+    } else if (has_asked_password) {
+      if (password != nullptr) {
+        return E_WRONG_PASSWORD;
+      } else {
+        return E_NO_PASSWORD;
+      }
+    } else {
+      return result;
+    }
+  }
+
  private:
   BSTR password;
+  bool has_asked_password;
 };
 
 static HRESULT LoadLibrary(const char *library_name) {
@@ -358,6 +375,7 @@ static HRESULT OpenInArchive(
   UInt64 maxCheckStartPosition = 1 << 22;
   CMyComPtr<ArchiveOpenCallback> callback(new ArchiveOpenCallback(password));
   result = in_archive->Open(in_stream, &maxCheckStartPosition, callback);
+  result = callback->GetBetterResult(result);
   if (result != S_OK) {
     in_archive->Close();
     in_archive = nullptr;
@@ -401,9 +419,16 @@ static HRESULT OpenInArchive(
       }
 
       // The signature matched, try to open it
-      if (OpenInArchive(format.class_id, in_stream, password, in_archive) == S_OK) {
+      HRESULT result = OpenInArchive(format.class_id, in_stream, password, in_archive);
+
+      if (result == S_OK) {
         format_name = format.name;
         return S_OK;
+      }
+
+      if (result == E_NO_PASSWORD || result == E_WRONG_PASSWORD) {
+        // It's a password error, the archive format is confirmed
+        return result;
       }
 
       // Can't open archive in this format
@@ -416,9 +441,16 @@ static HRESULT OpenInArchive(
   for (int i = 0; i < formats.Size(); i++) {
     if (!formats_checked[i]) {
       Format& format = formats[i];
-      if (OpenInArchive(format.class_id, in_stream, password, in_archive) == S_OK) {
+      HRESULT result = OpenInArchive(format.class_id, in_stream, password, in_archive);
+
+      if (result == S_OK) {
         format_name = format.name;
         return S_OK;
+      }
+
+      if (result == E_NO_PASSWORD || result == E_WRONG_PASSWORD) {
+        // It's a password error, the archive format is confirmed
+        return result;
       }
     }
   }

@@ -47,16 +47,20 @@ class ArchiveExtractCallback :
 
   STDMETHOD(CryptoGetTextPassword)(BSTR *password);
 
+  HRESULT GetBetterResult(HRESULT result);
+
  private:
   UInt32 index;
   BSTR password;
   CMyComPtr<ISequentialOutStream> out_stream;
+  bool has_asked_password;
 };
 
 ArchiveExtractCallback::ArchiveExtractCallback(UInt32 index, BSTR password, CMyComPtr<ISequentialOutStream> out_stream) {
   this->index = index;
   this->password = ::SysAllocString(password);
   this->out_stream = out_stream;
+  this->has_asked_password = false;
 }
 
 ArchiveExtractCallback::~ArchiveExtractCallback() {
@@ -129,8 +133,23 @@ HRESULT ArchiveExtractCallback::SetOperationResult(Int32 opRes) {
 }
 
 HRESULT ArchiveExtractCallback::CryptoGetTextPassword(BSTR* password) {
+  has_asked_password = true;
   *password = ::SysAllocString(this->password);
   return this->password != nullptr ? S_OK : E_NO_PASSWORD;
+}
+
+HRESULT ArchiveExtractCallback::GetBetterResult(HRESULT result) {
+  if (result == S_OK) {
+    return S_OK;
+  } else if (has_asked_password) {
+    if (password != nullptr) {
+      return E_WRONG_PASSWORD;
+    } else {
+      return E_NO_PASSWORD;
+    }
+  } else {
+    return result;
+  }
 }
 
 InArchive::InArchive(CMyComPtr<IInArchive> in_archive, AString format_name) {
@@ -314,5 +333,6 @@ GET_ENTRY_PROPERTY_END
 
 HRESULT InArchive::ExtractEntry(UInt32 index, BSTR password, CMyComPtr<ISequentialOutStream> out_stream) {
   CMyComPtr<ArchiveExtractCallback> callback(new ArchiveExtractCallback(index, password, out_stream));
-  return this->in_archive->Extract(&index, 1, false, callback);
+  HRESULT result = this->in_archive->Extract(&index, 1, false, callback);
+  return callback->GetBetterResult(result);
 }

@@ -122,13 +122,21 @@ static const char* GetMessageForCode(HRESULT code) {
 
 #define THROW_ARCHIVE_EXCEPTION_RETURN(ENV, CODE)                                         \
   do {                                                                                    \
-    ThrowException(ENV, "com/hippo/a7zip/ArchiveException", GetMessageForCode(CODE));     \
+    if (CODE == E_NO_PASSWORD || CODE == E_WRONG_PASSWORD) {                              \
+      ThrowException(ENV, "com/hippo/a7zip/PasswordException", GetMessageForCode(CODE));  \
+    } else {                                                                              \
+      ThrowException(ENV, "com/hippo/a7zip/ArchiveException", GetMessageForCode(CODE));   \
+    }                                                                                     \
     return;                                                                               \
   } while (0)
 
 #define THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(ENV, CODE, VALUE)                            \
   do {                                                                                    \
-    ThrowException(ENV, "com/hippo/a7zip/ArchiveException", GetMessageForCode(CODE));     \
+    if (CODE == E_NO_PASSWORD || CODE == E_WRONG_PASSWORD) {                              \
+      ThrowException(ENV, "com/hippo/a7zip/PasswordException", GetMessageForCode(CODE));  \
+    } else {                                                                              \
+      ThrowException(ENV, "com/hippo/a7zip/ArchiveException", GetMessageForCode(CODE));   \
+    }                                                                                     \
     return VALUE;                                                                         \
   } while (0)
 
