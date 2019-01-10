@@ -10,21 +10,21 @@ set(P_SEVEN_ZIP_EXTRACT_LITE_SOURCES
         p7zip/CPP/7zip/Archive/7z/7zIn.cpp
         p7zip/CPP/7zip/Archive/7z/7zProperties.cpp
         p7zip/CPP/7zip/Archive/7z/7zRegister.cpp
-        p7zip/CPP/7zip/Archive/ArchiveExports.cpp
         p7zip/CPP/7zip/Archive/Common/CoderMixer2.cpp
         p7zip/CPP/7zip/Archive/Common/FindSignature.cpp
         p7zip/CPP/7zip/Archive/Common/InStreamWithCRC.cpp
         p7zip/CPP/7zip/Archive/Common/ItemNameUtils.cpp
         p7zip/CPP/7zip/Archive/Common/OutStreamWithCRC.cpp
-        p7zip/CPP/7zip/Archive/DllExports2.cpp
-        p7zip/CPP/7zip/Archive/HandlerCont.cpp
         p7zip/CPP/7zip/Archive/Rar/RarHandler.cpp
         p7zip/CPP/7zip/Archive/Rar/Rar5Handler.cpp
-        p7zip/CPP/7zip/Archive/XzHandler.cpp
         p7zip/CPP/7zip/Archive/Zip/ZipHandler.cpp
         p7zip/CPP/7zip/Archive/Zip/ZipIn.cpp
         p7zip/CPP/7zip/Archive/Zip/ZipItem.cpp
         p7zip/CPP/7zip/Archive/Zip/ZipRegister.cpp
+        p7zip/CPP/7zip/Archive/ArchiveExports.cpp
+        p7zip/CPP/7zip/Archive/DllExports2.cpp
+        p7zip/CPP/7zip/Archive/HandlerCont.cpp
+        p7zip/CPP/7zip/Archive/XzHandler.cpp
         p7zip/CPP/7zip/Common/CWrappers.cpp
         p7zip/CPP/7zip/Common/CreateCoder.cpp
         p7zip/CPP/7zip/Common/FilterCoder.cpp
@@ -129,6 +129,85 @@ set(P_SEVEN_ZIP_EXTRACT_LITE_SOURCES
         p7zip/C/XzIn.c
 )
 
+set(P_SEVEN_ZIP_EXTRACT_SOURCES
+        p7zip/CPP/7zip/Archive/Cab/CabBlockInStream.cpp
+        p7zip/CPP/7zip/Archive/Cab/CabHandler.cpp
+        p7zip/CPP/7zip/Archive/Cab/CabHeader.cpp
+        p7zip/CPP/7zip/Archive/Cab/CabIn.cpp
+        p7zip/CPP/7zip/Archive/Cab/CabRegister.cpp
+        p7zip/CPP/7zip/Archive/Chm/ChmHandler.cpp
+        p7zip/CPP/7zip/Archive/Chm/ChmIn.cpp
+        p7zip/CPP/7zip/Archive/Common/DummyOutStream.cpp
+        p7zip/CPP/7zip/Archive/Common/MultiStream.cpp
+        p7zip/CPP/7zip/Archive/Common/OutStreamWithSha1.cpp
+        p7zip/CPP/7zip/Archive/Iso/IsoHandler.cpp
+        p7zip/CPP/7zip/Archive/Iso/IsoHeader.cpp
+        p7zip/CPP/7zip/Archive/Iso/IsoIn.cpp
+        p7zip/CPP/7zip/Archive/Iso/IsoRegister.cpp
+        p7zip/CPP/7zip/Archive/Nsis/NsisDecode.cpp
+        p7zip/CPP/7zip/Archive/Nsis/NsisHandler.cpp
+        p7zip/CPP/7zip/Archive/Nsis/NsisIn.cpp
+        p7zip/CPP/7zip/Archive/Nsis/NsisRegister.cpp
+        p7zip/CPP/7zip/Archive/Tar/TarHandler.cpp
+        p7zip/CPP/7zip/Archive/Tar/TarHeader.cpp
+        p7zip/CPP/7zip/Archive/Tar/TarIn.cpp
+        p7zip/CPP/7zip/Archive/Tar/TarRegister.cpp
+        p7zip/CPP/7zip/Archive/Udf/UdfHandler.cpp
+        p7zip/CPP/7zip/Archive/Udf/UdfIn.cpp
+        p7zip/CPP/7zip/Archive/Wim/WimHandler.cpp
+        p7zip/CPP/7zip/Archive/Wim/WimIn.cpp
+        p7zip/CPP/7zip/Archive/Wim/WimRegister.cpp
+        p7zip/CPP/7zip/Archive/ApmHandler.cpp
+        p7zip/CPP/7zip/Archive/ArHandler.cpp
+        p7zip/CPP/7zip/Archive/ArjHandler.cpp
+        p7zip/CPP/7zip/Archive/Bz2Handler.cpp
+        p7zip/CPP/7zip/Archive/ComHandler.cpp
+        p7zip/CPP/7zip/Archive/CpioHandler.cpp
+        p7zip/CPP/7zip/Archive/CramfsHandler.cpp
+        p7zip/CPP/7zip/Archive/DmgHandler.cpp
+        p7zip/CPP/7zip/Archive/ElfHandler.cpp
+        p7zip/CPP/7zip/Archive/ExtHandler.cpp
+        p7zip/CPP/7zip/Archive/FatHandler.cpp
+        p7zip/CPP/7zip/Archive/FlvHandler.cpp
+        p7zip/CPP/7zip/Archive/GptHandler.cpp
+        p7zip/CPP/7zip/Archive/GzHandler.cpp
+        p7zip/CPP/7zip/Archive/HfsHandler.cpp
+        p7zip/CPP/7zip/Archive/IhexHandler.cpp
+        p7zip/CPP/7zip/Archive/LzhHandler.cpp
+        p7zip/CPP/7zip/Archive/LzmaHandler.cpp
+        p7zip/CPP/7zip/Archive/MachoHandler.cpp
+        p7zip/CPP/7zip/Archive/MbrHandler.cpp
+        p7zip/CPP/7zip/Archive/MslzHandler.cpp
+        p7zip/CPP/7zip/Archive/MubHandler.cpp
+        p7zip/CPP/7zip/Archive/NtfsHandler.cpp
+        p7zip/CPP/7zip/Archive/PeHandler.cpp
+        p7zip/CPP/7zip/Archive/PpmdHandler.cpp
+        p7zip/CPP/7zip/Archive/QcowHandler.cpp
+        p7zip/CPP/7zip/Archive/RpmHandler.cpp
+        p7zip/CPP/7zip/Archive/SplitHandler.cpp
+        p7zip/CPP/7zip/Archive/SquashfsHandler.cpp
+        p7zip/CPP/7zip/Archive/SwfHandler.cpp
+        p7zip/CPP/7zip/Archive/UefiHandler.cpp
+        p7zip/CPP/7zip/Archive/VdiHandler.cpp
+        p7zip/CPP/7zip/Archive/VhdHandler.cpp
+        p7zip/CPP/7zip/Archive/VmdkHandler.cpp
+        p7zip/CPP/7zip/Archive/XarHandler.cpp
+        p7zip/CPP/7zip/Archive/ZHandler.cpp
+        p7zip/CPP/7zip/Compress/BZip2Decoder.cpp
+        p7zip/CPP/7zip/Compress/BZip2Register.cpp
+        p7zip/CPP/7zip/Compress/LzhDecoder.cpp
+        p7zip/CPP/7zip/Compress/LzmsDecoder.cpp
+        p7zip/CPP/7zip/Compress/LzxDecoder.cpp
+        p7zip/CPP/7zip/Compress/QuantumDecoder.cpp
+        p7zip/CPP/7zip/Compress/XpressDecoder.cpp
+        p7zip/CPP/7zip/Compress/ZDecoder.cpp
+        p7zip/CPP/7zip/Compress/ZlibDecoder.cpp
+        p7zip/CPP/Common/MyMap.cpp
+        p7zip/CPP/Common/MyXml.cpp
+        p7zip/C/HuffEnc.c
+        p7zip/C/Sort.c
+)
+
 set(P_SEVEN_ZIP_INCLUDES
         p7zip/C
         p7zip/CPP
@@ -146,11 +225,14 @@ set(P_SEVEN_ZIP_COMMON_FLAGS
         "-DANDROID_NDK -DNDEBUG -D_REENTRANT -DENV_UNIX -DEXTERNAL_CODECS -DUNICODE -D_UNICODE -DUNIX_USE_WIN_FILE"
 )
 
-if(EXTRACT AND LITE)
+if(EXTRACT)
     set(P_SEVEN_ZIP_SOURCES ${P_SEVEN_ZIP_EXTRACT_LITE_SOURCES})
+    if (NOT LITE)
+        set(P_SEVEN_ZIP_SOURCES ${P_SEVEN_ZIP_SOURCES} ${P_SEVEN_ZIP_EXTRACT_SOURCES})
+    endif()
     set(P_SEVEN_ZIP_FLAGS "${P_SEVEN_ZIP_COMMON_FLAGS} ${P_SEVEN_ZIP_EXTRACT_FLAGS}")
 else()
-    message(FATAL_ERROR "Only EXTRACT LITE is supported now.")
+    message(FATAL_ERROR "Only EXTRACT is supported now.")
 endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${P_SEVEN_ZIP_FLAGS}")
