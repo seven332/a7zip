@@ -22,9 +22,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import okio.BufferedStore;
-import okio.Okio;
-import okio.Store;
 
 public class InArchive implements Closeable {
 
@@ -320,30 +317,17 @@ public class InArchive implements Closeable {
   }
 
   @NonNull
-  public static InArchive create(Store store) throws ArchiveException {
-    return create(store, null, null);
+  public static InArchive create(InStream stream) throws ArchiveException {
+    return create(stream, null, null);
   }
 
   @NonNull
   public static InArchive create(
-      Store store,
+      InStream stream,
       @Nullable Charset charset,
       @Nullable String password
   ) throws ArchiveException {
-    if (store instanceof BufferedStore) {
-      return create((BufferedStore) store, charset, password);
-    } else {
-      return create(Okio.buffer(store), charset, password);
-    }
-  }
-
-  @NonNull
-  private static InArchive create(
-      BufferedStore store,
-      @Nullable Charset charset,
-      @Nullable String password
-  ) throws ArchiveException {
-    long nativePtr = nativeCreate(store, password);
+    long nativePtr = nativeCreate(stream, password);
 
     if (nativePtr == 0) {
       // It should not be 0
@@ -353,7 +337,7 @@ public class InArchive implements Closeable {
     return new InArchive(nativePtr, charset, password);
   }
 
-  private static native long nativeCreate(BufferedStore store, String password) throws ArchiveException;
+  private static native long nativeCreate(InStream stream, String password) throws ArchiveException;
 
   private static native String nativeGetFormatName(long nativePtr);
 

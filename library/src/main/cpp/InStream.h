@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Hippo Seven
+ * Copyright 2019 Hippo Seven
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,26 +14,26 @@
  * limitations under the License.
  */
 
-#ifndef __A7ZIP_BUFFERED_STORE_IN_STREAM_H__
-#define __A7ZIP_BUFFERED_STORE_IN_STREAM_H__
+#ifndef __A7ZIP_IN_STREAM_H__
+#define __A7ZIP_IN_STREAM_H__
 
 #include <jni.h>
 
-#include <Common/MyCom.h>
 #include <7zip/IStream.h>
+#include <Common/MyCom.h>
 
 namespace a7zip {
 
-class BufferedStoreInStream:
+class InStream :
     public IInStream,
     public IStreamGetSize,
     public CMyUnknownImp
 {
  private:
-  BufferedStoreInStream(jobject store, jbyteArray array);
+  InStream(jobject stream, jbyteArray array);
 
  public:
-  virtual ~BufferedStoreInStream();
+  virtual ~InStream();
 
  public:
   MY_UNKNOWN_IMP2(IInStream, IStreamGetSize)
@@ -44,12 +44,12 @@ class BufferedStoreInStream:
   STDMETHOD(GetSize)(UInt64* size);
 
  private:
-  jobject store;
+  jobject stream;
   jbyteArray array;
 
  public:
   static HRESULT Initialize(JNIEnv* env);
-  static HRESULT Create(JNIEnv* env, jobject store, CMyComPtr<IInStream>& in_stream);
+  static HRESULT Create(JNIEnv* env, jobject stream, CMyComPtr<IInStream>& in_stream);
 
  private:
   static bool initialized;
@@ -62,4 +62,4 @@ class BufferedStoreInStream:
 
 }
 
-#endif //__A7ZIP_BUFFERED_STORE_IN_STREAM_H__
+#endif //__A7ZIP_IN_STREAM_H__

@@ -22,7 +22,7 @@
 #include <include_windows/windows.h>
 #include <7zip/Archive/IArchive.h>
 
-#include "BufferedStoreInStream.h"
+#include "InStream.h"
 #include "Log.h"
 #include "OutputStreamOutStream.h"
 #include "P7Zip.h"
@@ -166,15 +166,15 @@ static void CopyJStringToBSTR(BSTR bstr, const jchar* jstr, int length) {
 jlong a7zip_NativeCreate(
     JNIEnv* env,
     jclass,
-    jobject store,
+    jobject stream,
     jstring password
 ) {
-  CMyComPtr<IInStream> stream = nullptr;
-  HRESULT result = BufferedStoreInStream::Create(env, store, stream);
-  if (result != S_OK || stream == nullptr) {
+  CMyComPtr<IInStream> in_stream = nullptr;
+  HRESULT result = InStream::Create(env, stream, in_stream);
+  if (result != S_OK || in_stream == nullptr) {
     // Call java methods before throw exception
-    if (stream != nullptr) {
-      stream.Release();
+    if (in_stream != nullptr) {
+      in_stream.Release();
     }
     THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, result, 0);
   }
@@ -189,7 +189,7 @@ jlong a7zip_NativeCreate(
   }
 
   InArchive* archive = nullptr;
-  result = P7Zip::OpenArchive(stream, bstr_password, &archive);
+  result = P7Zip::OpenArchive(in_stream, bstr_password, &archive);
 
   if (password != nullptr) {
     ::SysFreeString(bstr_password);
@@ -198,7 +198,7 @@ jlong a7zip_NativeCreate(
 
   if (result != S_OK || archive == nullptr) {
     // Call java methods before throw exception
-    stream.Release();
+    in_stream.Release();
     if (archive != nullptr) {
       delete archive;
     }
@@ -387,7 +387,7 @@ void a7zip_NativeClose(
 
 static JNINativeMethod archive_methods[] = {
     { "nativeCreate",
-      "(Lokio/BufferedStore;Ljava/lang/String;)J",
+      "(Lcom/hippo/a7zip/InStream;Ljava/lang/String;)J",
       reinterpret_cast<void *>(a7zip_NativeCreate) },
     { "nativeGetFormatName",
       "(J)Ljava/lang/String;",

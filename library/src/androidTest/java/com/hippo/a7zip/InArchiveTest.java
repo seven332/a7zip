@@ -25,9 +25,9 @@ import android.support.test.InstrumentationRegistry;
 import com.getkeepsafe.relinker.ReLinker;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import okio.Okio;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -294,10 +294,10 @@ public class InArchiveTest extends BaseTestCase {
   }
 
   private InArchive openInArchiveFromAsset(String name) throws IOException, ArchiveException {
-    return InArchive.create(Okio.store(getAsset(name)));
+    return InArchive.create(new FileInStream(new RandomAccessFile(getAsset(name), "r")));
   }
 
   private InArchive openInArchiveFromAsset(String name, Charset charset, String password) throws IOException, ArchiveException {
-    return InArchive.create(Okio.store(getAsset(name)), charset, password);
+    return InArchive.create(new FileInStream(new RandomAccessFile(getAsset(name), "r")), charset, password);
   }
 }

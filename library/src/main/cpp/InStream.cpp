@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Hippo Seven
+ * Copyright 2019 Hippo Seven
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,40 +14,39 @@
  * limitations under the License.
  */
 
-#include "BufferedStoreInStream.h"
+#include "InStream.h"
 
 #include "JavaEnv.h"
-#include "Log.h"
 #include "Utils.h"
 
 #define ARRAY_SIZE DEFAULT_BUFFER_SIZE
 
 using namespace a7zip;
 
-bool BufferedStoreInStream::initialized = false;
-jmethodID BufferedStoreInStream::method_read = nullptr;
-jmethodID BufferedStoreInStream::method_seek = nullptr;
-jmethodID BufferedStoreInStream::method_tell = nullptr;
-jmethodID BufferedStoreInStream::method_size = nullptr;
-jmethodID BufferedStoreInStream::method_close = nullptr;
+bool InStream::initialized = false;
+jmethodID InStream::method_read = nullptr;
+jmethodID InStream::method_seek = nullptr;
+jmethodID InStream::method_tell = nullptr;
+jmethodID InStream::method_size = nullptr;
+jmethodID InStream::method_close = nullptr;
 
-BufferedStoreInStream::BufferedStoreInStream(jobject store, jbyteArray array) {
-  this->store = store;
+InStream::InStream(jobject stream, jbyteArray array) {
+  this->stream = stream;
   this->array = array;
 }
 
-BufferedStoreInStream::~BufferedStoreInStream() {
+InStream::~InStream() {
   JavaEnv env;
   if (!env.IsValid()) return;
 
-  env->CallVoidMethod(this->store, method_close);
+  env->CallVoidMethod(stream, method_close);
   CLEAR_IF_EXCEPTION_PENDING(env);
 
-  env->DeleteGlobalRef(this->store);
-  env->DeleteGlobalRef(this->array);
+  env->DeleteGlobalRef(stream);
+  env->DeleteGlobalRef(array);
 }
 
-HRESULT BufferedStoreInStream::Read(void* data, UInt32 size, UInt32* processedSize) {
+HRESULT InStream::Read(void* data, UInt32 size, UInt32* processedSize) {
   if (processedSize != nullptr) {
     *processedSize = 0;
   }
@@ -62,7 +61,7 @@ HRESULT BufferedStoreInStream::Read(void* data, UInt32 size, UInt32* processedSi
   // Make size not bigger than ARRAY_SIZE
   size = MIN(ARRAY_SIZE, size);
 
-  jint read = env->CallIntMethod(this->store, method_read, this->array, 0, size);
+  jint read = env->CallIntMethod(stream, method_read, array, 0, size);
   RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(env);
 
   // Check EOF
@@ -70,7 +69,7 @@ HRESULT BufferedStoreInStream::Read(void* data, UInt32 size, UInt32* processedSi
     return S_OK;
   }
 
-  env->GetByteArrayRegion(this->array, 0, read, static_cast<jbyte*>(data));
+  env->GetByteArrayRegion(array, 0, read, static_cast<jbyte*>(data));
   RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(env);
 
   if (processedSize != nullptr) {
@@ -80,7 +79,7 @@ HRESULT BufferedStoreInStream::Read(void* data, UInt32 size, UInt32* processedSi
   return S_OK;
 }
 
-HRESULT BufferedStoreInStream::Seek(Int64 offset, UInt32 seekOrigin, UInt64* newPosition) {
+HRESULT InStream::Seek(Int64 offset, UInt32 seekOrigin, UInt64* newPosition) {
   JavaEnv env;
   if (!env.IsValid()) return E_JAVA_EXCEPTION;
 
@@ -92,13 +91,13 @@ HRESULT BufferedStoreInStream::Seek(Int64 offset, UInt32 seekOrigin, UInt64* new
       break;
     }
     case STREAM_SEEK_CUR: {
-      jlong position = env->CallLongMethod(this->store, method_tell);
+      jlong position = env->CallLongMethod(stream, method_tell);
       RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(env);
       actual_offset = position + offset;
       break;
     }
     case STREAM_SEEK_END: {
-      jlong size = env->CallLongMethod(this->store, method_size);
+      jlong size = env->CallLongMethod(stream, method_size);
       RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(env);
       actual_offset = size + offset;
       break;
@@ -112,7 +111,7 @@ HRESULT BufferedStoreInStream::Seek(Int64 offset, UInt32 seekOrigin, UInt64* new
     return E_INVALIDARG;
   }
 
-  env->CallVoidMethod(this->store, method_seek, actual_offset);
+  env->CallVoidMethod(stream, method_seek, actual_offset);
   RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(env);
 
   if (newPosition != nullptr) {
@@ -122,11 +121,11 @@ HRESULT BufferedStoreInStream::Seek(Int64 offset, UInt32 seekOrigin, UInt64* new
   return S_OK;
 }
 
-HRESULT BufferedStoreInStream::GetSize(UInt64* size) {
+HRESULT InStream::GetSize(UInt64* size) {
   JavaEnv env;
   if (!env.IsValid()) return E_JAVA_EXCEPTION;
 
-  jlong store_size = env->CallLongMethod(this->store, method_size);
+  jlong store_size = env->CallLongMethod(stream, method_size);
   RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(env);
 
   if (size != nullptr) {
@@ -136,12 +135,12 @@ HRESULT BufferedStoreInStream::GetSize(UInt64* size) {
   return S_OK;
 }
 
-HRESULT BufferedStoreInStream::Initialize(JNIEnv* env) {
+HRESULT InStream::Initialize(JNIEnv* env) {
   if (initialized) {
     return S_OK;
   }
 
-  jclass clazz = env->FindClass("okio/BufferedStore");
+  jclass clazz = env->FindClass("com/hippo/a7zip/InStream");
   if (clazz == nullptr) return E_CLASS_NOT_FOUND;
 
   method_read = env->GetMethodID(clazz, "read", "([BII)I");
@@ -159,33 +158,33 @@ HRESULT BufferedStoreInStream::Initialize(JNIEnv* env) {
   return JNI_OK;
 }
 
-HRESULT BufferedStoreInStream::Create(
+HRESULT InStream::Create(
     JNIEnv* env,
-    jobject store,
+    jobject stream,
     CMyComPtr<IInStream>& in_stream
 ) {
   if (!initialized) {
     return E_NOT_INITIALIZED;
   }
 
-  jobject g_store = env->NewGlobalRef(store);
-  if (g_store == nullptr) {
+  jobject g_stream = env->NewGlobalRef(stream);
+  if (g_stream == nullptr) {
     return E_OUTOFMEMORY;
   }
 
   jbyteArray array = env->NewByteArray(ARRAY_SIZE);
   if (array == nullptr) {
-    env->DeleteGlobalRef(g_store);
+    env->DeleteGlobalRef(g_stream);
     return E_FAILED_CONSTRUCT;
   }
 
   jbyteArray g_array = static_cast<jbyteArray>(env->NewGlobalRef(array));
   if (g_array == nullptr) {
-    env->DeleteGlobalRef(g_store);
+    env->DeleteGlobalRef(g_stream);
     return E_OUTOFMEMORY;
   }
 
-  in_stream = new BufferedStoreInStream(g_store, g_array);
+  in_stream = new InStream(g_stream, g_array);
 
   return S_OK;
 }
