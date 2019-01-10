@@ -16,13 +16,41 @@
 
 package com.hippo.a7zip;
 
-import android.content.Context;
-import com.getkeepsafe.relinker.ReLinker;
-
 public class A7Zip {
 
-  public static void initialize(Context context) {
-    ReLinker.loadLibrary(context, "p7zip");
-    ReLinker.loadLibrary(context, "a7zip");
+  /**
+   * Initializes A7Zip. This method loads native libraries
+   * with {@link System#loadLibrary(String)} directly.
+   */
+  public static void initialize() {
+    System.loadLibrary("p7zip");
+    System.loadLibrary("a7zip");
+  }
+
+  /**
+   * Initializes A7Zip. This method loads native libraries
+   * with custom library loader.
+   */
+  public static void initialize(LibraryLoader loader) {
+    loader.loadLibrary("p7zip");
+    loader.loadLibrary("a7zip");
+  }
+
+  /**
+   * Custom library loader.
+   */
+  public interface LibraryLoader {
+
+    /**
+     * Loads the native library. Using {@link System#loadLibrary(String)}
+     * directly may cause {@link UnsatisfiedLinkError} on some
+     * devices. Some libraries can fix it,
+     * like <a href="https://github.com/KeepSafe/ReLinker">ReLinker</a>
+     * and <a href="https://github.com/facebook/SoLoader">SoLoader</a>.
+     * The method could be a wrapper.
+     *
+     * @param library the name of the library
+     */
+    void loadLibrary(String library);
   }
 }

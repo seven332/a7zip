@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import android.support.test.InstrumentationRegistry;
+import com.getkeepsafe.relinker.ReLinker;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -34,7 +35,12 @@ public class InArchiveTest extends BaseTestCase {
 
   @BeforeClass
   public static void beforeClass() {
-    A7Zip.initialize(InstrumentationRegistry.getContext());
+    A7Zip.initialize(new A7Zip.LibraryLoader() {
+      @Override
+      public void loadLibrary(String library) {
+        ReLinker.loadLibrary(InstrumentationRegistry.getContext(), library);
+      }
+    });
   }
 
   @Test
