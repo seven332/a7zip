@@ -24,13 +24,22 @@
 
 namespace a7zip {
 
-class BlackHoleOutStream :
-    public ISequentialOutStream,
+class BlackHole :
+    public IOutStream,
     public CMyUnknownImp
 {
  public:
-  MY_UNKNOWN_IMP
+  BlackHole();
+
+ public:
+  MY_UNKNOWN_IMP2(ISequentialOutStream, IOutStream)
   STDMETHOD(Write)(const void *data, UInt32 size, UInt32 *processedSize);
+  STDMETHOD(Seek)(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition);
+  STDMETHOD(SetSize)(UInt64 newSize);
+
+ private:
+  UInt64 pos;
+  UInt64 size;
 };
 
 }

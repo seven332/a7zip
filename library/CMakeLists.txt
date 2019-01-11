@@ -8,7 +8,7 @@ option(LITE "Only supports 7z, rar, zip formats" OFF)
 add_subdirectory(p7zip)
 
 set(A_SEVEN_ZIP_SOURCES
-        src/main/cpp/BlackHoleOutStream.cpp
+        src/main/cpp/BlackHole.cpp
         src/main/cpp/InArchive.cpp
         src/main/cpp/InStream.cpp
         src/main/cpp/JavaEnv.cpp

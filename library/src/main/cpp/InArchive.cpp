@@ -20,7 +20,7 @@
 #include <7zip/ICoder.h>
 #include <7zip/IPassword.h>
 
-#include "BlackHoleOutStream.h"
+#include "BlackHole.h"
 #include "Log.h"
 #include "Utils.h"
 
@@ -84,7 +84,7 @@ HRESULT ArchiveExtractCallback::GetStream(
 ) {
   // If it's not extract mode or the index is different, return a black hole to skip data
   if (askExtractMode != NArchive::NExtract::NAskMode::kExtract || this->index != index) {
-    CMyComPtr<ISequentialOutStream> black_hole(new BlackHoleOutStream());
+    CMyComPtr<ISequentialOutStream> black_hole(new BlackHole());
     *outStream = black_hole.Detach();
     return S_OK;
   }
