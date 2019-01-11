@@ -412,11 +412,11 @@ static HRESULT OpenInArchive(
       UInt32 processedSize;
       CByteBuffer bytes(signature.Size());
 
-      CONTINUE_IF_NOT_ZERO(in_stream->Seek(0, STREAM_SEEK_SET, nullptr));
+      UInt64 newPosition;
+      CONTINUE_IF_NOT_ZERO(in_stream->Seek(format.signature_offset, STREAM_SEEK_SET, &newPosition));
+      if (newPosition != format.signature_offset) continue;
       CONTINUE_IF_NOT_ZERO(ReadFully(in_stream, bytes, static_cast<UInt32>(signature.Size()), &processedSize));
-      if (processedSize != signature.Size() || bytes != signature) {
-        continue;
-      }
+      if (processedSize != signature.Size() || bytes != signature) continue;
 
       // The signature matched, try to open it
       HRESULT result = OpenInArchive(format.class_id, in_stream, password, in_archive);
