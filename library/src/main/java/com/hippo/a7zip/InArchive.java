@@ -20,7 +20,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.charset.Charset;
 
 public class InArchive implements Closeable {
@@ -274,7 +273,7 @@ public class InArchive implements Closeable {
    *           it will be closed at the end of this method
    * @throws ArchiveException if get error
    */
-  public void extractEntry(int index, @NonNull OutputStream os) throws ArchiveException {
+  public void extractEntry(int index, @NonNull SequentialOutStream os) throws ArchiveException {
     extractEntry(index, password, os);
   }
 
@@ -288,7 +287,7 @@ public class InArchive implements Closeable {
    * @throws ArchiveException if get error
    */
   @SuppressWarnings("ThrowFromFinallyBlock")
-  public void extractEntry(int index, String password, @NonNull OutputStream os) throws ArchiveException {
+  public void extractEntry(int index, String password, @NonNull SequentialOutStream os) throws ArchiveException {
     try {
       checkClosed();
       nativeExtractEntry(nativePtr, index, password, os);
@@ -365,7 +364,7 @@ public class InArchive implements Closeable {
   @Nullable
   private static native String nativeGetEntryStringProperty(long nativePtr, int index, int propID);
 
-  private static native void nativeExtractEntry(long nativePtr, int index, String password, OutputStream os) throws ArchiveException;
+  private static native void nativeExtractEntry(long nativePtr, int index, String password, SequentialOutStream os) throws ArchiveException;
 
   private static native void nativeClose(long nativePtr);
 }

@@ -23,7 +23,6 @@ import static org.junit.Assert.fail;
 
 import android.support.test.InstrumentationRegistry;
 import com.getkeepsafe.relinker.ReLinker;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
@@ -91,9 +90,9 @@ public class InArchiveTest extends BaseTestCase {
           assertTrue(archive.getEntryBooleanProperty(i, PropID.IS_DIR));
           continue;
         }
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        ByteArrayOutStream os = new ByteArrayOutStream();
         archive.extractEntry(i, os);
-        String content = new String(os.toByteArray(), "UTF-8");
+        String content = os.toString("UTF-8");
         switch (path) {
           case "dump.txt":
           case "folder/dump.txt":
@@ -189,9 +188,9 @@ public class InArchiveTest extends BaseTestCase {
     try (InArchive archive = openInArchiveFromAsset(name)) {
       assertEquals("password.txt", archive.getEntryPath(0));
 
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
+      ByteArrayOutStream os = new ByteArrayOutStream();
       archive.extractEntry(0, password, os);
-      String content = new String(os.toByteArray(), "UTF-8");
+      String content = os.toString("UTF-8");
       assertEquals("password", content);
     }
   }
@@ -215,9 +214,9 @@ public class InArchiveTest extends BaseTestCase {
     try (InArchive archive = openInArchiveFromAsset(name, null, password)) {
       assertEquals("password.txt", archive.getEntryPath(0));
 
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
+      ByteArrayOutStream os = new ByteArrayOutStream();
       archive.extractEntry(0, os);
-      String content = new String(os.toByteArray(), "UTF-8");
+      String content = os.toString("UTF-8");
       assertEquals("password", content);
     }
   }
@@ -275,7 +274,7 @@ public class InArchiveTest extends BaseTestCase {
 
   private void assertExtractPasswordException(String name, String wrongPassword) throws IOException, ArchiveException {
     try (InArchive archive = openInArchiveFromAsset(name)) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
+      ByteArrayOutStream os = new ByteArrayOutStream();
 
       try {
         archive.extractEntry(0, os);

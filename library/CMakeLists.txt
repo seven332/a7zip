@@ -14,8 +14,8 @@ set(A_SEVEN_ZIP_SOURCES
         src/main/cpp/JavaEnv.cpp
         src/main/cpp/JavaInArchive.cpp
         src/main/cpp/JavaInit.cpp
-        src/main/cpp/OutputStreamOutStream.cpp
         src/main/cpp/P7Zip.cpp
+        src/main/cpp/SequentialOutStream.cpp
 )
 
 add_library(a7zip SHARED ${A_SEVEN_ZIP_SOURCES})

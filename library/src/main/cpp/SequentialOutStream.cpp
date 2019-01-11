@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "OutputStreamOutStream.h"
+#include "SequentialOutStream.h"
 
 #include "JavaEnv.h"
 #include "Utils.h"
@@ -23,27 +23,27 @@
 
 using namespace a7zip;
 
-bool OutputStreamOutStream::initialized = false;
-jmethodID OutputStreamOutStream::method_write = nullptr;
-jmethodID OutputStreamOutStream::method_close = nullptr;
+bool SequentialOutStream::initialized = false;
+jmethodID SequentialOutStream::method_write = nullptr;
+jmethodID SequentialOutStream::method_close = nullptr;
 
-OutputStreamOutStream::OutputStreamOutStream(jobject os, jbyteArray array) {
-  this->os = os;
+SequentialOutStream::SequentialOutStream(jobject stream, jbyteArray array) {
+  this->stream = stream;
   this->array = array;
 }
 
-OutputStreamOutStream::~OutputStreamOutStream() {
+SequentialOutStream::~SequentialOutStream() {
   JavaEnv env;
   if (!env.IsValid()) return;
 
-  env->CallVoidMethod(this->os, method_close);
+  env->CallVoidMethod(stream, method_close);
   CLEAR_IF_EXCEPTION_PENDING(env);
 
-  env->DeleteGlobalRef(this->os);
-  env->DeleteGlobalRef(this->array);
+  env->DeleteGlobalRef(stream);
+  env->DeleteGlobalRef(array);
 }
 
-HRESULT OutputStreamOutStream::Write(const void* data, UInt32 size, UInt32* processedSize) {
+HRESULT SequentialOutStream::Write(const void* data, UInt32 size, UInt32* processedSize) {
   if (processedSize != nullptr) {
     *processedSize = 0;
   }
@@ -59,11 +59,11 @@ HRESULT OutputStreamOutStream::Write(const void* data, UInt32 size, UInt32* proc
   size = MIN(ARRAY_SIZE, size);
 
   // Copy data from native buffer to java buffer
-  env->SetByteArrayRegion(this->array, 0, size, reinterpret_cast<const jbyte*>(data));
+  env->SetByteArrayRegion(array, 0, size, reinterpret_cast<const jbyte*>(data));
   RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(env);
 
   // Write data to sink
-  env->CallVoidMethod(this->os, method_write, this->array, 0, size);
+  env->CallVoidMethod(stream, method_write, array, 0, size);
   RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(env);
 
   if (processedSize != nullptr) {
@@ -73,12 +73,12 @@ HRESULT OutputStreamOutStream::Write(const void* data, UInt32 size, UInt32* proc
   return S_OK;
 }
 
-HRESULT OutputStreamOutStream::Initialize(JNIEnv* env) {
+HRESULT SequentialOutStream::Initialize(JNIEnv* env) {
   if (initialized) {
     return S_OK;
   }
 
-  jclass clazz = env->FindClass("java/io/OutputStream");
+  jclass clazz = env->FindClass("com/hippo/a7zip/SequentialOutStream");
   if (clazz == nullptr) return E_CLASS_NOT_FOUND;
 
   method_write = env->GetMethodID(clazz, "write", "([BII)V");
@@ -90,33 +90,33 @@ HRESULT OutputStreamOutStream::Initialize(JNIEnv* env) {
   return S_OK;
 }
 
-HRESULT OutputStreamOutStream::Create(
+HRESULT SequentialOutStream::Create(
     JNIEnv* env,
-    jobject os,
+    jobject stream,
     CMyComPtr<ISequentialOutStream>& out_stream
 ) {
   if (!initialized) {
     return E_NOT_INITIALIZED;
   }
 
-  jobject g_os = env->NewGlobalRef(os);
-  if (g_os == nullptr) {
+  jobject g_stream = env->NewGlobalRef(stream);
+  if (g_stream == nullptr) {
     return E_OUTOFMEMORY;
   }
 
   jbyteArray array = env->NewByteArray(ARRAY_SIZE);
   if (array == nullptr) {
-    env->DeleteGlobalRef(g_os);
+    env->DeleteGlobalRef(g_stream);
     return E_FAILED_CONSTRUCT;
   }
 
   jbyteArray g_array = static_cast<jbyteArray>(env->NewGlobalRef(array));
   if (g_array == nullptr) {
-    env->DeleteGlobalRef(g_os);
+    env->DeleteGlobalRef(g_stream);
     return E_OUTOFMEMORY;
   }
 
-  out_stream = new OutputStreamOutStream(g_os, g_array);
+  out_stream = new SequentialOutStream(g_stream, g_array);
 
   return S_OK;
 }

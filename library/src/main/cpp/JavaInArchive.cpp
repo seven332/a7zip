@@ -24,7 +24,7 @@
 
 #include "InStream.h"
 #include "Log.h"
-#include "OutputStreamOutStream.h"
+#include "SequentialOutStream.h"
 #include "P7Zip.h"
 #include "Utils.h"
 
@@ -335,17 +335,17 @@ void a7zip_NativeExtractEntry(
     jlong native_ptr,
     jint index,
     jstring password,
-    jobject os
+    jobject stream
 ) {
   CHECK_CLOSED_RETURN(env, native_ptr);
   InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
 
-  CMyComPtr<ISequentialOutStream> stream = nullptr;
-  HRESULT result = OutputStreamOutStream::Create(env, os, stream);
-  if (result != S_OK || stream == nullptr) {
-    if (stream != nullptr) {
+  CMyComPtr<ISequentialOutStream> out_stream = nullptr;
+  HRESULT result = SequentialOutStream::Create(env, stream, out_stream);
+  if (result != S_OK || out_stream == nullptr) {
+    if (out_stream != nullptr) {
       // Call java methods before throw exception
-      stream.Release();
+      out_stream.Release();
     } else {
       // Let java code closes the OutStream
     }
@@ -361,7 +361,7 @@ void a7zip_NativeExtractEntry(
     CopyJStringToBSTR(bstr_password, j_password, length);
   }
 
-  result = archive->ExtractEntry(static_cast<UInt32>(index), bstr_password, stream);
+  result = archive->ExtractEntry(static_cast<UInt32>(index), bstr_password, out_stream);
 
   if (password != nullptr) {
     ::SysFreeString(bstr_password);
@@ -370,7 +370,7 @@ void a7zip_NativeExtractEntry(
 
   if (result != S_OK) {
     // Call java methods before throw exception
-    stream.Release();
+    out_stream.Release();
     THROW_ARCHIVE_EXCEPTION_RETURN(env, result);
   }
 }
@@ -426,7 +426,7 @@ static JNINativeMethod archive_methods[] = {
       "(JII)Ljava/lang/String;",
       reinterpret_cast<void *>(a7zip_NativeGetEntryStringProperty) },
     { "nativeExtractEntry",
-      "(JILjava/lang/String;Ljava/io/OutputStream;)V",
+      "(JILjava/lang/String;Lcom/hippo/a7zip/SequentialOutStream;)V",
       reinterpret_cast<void *>(a7zip_NativeExtractEntry) },
     { "nativeClose",
       "(J)V",

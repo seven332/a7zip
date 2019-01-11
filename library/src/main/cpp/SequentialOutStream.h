@@ -24,27 +24,27 @@
 
 namespace a7zip {
 
-class OutputStreamOutStream :
+class SequentialOutStream :
     public ISequentialOutStream,
     public CMyUnknownImp
 {
  private:
-  OutputStreamOutStream(jobject os, jbyteArray array);
+  SequentialOutStream(jobject stream, jbyteArray array);
 
  public:
-  virtual ~OutputStreamOutStream();
+  virtual ~SequentialOutStream();
 
  public:
   MY_UNKNOWN_IMP
   STDMETHOD(Write)(const void *data, UInt32 size, UInt32 *processedSize);
 
  private:
-  jobject os;
+  jobject stream;
   jbyteArray array;
 
  public:
   static HRESULT Initialize(JNIEnv* env);
-  static HRESULT Create(JNIEnv* env, jobject os, CMyComPtr<ISequentialOutStream>& out_stream);
+  static HRESULT Create(JNIEnv* env, jobject stream, CMyComPtr<ISequentialOutStream>& out_stream);
 
  private:
   static bool initialized;
