@@ -44,7 +44,7 @@ public class InArchive implements Closeable {
   }
 
   // Sometimes p7zip returns string in the original charset, sometimes in utf-16.
-  // If it in unknown charset, each byte stores in each char,
+  // If it's in the original charset, each byte stores in each char,
   // so every char in the string is smaller than 0xFF.
   // But if every char in the string is smaller than 0xFF,
   // it's hard to tell the string is in utf-16 or the original charset.
