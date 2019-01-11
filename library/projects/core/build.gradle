@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Hippo Seven
+ * Copyright 2019 Hippo Seven
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +24,16 @@ android {
         targetSdkVersion 28
         versionCode 1
         versionName '1.0'
-        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
+        externalNativeBuild {
+            cmake {
+                targets 'a7zip-loader'
+                arguments '-DEXTRACT=ON'
+            }
+        }
     }
 
     sourceSets {
-        androidTest.java.srcDirs += '../../src/androidTest/java'
-        androidTest.resources.srcDirs += '../../src/androidTest/resources'
-        androidTest.assets.srcDirs += '../../src/androidTest/assets'
+        main.java.srcDirs += '../../src/main/java'
     }
 
     buildTypes {
@@ -39,15 +42,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    externalNativeBuild {
+        cmake {
+            path '../../CMakeLists.txt'
+        }
+    }
 }
 
 dependencies {
-    implementation project(':extract')
-    implementation project(':extract-lite')
     implementation 'com.android.support:support-annotations:28.0.0'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.getkeepsafe.relinker:relinker:1.3.0'
-    androidTestImplementation 'com.github.seven332.okio:okio:1.16.0'
-    androidTestImplementation 'org.jsoup:jsoup:1.11.3'
-    androidTestImplementation 'commons-io:commons-io:2.5'
 }
+
+apply from: rootProject.file('android-maven-gradle.gradle')

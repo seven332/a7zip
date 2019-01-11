@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Hippo Seven
+ * Copyright 2019 Hippo Seven
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-include ':demo'
+package com.hippo.a7zip;
 
-include ':core'
-project(':core').projectDir = new File('library/projects/core')
+import android.support.test.InstrumentationRegistry;
+import com.getkeepsafe.relinker.ReLinker;
 
-include ':extract-lite'
-project(':extract-lite').projectDir = new File('library/projects/extract-lite')
+public class ReLinkerLibraryLoader implements A7ZipLibraryLoader {
 
-include ':extract'
-project(':extract').projectDir = new File('library/projects/extract')
-
-include ':test'
-project(':test').projectDir = new File('library/projects/test')
+  @Override
+  public void loadLibrary(String libname) {
+    ReLinker.loadLibrary(InstrumentationRegistry.getContext(), libname);
+  }
+}

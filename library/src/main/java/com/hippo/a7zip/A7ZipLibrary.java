@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Hippo Seven
+ * Copyright 2019 Hippo Seven
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-include ':demo'
+package com.hippo.a7zip;
 
-include ':core'
-project(':core').projectDir = new File('library/projects/core')
+import android.support.annotation.NonNull;
 
-include ':extract-lite'
-project(':extract-lite').projectDir = new File('library/projects/extract-lite')
+/**
+ * The native library of A7Zip.
+ */
+public abstract class A7ZipLibrary {
 
-include ':extract'
-project(':extract').projectDir = new File('library/projects/extract')
+  A7ZipLibrary() { }
 
-include ':test'
-project(':test').projectDir = new File('library/projects/test')
+  abstract String getMainLibraryName();
+
+  @NonNull
+  abstract String[] getMinorLibraryNames();
+}

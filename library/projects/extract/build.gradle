@@ -32,10 +32,6 @@ android {
         }
     }
 
-    sourceSets {
-        main.java.srcDirs += '../../src/main/java'
-    }
-
     buildTypes {
         release {
             minifyEnabled false
@@ -51,6 +47,7 @@ android {
 }
 
 dependencies {
+    api project(':core')
     implementation 'com.android.support:support-annotations:28.0.0'
 }
 

@@ -21,45 +21,84 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import android.support.test.InstrumentationRegistry;
-import com.getkeepsafe.relinker.ReLinker;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import org.junit.BeforeClass;
+import java.util.Collection;
+import java.util.List;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+@RunWith(Parameterized.class)
 public class InArchiveTest extends BaseTestCase {
 
-  @BeforeClass
-  public static void beforeClass() {
-    A7Zip.initialize(new A7Zip.LibraryLoader() {
-      @Override
-      public void loadLibrary(String library) {
-        ReLinker.loadLibrary(InstrumentationRegistry.getContext(), library);
-      }
+  @Parameterized.Parameters(name = "{0}")
+  public static Collection<Object[]> data() {
+    return Arrays.asList(new Object[][] {
+        { "Extract", A7ZipExtract.LIBRARY, new String[] { "7z", "Rar", "Rar5", "zip", "tar", "wim" } },
+        { "Extract-Lite", A7ZipExtractLite.LIBRARY, new String[] { "7z", "Rar", "Rar5", "zip" } },
     });
+  }
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
+
+  private List<String> supportedFormats;
+
+  public InArchiveTest(
+      @SuppressWarnings("unused") String name,
+      A7ZipLibrary library,
+      String[] supportedFormats
+  ) {
+    A7Zip.loadLibrary(library, new ReLinkerLibraryLoader());
+    this.supportedFormats = Arrays.asList(supportedFormats);
+  }
+
+  private void checkFormat(String format) {
+    if (!supportedFormats.contains(format)) {
+      thrown.expect(ArchiveException.class);
+      thrown.expectMessage("Unknown archive format");
+    }
   }
 
   @Test
   public void testZip() throws IOException, ArchiveException {
+    checkFormat("zip");
     testArchive("archive.zip", "zip");
   }
 
   @Test
   public void test7z() throws IOException, ArchiveException {
+    checkFormat("7z");
     testArchive("archive.7z", "7z");
   }
 
   @Test
   public void testRar() throws IOException, ArchiveException {
+    checkFormat("Rar");
     testArchive("archive.rar", "Rar");
   }
 
   @Test
   public void testRar5() throws IOException, ArchiveException {
+    checkFormat("Rar5");
     testArchive("archive.rar5", "Rar5");
+  }
+
+  @Test
+  public void testTar() throws IOException, ArchiveException {
+    checkFormat("tar");
+    testArchive("archive.tar", "tar");
+  }
+
+  @Test
+  public void testWim() throws IOException, ArchiveException {
+    checkFormat("wim");
+    testArchive("archive.wim", "wim");
   }
 
   private void testArchive(String name, String format) throws IOException, ArchiveException {
@@ -108,21 +147,25 @@ public class InArchiveTest extends BaseTestCase {
 
   @Test
   public void testPathZip() throws IOException, ArchiveException {
+    checkFormat("zip");
     testPath("path.zip");
   }
 
   @Test
   public void testPath7z() throws IOException, ArchiveException {
+    checkFormat("7z");
     testPath("path.7z");
   }
 
   @Test
   public void testPathRar() throws IOException, ArchiveException {
+    checkFormat("Rar");
     testPath("path.rar");
   }
 
   @Test
   public void testPathRar5() throws IOException, ArchiveException {
+    checkFormat("Rar5");
     testPath("path.rar5");
   }
 
@@ -134,6 +177,7 @@ public class InArchiveTest extends BaseTestCase {
 
   @Test
   public void testPathZipGB18030() throws IOException, ArchiveException {
+    checkFormat("zip");
     try (InArchive archive = openInArchiveFromAsset("path-gb18030.zip")) {
       assertEquals("新建文本文档.txt", archive.getEntryPath(0, Charset.forName("GB18030")));
     }
@@ -141,6 +185,7 @@ public class InArchiveTest extends BaseTestCase {
 
   @Test
   public void testCommentZipGB18030() throws IOException, ArchiveException {
+    checkFormat("zip");
     try (InArchive archive = openInArchiveFromAsset("comment-gb18030.zip")) {
       assertEquals("我是注释", archive.getArchiveStringProperty(PropID.COMMENT, Charset.forName("GB18030")));
     }
@@ -148,6 +193,7 @@ public class InArchiveTest extends BaseTestCase {
 
   @Test
   public void testCommentZipUTF8() throws IOException, ArchiveException {
+    checkFormat("zip");
     try (InArchive archive = openInArchiveFromAsset("comment-utf-8.zip")) {
       assertEquals("\uFEFF我是注释", archive.getArchiveStringProperty(PropID.COMMENT, Charset.forName("UTF-8")));
     }
@@ -155,6 +201,7 @@ public class InArchiveTest extends BaseTestCase {
 
   @Test
   public void testCommentEntryZipGB18030() throws IOException, ArchiveException {
+    checkFormat("zip");
     try (InArchive archive = openInArchiveFromAsset("comment-entry-gb18030.zip")) {
       assertEquals("我是注释", archive.getEntryStringProperty(0, PropID.COMMENT, Charset.forName("GB18030")));
     }
@@ -162,24 +209,28 @@ public class InArchiveTest extends BaseTestCase {
 
   @Test
   public void testPasswordZip() throws IOException, ArchiveException {
+    checkFormat("zip");
     assertPasswordArchive("password.zip", "123456");
     assertPasswordPathArchive("password.zip", "123456");
   }
 
   @Test
   public void testPassword7z() throws IOException, ArchiveException {
+    checkFormat("7z");
     assertPasswordArchive("password.7z", "123456");
     assertPasswordPathArchive("password.7z", "123456");
   }
 
   @Test
   public void testPasswordRar() throws IOException, ArchiveException {
+    checkFormat("Rar");
     assertPasswordArchive("password.rar", "123456");
     assertPasswordPathArchive("password.rar", "123456");
   }
 
   @Test
   public void testPasswordRar5() throws IOException, ArchiveException {
+    checkFormat("Rar5");
     assertPasswordArchive("password.rar5", "123456");
     assertPasswordPathArchive("password.rar5", "123456");
   }
@@ -197,16 +248,19 @@ public class InArchiveTest extends BaseTestCase {
 
   @Test
   public void testPasswordPath7z() throws IOException, ArchiveException {
+    checkFormat("7z");
     assertPasswordPathArchive("password-path.7z", "123456");
   }
 
   @Test
   public void testPasswordPathRar() throws IOException, ArchiveException {
+    checkFormat("Rar");
     assertPasswordPathArchive("password-path.rar", "123456");
   }
 
   @Test
   public void testPasswordPathRar5() throws IOException, ArchiveException {
+    checkFormat("Rar5");
     assertPasswordPathArchive("password-path.rar5", "123456");
   }
 
@@ -223,16 +277,19 @@ public class InArchiveTest extends BaseTestCase {
 
   @Test
   public void testCreatePasswordException7z() throws IOException, ArchiveException {
+    checkFormat("7z");
     assertCreatePasswordException("password-path.7z", "654321");
   }
 
   @Test
   public void testCreatePasswordExceptionRar() throws IOException, ArchiveException {
+    checkFormat("Rar");
     assertCreatePasswordException("password-path.rar", "654321");
   }
 
   @Test
   public void testCreatePasswordExceptionRar5() throws IOException, ArchiveException {
+    checkFormat("Rar5");
     assertCreatePasswordException("password-path.rar5", "654321");
   }
 
@@ -254,21 +311,25 @@ public class InArchiveTest extends BaseTestCase {
 
   @Test
   public void testExtractPasswordExceptionZip() throws IOException, ArchiveException {
+    checkFormat("zip");
     assertExtractPasswordException("password.zip", "654321");
   }
 
   @Test
   public void testExtractPasswordException7z() throws IOException, ArchiveException {
+    checkFormat("7z");
     assertExtractPasswordException("password.7z", "654321");
   }
 
   @Test
   public void testExtractPasswordExceptionRar() throws IOException, ArchiveException {
+    checkFormat("Rar");
     assertExtractPasswordException("password.rar", "654321");
   }
 
   @Test
   public void testExtractPasswordExceptionRar5() throws IOException, ArchiveException {
+    checkFormat("Rar5");
     assertExtractPasswordException("password.rar5", "654321");
   }
 

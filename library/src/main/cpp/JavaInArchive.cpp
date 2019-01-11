@@ -433,12 +433,11 @@ static JNINativeMethod archive_methods[] = {
       reinterpret_cast<void *>(a7zip_NativeClose) }
 };
 
-static HRESULT RegisterMethods(JNIEnv* env) {
+HRESULT JavaInArchive::RegisterMethods(JNIEnv* env) {
   jclass clazz = env->FindClass("com/hippo/a7zip/InArchive");
   if (clazz == nullptr) return E_CLASS_NOT_FOUND;
 
   jint result = env->RegisterNatives(clazz, archive_methods, std::extent<decltype(archive_methods)>::value);
-  RETURN_E_JAVA_EXCEPTION_IF_EXCEPTION_PENDING(env);
   if (result < 0) {
     return E_FAILED_REGISTER;
   }
@@ -446,7 +445,14 @@ static HRESULT RegisterMethods(JNIEnv* env) {
   return S_OK;
 }
 
-HRESULT JavaInArchive::Initialize(JNIEnv* env) {
-  RETURN_SAME_IF_NOT_ZERO(RegisterMethods(env));
+HRESULT JavaInArchive::UnregisterMethods(JNIEnv *env) {
+  jclass clazz = env->FindClass("com/hippo/a7zip/InArchive");
+  if (clazz == nullptr) return E_CLASS_NOT_FOUND;
+
+  jint result = env->UnregisterNatives(clazz);
+  if (result < 0) {
+    return E_FAILED_UNREGISTER;
+  }
+
   return S_OK;
 }

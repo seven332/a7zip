@@ -14,33 +14,22 @@
  * limitations under the License.
  */
 
-#ifndef __A7ZIP_JAVA_ENV_H__
-#define __A7ZIP_JAVA_ENV_H__
+package com.hippo.a7zip;
 
-#include <jni.h>
+/**
+ * Native library loader.
+ */
+public interface A7ZipLibraryLoader {
 
-namespace a7zip {
-
-class JavaEnv {
-
- public:
-  JavaEnv();
-  ~JavaEnv();
-  bool IsValid();
-  JNIEnv* operator->() const { return env; }
-  explicit operator JNIEnv*() const { return env; }
-
- private:
-  JNIEnv* env;
-  bool should_detach;
-
- public:
-  static void Initialize(JavaVM* jvm);
-
- private:
-  static JavaVM* jvm;
-};
-
+  /**
+   * Loads the native library. Using {@link System#loadLibrary(String)}
+   * directly may cause {@link UnsatisfiedLinkError} on some
+   * devices. Some libraries can fix it,
+   * like <a href="https://github.com/KeepSafe/ReLinker">ReLinker</a>
+   * and <a href="https://github.com/facebook/SoLoader">SoLoader</a>.
+   * The method could be a wrapper.
+   *
+   * @param libname the name of the library
+   */
+  void loadLibrary(String libname);
 }
-
-#endif //__A7ZIP_JAVA_ENV_H__

@@ -19,38 +19,23 @@ package com.hippo.a7zip;
 public class A7Zip {
 
   /**
-   * Initializes A7Zip. This method loads native libraries
-   * with {@link System#loadLibrary(String)} directly.
+   * Load native libraries for A7Zip with {@link System#loadLibrary(String)} directly.
    */
-  public static void initialize() {
-    System.loadLibrary("p7zip");
-    System.loadLibrary("a7zip");
+  public static void loadLibrary(A7ZipLibrary library) {
+    A7ZipLoader.loadLibrary(library, SYSTEM_LIBRARY_LOADER);
   }
 
   /**
-   * Initializes A7Zip. This method loads native libraries
-   * with custom library loader.
+   * Load native libraries for A7Zip with custom library loader.
    */
-  public static void initialize(LibraryLoader loader) {
-    loader.loadLibrary("p7zip");
-    loader.loadLibrary("a7zip");
+  public static void loadLibrary(A7ZipLibrary library, A7ZipLibraryLoader loader) {
+    A7ZipLoader.loadLibrary(library, loader);
   }
 
-  /**
-   * Custom library loader.
-   */
-  public interface LibraryLoader {
-
-    /**
-     * Loads the native library. Using {@link System#loadLibrary(String)}
-     * directly may cause {@link UnsatisfiedLinkError} on some
-     * devices. Some libraries can fix it,
-     * like <a href="https://github.com/KeepSafe/ReLinker">ReLinker</a>
-     * and <a href="https://github.com/facebook/SoLoader">SoLoader</a>.
-     * The method could be a wrapper.
-     *
-     * @param library the name of the library
-     */
-    void loadLibrary(String library);
-  }
+  private static final A7ZipLibraryLoader SYSTEM_LIBRARY_LOADER = new A7ZipLibraryLoader() {
+    @Override
+    public void loadLibrary(String library) {
+      System.loadLibrary(library);
+    }
+  };
 }

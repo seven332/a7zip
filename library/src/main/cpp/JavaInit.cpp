@@ -25,6 +25,20 @@
 
 using namespace a7zip;
 
+#ifdef A7ZIP_EXTRACT
+#ifdef A7ZIP_LITE
+#define SEVEN_ZIP_LIBRARY_NAME "libp7zip-extract-lite.so"
+#else
+#define SEVEN_ZIP_LIBRARY_NAME "libp7zip-extract.so"
+#endif // A7ZIP_LITE
+#else
+#ifdef A7ZIP_LITE
+#define SEVEN_ZIP_LIBRARY_NAME "libp7zip-lite.so"
+#else
+#define SEVEN_ZIP_LIBRARY_NAME "libp7zip-full.so"
+#endif // A7ZIP_LITE
+#endif // A7ZIP_EXTRACT
+
 jint JNI_OnLoad(JavaVM* vm, void*) {
   JNIEnv* env;
 
@@ -33,10 +47,26 @@ jint JNI_OnLoad(JavaVM* vm, void*) {
   }
 
   JavaEnv::Initialize(vm);
-  RETURN_JNI_ERR_IF_NOT_ZERO(JavaInArchive::Initialize(env));
   RETURN_JNI_ERR_IF_NOT_ZERO(InStream::Initialize(env));
   RETURN_JNI_ERR_IF_NOT_ZERO(SequentialOutStream::Initialize(env));
-  RETURN_JNI_ERR_IF_NOT_ZERO(P7Zip::Initialize("libp7zip.so"));
+  RETURN_JNI_ERR_IF_NOT_ZERO(P7Zip::Initialize(SEVEN_ZIP_LIBRARY_NAME));
 
   return JNI_VERSION_1_6;
+}
+
+#define EXPORT __attribute__ ((visibility ("default")))
+
+extern "C" {
+  EXPORT int Initialize();
+  EXPORT int Terminate();
+}
+
+int Initialize() {
+  JavaEnv env;
+  return JavaInArchive::RegisterMethods(static_cast<JNIEnv*>(env));
+}
+
+int Terminate() {
+  JavaEnv env;
+  return JavaInArchive::UnregisterMethods(static_cast<JNIEnv*>(env));
 }
