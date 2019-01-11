@@ -20,7 +20,7 @@
 #include "JavaEnv.h"
 #include "JavaInArchive.h"
 #include "SequentialOutStream.h"
-#include "P7Zip.h"
+#include "SevenZip.h"
 #include "Utils.h"
 
 using namespace a7zip;
@@ -49,7 +49,7 @@ jint JNI_OnLoad(JavaVM* vm, void*) {
   JavaEnv::Initialize(vm);
   RETURN_JNI_ERR_IF_NOT_ZERO(InStream::Initialize(env));
   RETURN_JNI_ERR_IF_NOT_ZERO(SequentialOutStream::Initialize(env));
-  RETURN_JNI_ERR_IF_NOT_ZERO(P7Zip::Initialize(SEVEN_ZIP_LIBRARY_NAME));
+  RETURN_JNI_ERR_IF_NOT_ZERO(SevenZip::Initialize(SEVEN_ZIP_LIBRARY_NAME));
 
   return JNI_VERSION_1_6;
 }

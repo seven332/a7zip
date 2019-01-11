@@ -14,8 +14,8 @@ set(A_SEVEN_ZIP_SOURCES
         src/main/cpp/JavaEnv.cpp
         src/main/cpp/JavaInArchive.cpp
         src/main/cpp/JavaInitA7Zip.cpp
-        src/main/cpp/P7Zip.cpp
         src/main/cpp/SequentialOutStream.cpp
+        src/main/cpp/SevenZip.cpp
 )
 
 set(A_SEVEN_ZIP_FLAGS)

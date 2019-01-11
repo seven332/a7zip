@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "P7Zip.h"
+#include "SevenZip.h"
 
 #include <dlfcn.h>
 
@@ -325,7 +325,7 @@ static HRESULT LoadFormats() {
   return S_OK;
 }
 
-HRESULT P7Zip::Initialize(const char* library_name) {
+HRESULT SevenZip::Initialize(const char* library_name) {
   if (initialized) {
     return S_OK;
   }
@@ -458,7 +458,7 @@ static HRESULT OpenInArchive(
   return E_UNKNOWN_FORMAT;
 }
 
-HRESULT P7Zip::OpenArchive(CMyComPtr<IInStream> in_stream, BSTR password, InArchive** archive) {
+HRESULT SevenZip::OpenArchive(CMyComPtr<IInStream> in_stream, BSTR password, InArchive** archive) {
   CMyComPtr<IInArchive> in_archive = nullptr;
   AString format_name;
 

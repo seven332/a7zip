@@ -29,7 +29,7 @@
 #include "InArchive.h"
 
 namespace a7zip {
-namespace P7Zip {
+namespace SevenZip {
 
 HRESULT Initialize(const char* library_name);
 HRESULT OpenArchive(CMyComPtr<IInStream> stream, BSTR password, InArchive** archive);

@@ -25,7 +25,7 @@
 #include "InStream.h"
 #include "Log.h"
 #include "SequentialOutStream.h"
-#include "P7Zip.h"
+#include "SevenZip.h"
 #include "Utils.h"
 
 #ifdef LOG_TAG
@@ -189,7 +189,7 @@ jlong a7zip_NativeOpen(
   }
 
   InArchive* archive = nullptr;
-  result = P7Zip::OpenArchive(in_stream, bstr_password, &archive);
+  result = SevenZip::OpenArchive(in_stream, bstr_password, &archive);
 
   if (password != nullptr) {
     ::SysFreeString(bstr_password);
