@@ -294,10 +294,10 @@ public class InArchiveTest extends BaseTestCase {
   }
 
   private InArchive openInArchiveFromAsset(String name) throws IOException, ArchiveException {
-    return InArchive.create(new FileInStream(new RandomAccessFile(getAsset(name), "r")));
+    return InArchive.open(new FileInStream(new RandomAccessFile(getAsset(name), "r")));
   }
 
   private InArchive openInArchiveFromAsset(String name, Charset charset, String password) throws IOException, ArchiveException {
-    return InArchive.create(new FileInStream(new RandomAccessFile(getAsset(name), "r")), charset, password);
+    return InArchive.open(new FileInStream(new RandomAccessFile(getAsset(name), "r")), charset, password);
   }
 }

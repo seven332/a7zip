@@ -317,17 +317,17 @@ public class InArchive implements Closeable {
   }
 
   @NonNull
-  public static InArchive create(InStream stream) throws ArchiveException {
-    return create(stream, null, null);
+  public static InArchive open(InStream stream) throws ArchiveException {
+    return open(stream, null, null);
   }
 
   @NonNull
-  public static InArchive create(
+  public static InArchive open(
       InStream stream,
       @Nullable Charset charset,
       @Nullable String password
   ) throws ArchiveException {
-    long nativePtr = nativeCreate(stream, password);
+    long nativePtr = nativeOpen(stream, password);
 
     if (nativePtr == 0) {
       // It should not be 0
@@ -337,7 +337,7 @@ public class InArchive implements Closeable {
     return new InArchive(nativePtr, charset, password);
   }
 
-  private static native long nativeCreate(InStream stream, String password) throws ArchiveException;
+  private static native long nativeOpen(InStream stream, String password) throws ArchiveException;
 
   private static native String nativeGetFormatName(long nativePtr);
 

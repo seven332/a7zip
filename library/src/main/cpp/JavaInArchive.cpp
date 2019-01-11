@@ -163,7 +163,7 @@ static void CopyJStringToBSTR(BSTR bstr, const jchar* jstr, int length) {
   *bstr = 0;
 }
 
-jlong a7zip_NativeCreate(
+jlong a7zip_NativeOpen(
     JNIEnv* env,
     jclass,
     jobject stream,
@@ -386,9 +386,9 @@ void a7zip_NativeClose(
 }
 
 static JNINativeMethod archive_methods[] = {
-    { "nativeCreate",
+    { "nativeOpen",
       "(Lcom/hippo/a7zip/InStream;Ljava/lang/String;)J",
-      reinterpret_cast<void *>(a7zip_NativeCreate) },
+      reinterpret_cast<void *>(a7zip_NativeOpen) },
     { "nativeGetFormatName",
       "(J)Ljava/lang/String;",
       reinterpret_cast<void *>(a7zip_NativeGetFormatName) },
