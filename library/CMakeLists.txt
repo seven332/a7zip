@@ -13,7 +13,7 @@ set(A_SEVEN_ZIP_SOURCES
         src/main/cpp/InStream.cpp
         src/main/cpp/JavaEnv.cpp
         src/main/cpp/JavaInArchive.cpp
-        src/main/cpp/JavaInit.cpp
+        src/main/cpp/JavaInitA7Zip.cpp
         src/main/cpp/P7Zip.cpp
         src/main/cpp/SequentialOutStream.cpp
 )
