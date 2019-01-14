@@ -25,20 +25,6 @@
 
 using namespace a7zip;
 
-#ifdef A7ZIP_EXTRACT
-#ifdef A7ZIP_LITE
-#define SEVEN_ZIP_LIBRARY_NAME "libp7zip-extract-lite.so"
-#else
-#define SEVEN_ZIP_LIBRARY_NAME "libp7zip-extract.so"
-#endif // A7ZIP_LITE
-#else
-#ifdef A7ZIP_LITE
-#define SEVEN_ZIP_LIBRARY_NAME "libp7zip-lite.so"
-#else
-#define SEVEN_ZIP_LIBRARY_NAME "libp7zip-full.so"
-#endif // A7ZIP_LITE
-#endif // A7ZIP_EXTRACT
-
 jint JNI_OnLoad(JavaVM* vm, void*) {
   JNIEnv* env;
 
@@ -49,7 +35,7 @@ jint JNI_OnLoad(JavaVM* vm, void*) {
   JavaEnv::Initialize(vm);
   RETURN_JNI_ERR_IF_NOT_ZERO(InStream::Initialize(env));
   RETURN_JNI_ERR_IF_NOT_ZERO(SequentialOutStream::Initialize(env));
-  RETURN_JNI_ERR_IF_NOT_ZERO(SevenZip::Initialize(SEVEN_ZIP_LIBRARY_NAME));
+  RETURN_JNI_ERR_IF_NOT_ZERO(SevenZip::Initialize());
 
   return JNI_VERSION_1_6;
 }

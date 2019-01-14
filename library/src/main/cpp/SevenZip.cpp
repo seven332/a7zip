@@ -32,9 +32,13 @@
 
 using namespace a7zip;
 
-typedef UInt32 (WINAPI *GetNumberFunc)(UInt32* numMethods);
-typedef UInt32 (WINAPI *GetPropertyFunc)(UInt32 index, PROPID propID, PROPVARIANT* value);
-typedef UInt32 (WINAPI *CreateObjectFunc)(const GUID* clsID, const GUID* iid, void** outObject);
+extern "C" HRESULT GetNumberOfMethods(UINT32 *numCodecs);
+extern "C" HRESULT GetNumberOfFormats(UINT32 *numFormats);
+extern "C" HRESULT GetMethodProperty(UInt32 codecIndex, PROPID propID, PROPVARIANT* value);
+extern "C" HRESULT GetHandlerProperty2(UInt32 formatIndex, PROPID propID, PROPVARIANT* value);
+extern "C" HRESULT CreateObject(const GUID* clsid, const GUID* iid, void** outObject);
+
+typedef HRESULT (*GetPropertyFunc)(UInt32 index, PROPID propID, PROPVARIANT* value);
 
 class Method {
  public:
@@ -68,11 +72,6 @@ class CompressCodecsInfo :
 
 static bool initialized = false;
 static void* handle = nullptr;
-static GetNumberFunc get_number_of_methods = nullptr;
-static GetNumberFunc get_number_of_formats = nullptr;
-static GetPropertyFunc get_method_property = nullptr;
-static GetPropertyFunc get_handler_property = nullptr;
-static CreateObjectFunc create_object = nullptr;
 static CObjectVector<Method> methods;
 static CObjectVector<Format> formats;
 static CompressCodecsInfo compress_codecs_info;
@@ -101,7 +100,7 @@ HRESULT CompressCodecsInfo::GetProperty(UInt32 index, PROPID propID, PROPVARIANT
       return S_OK;
     }
     default: {
-      return get_method_property(index, propID, value);
+      return GetMethodProperty(index, propID, value);
     }
   }
 }
@@ -114,7 +113,7 @@ HRESULT CompressCodecsInfo::CreateDecoder(
   Method& method = methods[index];
 
   if (method.has_decoder) {
-    return create_object(&(method.decoder), interfaceID, coder);
+    return CreateObject(&(method.decoder), interfaceID, coder);
   } else {
     return S_OK;
   }
@@ -128,7 +127,7 @@ HRESULT CompressCodecsInfo::CreateEncoder(
   Method& method = methods[index];
 
   if (method.has_encoder) {
-    return create_object(&(method.encoder), interfaceID, coder);
+    return CreateObject(&(method.encoder), interfaceID, coder);
   } else {
     return S_OK;
   }
@@ -177,30 +176,6 @@ class ArchiveOpenCallback :
   bool has_asked_password;
 };
 
-static HRESULT LoadLibrary(const char *library_name) {
-  if (handle != nullptr) return S_OK;
-
-  handle = dlopen(library_name, RTLD_LAZY | RTLD_LOCAL);
-  if (handle == nullptr) return E_DLOPEN;
-
-  get_number_of_methods = reinterpret_cast<GetNumberFunc>(dlsym(handle, "GetNumberOfMethods"));
-  get_number_of_formats = reinterpret_cast<GetNumberFunc>(dlsym(handle, "GetNumberOfFormats"));
-  get_method_property = reinterpret_cast<GetPropertyFunc>(dlsym(handle, "GetMethodProperty"));
-  get_handler_property = reinterpret_cast<GetPropertyFunc>(dlsym(handle, "GetHandlerProperty2"));
-  create_object = reinterpret_cast<CreateObjectFunc>(dlsym(handle, "CreateObject"));
-  if (get_method_property == nullptr
-      || get_number_of_methods == nullptr
-      || get_number_of_formats == nullptr
-      || get_handler_property == nullptr
-      || create_object == nullptr) {
-    dlclose(handle);
-    handle = nullptr;
-    return E_DLSYM;
-  }
-
-  return JNI_OK;
-}
-
 #define GET_PROP_METHOD(METHOD_NAME, PROP_TYPE, VALUE_TYPE, CONVERTER)         \
 HRESULT METHOD_NAME(                                                           \
     GetPropertyFunc get_property,                                              \
@@ -237,13 +212,13 @@ GET_PROP_METHOD(GetUInt32, UInt32, VT_UI4, value = prop.ulVal);
 static HRESULT LoadMethods() {
   UInt32 method_number = 0;
 
-  RETURN_SAME_IF_NOT_ZERO(get_number_of_methods(&method_number));
+  RETURN_SAME_IF_NOT_ZERO(GetNumberOfMethods(&method_number));
 
   for(UInt32 i = 0; i < method_number; i++) {
     Method& method = methods.AddNew();
 
 #   define GET_PROP(METHOD, PROP, VALUE, ASSIGNED)                              \
-    if (METHOD(get_method_property, i, PROP, VALUE, ASSIGNED) != S_OK) {        \
+    if (METHOD(GetMethodProperty, i, PROP, VALUE, ASSIGNED) != S_OK) {        \
       methods.DeleteBack();                                                     \
       continue;                                                                 \
     }
@@ -282,13 +257,13 @@ static void AppendMultiSignature(
 static HRESULT LoadFormats() {
   UInt32 format_number = 0;
 
-  RETURN_SAME_IF_NOT_ZERO(get_number_of_formats(&format_number));
+  RETURN_SAME_IF_NOT_ZERO(GetNumberOfFormats(&format_number));
 
   for(UInt32 i = 0; i < format_number; i++) {
     Format& format = formats.AddNew();
 
 #   define GET_PROP(METHOD, PROP, VALUE, ASSIGNED)                              \
-    if (METHOD(get_handler_property, i, PROP, VALUE, ASSIGNED) != S_OK) {       \
+    if (METHOD(GetHandlerProperty2, i, PROP, VALUE, ASSIGNED) != S_OK) {        \
       formats.DeleteBack();                                                     \
       continue;                                                                 \
     }
@@ -325,12 +300,11 @@ static HRESULT LoadFormats() {
   return S_OK;
 }
 
-HRESULT SevenZip::Initialize(const char* library_name) {
+HRESULT SevenZip::Initialize() {
   if (initialized) {
     return S_OK;
   }
 
-  RETURN_SAME_IF_NOT_ZERO(LoadLibrary(library_name));
   RETURN_SAME_IF_NOT_ZERO(LoadMethods());
   RETURN_SAME_IF_NOT_ZERO(LoadFormats());
 
@@ -362,7 +336,7 @@ static HRESULT OpenInArchive(
     BSTR password,
     CMyComPtr<IInArchive>& in_archive
 ) {
-  RETURN_SAME_IF_NOT_ZERO(create_object(&class_id, &IID_IInArchive, reinterpret_cast<void **>(&in_archive)));
+  RETURN_SAME_IF_NOT_ZERO(CreateObject(&class_id, &IID_IInArchive, reinterpret_cast<void **>(&in_archive)));
 
   UInt64 newPosition = 0;
   HRESULT result = in_stream->Seek(0, STREAM_SEEK_SET, &newPosition);
