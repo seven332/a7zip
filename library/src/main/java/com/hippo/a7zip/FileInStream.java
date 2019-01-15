@@ -28,11 +28,15 @@ public class FileInStream implements InStream {
 
   private RandomAccessFile file;
 
-  public void FileInStream(File file) throws FileNotFoundException {
-    this.file = new RandomAccessFile(file, "r");
+  public FileInStream(String path) throws FileNotFoundException {
+    this(new File(path));
   }
 
-  public void FileInStream(RandomAccessFile file) {
+  public FileInStream(File file) throws FileNotFoundException {
+    this(new RandomAccessFile(file, "r"));
+  }
+
+  public FileInStream(RandomAccessFile file) {
     this.file = file;
   }
 
