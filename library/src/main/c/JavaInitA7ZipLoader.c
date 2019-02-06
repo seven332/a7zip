@@ -59,7 +59,7 @@ typedef struct {
   TerminateFunc terminate;
 } Library;
 
-jlong A7ZipLoader_NativeLoadLibrary(
+static jlong A7ZipLoader_NativeLoadLibrary(
     JNIEnv* env,
     __unused jclass clazz,
     jstring libname
@@ -114,7 +114,7 @@ jlong A7ZipLoader_NativeLoadLibrary(
   return (jlong) library;
 }
 
-void A7ZipLoader_NativeUnloadLibrary(
+static void A7ZipLoader_NativeUnloadLibrary(
     __unused JNIEnv* env,
     __unused jclass clazz,
     jlong native_ptr
