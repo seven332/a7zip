@@ -102,6 +102,10 @@ static const char* GetMessageForCode(HRESULT code) {
       return "Wrong password";
     case E_NO_PASSWORD:
       return "No password";
+    case E_NOTIMPL:
+      return "Not implemented";
+    case E_OUTOFMEMORY:
+      return "Out of memory";
     case E_UNKNOWN_ERROR:
     default:
       return "Unknown error.";
