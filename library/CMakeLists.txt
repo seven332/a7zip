@@ -19,7 +19,7 @@ set(A_SEVEN_ZIP_SOURCES
         src/main/cpp/SevenZip.cpp
 )
 
-set(A_SEVEN_ZIP_FLAGS)
+set(A_SEVEN_ZIP_FLAGS -fvisibility=hidden)
 if(EXTRACT)
     set(A_SEVEN_ZIP_FLAGS ${A_SEVEN_ZIP_FLAGS} -DA7ZIP_EXTRACT)
 endif()
