@@ -266,12 +266,27 @@ public class InArchive implements Closeable {
   }
 
   /**
+   * Returns the stream of the entry. Only a few archive formats support it.
+   *
+   * @param index the index of the entry
+   * @return the stream of the entry
+   * @throws ArchiveException if the archive format doesn't support the operation or get error
+   * @see #extractEntry(int, SequentialOutStream)
+   * @see #extractEntry(int, String, SequentialOutStream)
+   */
+  @NonNull
+  public SequentialInStream getEntryStream(int index) throws ArchiveException {
+    return nativeGetEntryStream(nativePtr, index);
+  }
+
+  /**
    * Extracts the context of the entry into the output stream.
    *
    * @param index the index of the entry
    * @param os the output steam to receive the content,
    *           it will be closed at the end of this method
    * @throws ArchiveException if get error
+   * @see #getEntryStream(int)
    */
   public void extractEntry(int index, @NonNull SequentialOutStream os) throws ArchiveException {
     extractEntry(index, password, os);
@@ -363,6 +378,9 @@ public class InArchive implements Closeable {
 
   @Nullable
   private static native String nativeGetEntryStringProperty(long nativePtr, int index, int propID);
+
+  @NonNull
+  private static native SequentialInStream nativeGetEntryStream(long nativePtr, int index) throws ArchiveException;
 
   private static native void nativeExtractEntry(long nativePtr, int index, String password, SequentialOutStream os) throws ArchiveException;
 

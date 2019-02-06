@@ -15,6 +15,8 @@ set(A_SEVEN_ZIP_SOURCES
         src/main/cpp/JavaHelper.cpp
         src/main/cpp/JavaInArchive.cpp
         src/main/cpp/JavaInitA7Zip.cpp
+        src/main/cpp/JavaInStream.cpp
+        src/main/cpp/JavaSequentialInStream.cpp
         src/main/cpp/SequentialOutStream.cpp
         src/main/cpp/SevenZip.cpp
 )

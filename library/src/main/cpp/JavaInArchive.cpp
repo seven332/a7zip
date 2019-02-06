@@ -24,6 +24,8 @@
 
 #include "InStream.h"
 #include "JavaHelper.h"
+#include "JavaInStream.h"
+#include "JavaSequentialInStream.h"
 #include "Log.h"
 #include "SequentialOutStream.h"
 #include "SevenZip.h"
@@ -207,6 +209,53 @@ GET_ENTRY_PROPERTY_START(NativeGetEntryStringProperty, jstring)
   GET_STRING_PROPERTY(archive->GetEntryStringProperty(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &str_prop))
 GET_ENTRY_PROPERTY_END
 
+static jobject NativeGetEntryStream(
+    JNIEnv* env,
+    jclass,
+    jlong native_ptr,
+    jint index
+) {
+  CHECK_CLOSED_RET(env, nullptr, native_ptr);
+  InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
+
+  CMyComPtr<ISequentialInStream> sequential_in_stream = nullptr;
+  HRESULT result = archive->GetEntryStream(static_cast<UInt32>(index), &sequential_in_stream);
+  if (result != S_OK || sequential_in_stream == nullptr) {
+    if (sequential_in_stream != nullptr) {
+      // Release the stream manually before throw java exception
+      sequential_in_stream.Release();
+    }
+    THROW_ARCHIVE_EXCEPTION_RET(env, nullptr, result);
+  }
+
+  // Try to get IInStream
+  CMyComPtr<IInStream> in_stream = nullptr;
+  sequential_in_stream.QueryInterface(IID_IInStream, &in_stream);
+
+  if (in_stream != nullptr) {
+    // It's an IInStream
+    jobject object = nullptr;
+    result = JavaInStream::NewInstance(env, in_stream, &object);
+    if (object == nullptr) {
+      // Release the stream manually before throw java exception
+      in_stream->Release();
+      sequential_in_stream->Release();
+      THROW_ARCHIVE_EXCEPTION_RET(env, nullptr, result);
+    }
+    return object;
+  } else {
+    // It's just an ISequentialInStream
+    jobject object = nullptr;
+    result = JavaSequentialInStream::NewInstance(env, sequential_in_stream, &object);
+    if (object == nullptr) {
+      // Release the stream manually before throw java exception
+      sequential_in_stream->Release();
+      THROW_ARCHIVE_EXCEPTION_RET(env, nullptr, result);
+    }
+    return object;
+  }
+}
+
 static void NativeExtractEntry(
     JNIEnv* env,
     jclass,
@@ -303,6 +352,9 @@ static JNINativeMethod archive_methods[] = {
     { "nativeGetEntryStringProperty",
       "(JII)Ljava/lang/String;",
       reinterpret_cast<void *>(NativeGetEntryStringProperty) },
+    { "nativeGetEntryStream",
+      "(JI)Lcom/hippo/a7zip/SequentialInStream;",
+      reinterpret_cast<void *>(NativeGetEntryStream) },
     { "nativeExtractEntry",
       "(JILjava/lang/String;Lcom/hippo/a7zip/SequentialOutStream;)V",
       reinterpret_cast<void *>(NativeExtractEntry) },

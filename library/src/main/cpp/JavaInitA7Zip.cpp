@@ -19,6 +19,8 @@
 #include "InStream.h"
 #include "JavaEnv.h"
 #include "JavaInArchive.h"
+#include "JavaInStream.h"
+#include "JavaSequentialInStream.h"
 #include "SequentialOutStream.h"
 #include "SevenZip.h"
 #include "Utils.h"
@@ -34,6 +36,8 @@ jint JNI_OnLoad(JavaVM* vm, void*) {
 
   JavaEnv::Initialize(vm);
   RETURN_JNI_ERR_IF_NOT_ZERO(InStream::Initialize(env));
+  RETURN_JNI_ERR_IF_NOT_ZERO(JavaInStream::Initialize(env));
+  RETURN_JNI_ERR_IF_NOT_ZERO(JavaSequentialInStream::Initialize(env));
   RETURN_JNI_ERR_IF_NOT_ZERO(SequentialOutStream::Initialize(env));
   RETURN_JNI_ERR_IF_NOT_ZERO(SevenZip::Initialize());
 
@@ -49,10 +53,16 @@ extern "C" {
 
 int Initialize() {
   JavaEnv env;
-  return JavaInArchive::RegisterMethods(static_cast<JNIEnv*>(env));
+  RETURN_SAME_IF_NOT_ZERO(JavaInArchive::RegisterMethods(static_cast<JNIEnv*>(env)));
+  RETURN_SAME_IF_NOT_ZERO(JavaInStream::RegisterMethods(static_cast<JNIEnv*>(env)));
+  RETURN_SAME_IF_NOT_ZERO(JavaSequentialInStream::RegisterMethods(static_cast<JNIEnv*>(env)));
+  return S_OK;
 }
 
 int Terminate() {
   JavaEnv env;
-  return JavaInArchive::UnregisterMethods(static_cast<JNIEnv*>(env));
+  RETURN_SAME_IF_NOT_ZERO(JavaInArchive::UnregisterMethods(static_cast<JNIEnv*>(env)));
+  RETURN_SAME_IF_NOT_ZERO(JavaInStream::UnregisterMethods(static_cast<JNIEnv*>(env)));
+  RETURN_SAME_IF_NOT_ZERO(JavaSequentialInStream::UnregisterMethods(static_cast<JNIEnv*>(env)));
+  return S_OK;
 }

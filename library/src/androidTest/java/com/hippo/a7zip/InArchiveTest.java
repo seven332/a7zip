@@ -21,11 +21,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -38,8 +41,18 @@ public class InArchiveTest extends BaseTestCase {
   @Parameterized.Parameters(name = "{0}")
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {
-        { "Extract", A7ZipExtract.LIBRARY, new String[] { "7z", "Rar", "Rar5", "zip", "tar", "wim" } },
-        { "Extract-Lite", A7ZipExtractLite.LIBRARY, new String[] { "7z", "Rar", "Rar5", "zip" } },
+        {
+            "Extract",
+            A7ZipExtract.LIBRARY,
+            new String[] { "7z", "Rar", "Rar5", "zip", "tar", "wim", "Cpio" },
+            new String[] { "tar", "Cpio" }
+        },
+        {
+            "Extract-Lite",
+            A7ZipExtractLite.LIBRARY,
+            new String[] { "7z", "Rar", "Rar5", "zip" },
+            new String[] { }
+        },
     });
   }
 
@@ -47,14 +60,17 @@ public class InArchiveTest extends BaseTestCase {
   public ExpectedException thrown = ExpectedException.none();
 
   private List<String> supportedFormats;
+  private List<String> supportedGetStreamFormats;
 
   public InArchiveTest(
       @SuppressWarnings("unused") String name,
       A7ZipLibrary library,
-      String[] supportedFormats
+      String[] supportedFormats,
+      String[] supportedGetStreamFormats
   ) {
     A7Zip.loadLibrary(library, new ReLinkerLibraryLoader());
     this.supportedFormats = Arrays.asList(supportedFormats);
+    this.supportedGetStreamFormats = Arrays.asList(supportedGetStreamFormats);
   }
 
   private void checkFormat(String format) {
@@ -100,6 +116,12 @@ public class InArchiveTest extends BaseTestCase {
     testArchive("archive.wim", "wim");
   }
 
+  @Test
+  public void testCpio() throws IOException, ArchiveException {
+    checkFormat("Cpio");
+    testArchive("archive.cpio", "Cpio");
+  }
+
   private void testArchive(String name, String format) throws IOException, ArchiveException {
     try (InArchive archive = openInArchiveFromAsset(name)) {
       int size = archive.getNumberOfEntries();
@@ -128,19 +150,50 @@ public class InArchiveTest extends BaseTestCase {
           assertTrue(archive.getEntryBooleanProperty(i, PropID.IS_DIR));
           continue;
         }
-        ByteArrayOutStream os = new ByteArrayOutStream();
-        archive.extractEntry(i, os);
-        String content = os.toString("UTF-8");
-        switch (path) {
-          case "dump.txt":
-          case "folder/dump.txt":
-            assertEquals("dump", content);
-            break;
-          default:
-            assertEquals("", content);
-            break;
+
+        String content1 = getContentByExtractingEntry(archive, i);
+        assertContent(path, content1);
+
+        if (supportedGetStreamFormats.contains(format)) {
+          String content2 = getContentByGettingEntryStream(archive, i);
+          assertContent(path, content2);
+        } else {
+          try {
+            archive.getEntryStream(i);
+            fail();
+          } catch (ArchiveException e) {
+            assertEquals(e.getMessage(), "Not implemented");
+          }
         }
       }
+    }
+  }
+
+  private static String getContentByExtractingEntry(InArchive archive, int index)
+      throws ArchiveException, UnsupportedEncodingException {
+    ByteArrayOutStream os = new ByteArrayOutStream();
+    archive.extractEntry(index, os);
+    return os.toString("UTF-8");
+  }
+
+  private static String getContentByGettingEntryStream(InArchive archive, int index)
+      throws IOException, ArchiveException {
+    SequentialInStream stream = archive.getEntryStream(index);
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    IOUtils.copy(new SequentialInputStream(stream), os);
+    stream.close();
+    return os.toString("UTF-8");
+  }
+
+  private static void assertContent(String path, String content) {
+    switch (path) {
+      case "dump.txt":
+      case "folder/dump.txt":
+        assertEquals("dump", content);
+        break;
+      default:
+        assertEquals("", content);
+        break;
     }
   }
 

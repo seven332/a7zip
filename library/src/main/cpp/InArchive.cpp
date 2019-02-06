@@ -36,7 +36,7 @@ class ArchiveExtractCallback :
   ~ArchiveExtractCallback();
 
  public:
-  MY_UNKNOWN_IMP1(ICryptoGetTextPassword)
+  MY_UNKNOWN_IMP2(IArchiveExtractCallback, ICryptoGetTextPassword)
 
   STDMETHOD(SetTotal)(UInt64 total);
   STDMETHOD(SetCompleted)(const UInt64 *completeValue);
@@ -330,6 +330,17 @@ GET_ARCHIVE_PROPERTY_END
 GET_ENTRY_PROPERTY_START(GetEntryStringProperty, BSTR*)
   GET_STRING_PROPERTY
 GET_ENTRY_PROPERTY_END
+
+HRESULT InArchive::GetEntryStream(UInt32 index, ISequentialInStream** stream) {
+  *stream = nullptr;
+  CMyComPtr<IInArchiveGetStream> in_archive_get_stream;
+  in_archive->QueryInterface(IID_IInArchiveGetStream, reinterpret_cast<void **>(&in_archive_get_stream));
+  if (in_archive_get_stream != nullptr) {
+    return in_archive_get_stream->GetStream(index, stream);
+  } else {
+    return E_NOTIMPL;
+  }
+}
 
 HRESULT InArchive::ExtractEntry(UInt32 index, BSTR password, CMyComPtr<ISequentialOutStream> out_stream) {
   CMyComPtr<ArchiveExtractCallback> callback(new ArchiveExtractCallback(index, password, out_stream));

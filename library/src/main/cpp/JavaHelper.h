@@ -22,6 +22,7 @@
 #include <Common/MyWindows.h>
 
 #define CLASS_NAME_ILLEGAL_STATE_EXCEPTION "java/lang/IllegalStateException"
+#define CLASS_NAME_IO_EXCEPTION "java/io/IOException"
 #define CLASS_NAME_ARCHIVE_EXCEPTION "com/hippo/a7zip/ArchiveException"
 #define CLASS_NAME_PASSWORD_EXCEPTION "com/hippo/a7zip/PasswordException"
 
@@ -36,6 +37,12 @@
     a7zip::JavaHelper::ThrowException((ENV), (EXCEPTION_NAME), __VA_ARGS__);    \
     return (RET);                                                               \
   } while (0)
+
+#define THROW_IO_EXCEPTION(ENV, CODE)                                           \
+  THROW_EXCEPTION(ENV, CLASS_NAME_IO_EXCEPTION, CODE)
+
+#define THROW_IO_EXCEPTION_RET(ENV, RET, CODE)                                  \
+  THROW_EXCEPTION_RET(ENV, RET, CLASS_NAME_IO_EXCEPTION, CODE)
 
 #define THROW_ARCHIVE_EXCEPTION(ENV, CODE)                                      \
   do {                                                                          \
