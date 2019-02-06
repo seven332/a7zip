@@ -21,6 +21,55 @@
 
 #include <Common/MyWindows.h>
 
+#define CLASS_NAME_ILLEGAL_STATE_EXCEPTION "java/lang/IllegalStateException"
+#define CLASS_NAME_ARCHIVE_EXCEPTION "com/hippo/a7zip/ArchiveException"
+#define CLASS_NAME_PASSWORD_EXCEPTION "com/hippo/a7zip/PasswordException"
+
+#define THROW_EXCEPTION(ENV, EXCEPTION_NAME, ...)                               \
+  do {                                                                          \
+    a7zip::JavaHelper::ThrowException((ENV), (EXCEPTION_NAME), __VA_ARGS__);    \
+    return;                                                                     \
+  } while (0)
+
+#define THROW_EXCEPTION_RET(ENV, RET, EXCEPTION_NAME, ...)                      \
+  do {                                                                          \
+    a7zip::JavaHelper::ThrowException((ENV), (EXCEPTION_NAME), __VA_ARGS__);    \
+    return (RET);                                                               \
+  } while (0)
+
+#define THROW_ARCHIVE_EXCEPTION(ENV, CODE)                                      \
+  do {                                                                          \
+    if ((CODE) == E_NO_PASSWORD || (CODE) == E_WRONG_PASSWORD) {                \
+      THROW_EXCEPTION(ENV, CLASS_NAME_PASSWORD_EXCEPTION, CODE);                \
+    } else {                                                                    \
+      THROW_EXCEPTION(ENV, CLASS_NAME_ARCHIVE_EXCEPTION, CODE);                 \
+    }                                                                           \
+  } while (0)
+
+#define THROW_ARCHIVE_EXCEPTION_RET(ENV, RET, CODE)                             \
+  do {                                                                          \
+    if ((CODE) == E_NO_PASSWORD || (CODE) == E_WRONG_PASSWORD) {                \
+      THROW_EXCEPTION_RET(ENV, RET, CLASS_NAME_PASSWORD_EXCEPTION, CODE);       \
+    } else {                                                                    \
+      THROW_EXCEPTION_RET(ENV, RET, CLASS_NAME_ARCHIVE_EXCEPTION, CODE);        \
+    }                                                                           \
+  } while (0)
+
+#define CHECK_CLOSED(ENV, NATIVE_PTR)                                           \
+  do {                                                                          \
+    if ((NATIVE_PTR) == 0) {                                                    \
+      THROW_EXCEPTION(ENV, CLASS_NAME_ILLEGAL_STATE_EXCEPTION, "It's closed");  \
+    }                                                                           \
+  } while (0)
+
+#define CHECK_CLOSED_RET(ENV, RET, NATIVE_PTR)                                  \
+  do {                                                                          \
+    if ((NATIVE_PTR) == 0) {                                                    \
+      THROW_EXCEPTION_RET(                                                      \
+          ENV, RET, CLASS_NAME_ILLEGAL_STATE_EXCEPTION, "It's closed");         \
+    }                                                                           \
+  } while (0)
+
 namespace a7zip {
 namespace JavaHelper {
 

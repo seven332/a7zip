@@ -36,44 +36,6 @@
 
 using namespace a7zip;
 
-#define THROW_ARCHIVE_EXCEPTION_RETURN(ENV, CODE)                                         \
-  do {                                                                                    \
-    if ((CODE) == E_NO_PASSWORD || (CODE) == E_WRONG_PASSWORD) {                          \
-      JavaHelper::ThrowException(ENV, "com/hippo/a7zip/PasswordException", (CODE));       \
-    } else {                                                                              \
-      JavaHelper::ThrowException(ENV, "com/hippo/a7zip/ArchiveException", (CODE));        \
-    }                                                                                     \
-    return;                                                                               \
-  } while (0)
-
-#define THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(ENV, CODE, VALUE)                            \
-  do {                                                                                    \
-    if ((CODE) == E_NO_PASSWORD || (CODE) == E_WRONG_PASSWORD) {                          \
-      JavaHelper::ThrowException(ENV, "com/hippo/a7zip/PasswordException", (CODE));       \
-    } else {                                                                              \
-      JavaHelper::ThrowException(ENV, "com/hippo/a7zip/ArchiveException", (CODE));        \
-    }                                                                                     \
-    return VALUE;                                                                         \
-  } while (0)
-
-#define CHECK_CLOSED_RETURN(ENV, NATIVE_PTR)                                              \
-  do {                                                                                    \
-    if ((NATIVE_PTR) == 0) {                                                              \
-      JavaHelper::ThrowException(                                                         \
-          ENV, "java/lang/IllegalStateException", "This Archive is closed.");             \
-      return;                                                                             \
-    }                                                                                     \
-  } while (0)
-
-#define CHECK_CLOSED_RETURN_VALUE(ENV, NATIVE_PTR, VALUE)                                 \
-  do {                                                                                    \
-    if ((NATIVE_PTR) == 0) {                                                              \
-      JavaHelper::ThrowException(                                                         \
-          ENV, "java/lang/IllegalStateException", "This Archive is closed.");             \
-      return VALUE;                                                                       \
-    }                                                                                     \
-  } while (0)
-
 static void CopyJStringToBSTR(BSTR bstr, const jchar* jstr, int length) {
   for (int i = 0; i < length; i++) {
     *bstr++ = *jstr++;
@@ -94,7 +56,7 @@ jlong a7zip_NativeOpen(
     if (in_stream != nullptr) {
       in_stream.Release();
     }
-    THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, result, 0);
+    THROW_ARCHIVE_EXCEPTION_RET(env, 0, result);
   }
 
   const jchar* j_password = nullptr;
@@ -117,10 +79,8 @@ jlong a7zip_NativeOpen(
   if (result != S_OK || archive == nullptr) {
     // Call java methods before throw exception
     in_stream.Release();
-    if (archive != nullptr) {
-      delete archive;
-    }
-    THROW_ARCHIVE_EXCEPTION_RETURN_VALUE(env, result, 0);
+    delete archive;
+    THROW_ARCHIVE_EXCEPTION_RET(env, 0, result);
   }
 
   return reinterpret_cast<jlong>(archive);
@@ -131,7 +91,7 @@ jstring a7zip_NativeGetFormatName(
     jclass,
     jlong native_ptr
 ) {
-  CHECK_CLOSED_RETURN_VALUE(env, native_ptr, nullptr);
+  CHECK_CLOSED_RET(env, nullptr, native_ptr);
   InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
   return env->NewStringUTF(archive->GetFormatName());
 }
@@ -141,7 +101,7 @@ jint a7zip_NativeGetNumberOfEntries(
     jclass,
     jlong native_ptr
 ) {
-  CHECK_CLOSED_RETURN_VALUE(env, native_ptr, 0);
+  CHECK_CLOSED_RET(env, 0, native_ptr);
   InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
 
   UInt32 number = 0;
@@ -151,7 +111,7 @@ jint a7zip_NativeGetNumberOfEntries(
 
 #define GET_ARCHIVE_PROPERTY_START(METHOD_NAME, RETURN_TYPE)                              \
 RETURN_TYPE METHOD_NAME(JNIEnv* env, jclass, jlong native_ptr, jint prop_id) {            \
-  CHECK_CLOSED_RETURN_VALUE(env, native_ptr, 0);                                          \
+  CHECK_CLOSED_RET(env, 0, native_ptr);                                                   \
   InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
 
 #define GET_ARCHIVE_PROPERTY_END                                                          \
@@ -159,7 +119,7 @@ RETURN_TYPE METHOD_NAME(JNIEnv* env, jclass, jlong native_ptr, jint prop_id) {  
 
 #define GET_ENTRY_PROPERTY_START(METHOD_NAME, RETURN_TYPE)                                \
 RETURN_TYPE METHOD_NAME(JNIEnv* env, jclass, jlong native_ptr, jint index, jint prop_id) {\
-  CHECK_CLOSED_RETURN_VALUE(env, native_ptr, 0);                                          \
+  CHECK_CLOSED_RET(env, 0, native_ptr);                                                   \
   InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
 
 #define GET_ENTRY_PROPERTY_END                                                            \
@@ -255,7 +215,7 @@ void a7zip_NativeExtractEntry(
     jstring password,
     jobject stream
 ) {
-  CHECK_CLOSED_RETURN(env, native_ptr);
+  CHECK_CLOSED(env, native_ptr);
   InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
 
   CMyComPtr<ISequentialOutStream> out_stream = nullptr;
@@ -267,7 +227,7 @@ void a7zip_NativeExtractEntry(
     } else {
       // Let java code closes the OutStream
     }
-    THROW_ARCHIVE_EXCEPTION_RETURN(env, result);
+    THROW_ARCHIVE_EXCEPTION(env, result);
   }
 
   const jchar* j_password = nullptr;
@@ -289,7 +249,7 @@ void a7zip_NativeExtractEntry(
   if (result != S_OK) {
     // Call java methods before throw exception
     out_stream.Release();
-    THROW_ARCHIVE_EXCEPTION_RETURN(env, result);
+    THROW_ARCHIVE_EXCEPTION(env, result);
   }
 }
 
@@ -298,7 +258,7 @@ void a7zip_NativeClose(
     jclass,
     jlong native_ptr
 ) {
-  CHECK_CLOSED_RETURN(env, native_ptr);
+  CHECK_CLOSED(env, native_ptr);
   InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
   delete archive;
 }
