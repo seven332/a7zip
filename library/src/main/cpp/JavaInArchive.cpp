@@ -43,7 +43,7 @@ static void CopyJStringToBSTR(BSTR bstr, const jchar* jstr, int length) {
   *bstr = 0;
 }
 
-jlong a7zip_NativeOpen(
+static jlong NativeOpen(
     JNIEnv* env,
     jclass,
     jobject stream,
@@ -86,7 +86,7 @@ jlong a7zip_NativeOpen(
   return reinterpret_cast<jlong>(archive);
 }
 
-jstring a7zip_NativeGetFormatName(
+static jstring NativeGetFormatName(
     JNIEnv* env,
     jclass,
     jlong native_ptr
@@ -96,7 +96,7 @@ jstring a7zip_NativeGetFormatName(
   return env->NewStringUTF(archive->GetFormatName());
 }
 
-jint a7zip_NativeGetNumberOfEntries(
+static jint NativeGetNumberOfEntries(
     JNIEnv* env,
     jclass,
     jlong native_ptr
@@ -110,7 +110,7 @@ jint a7zip_NativeGetNumberOfEntries(
 }
 
 #define GET_ARCHIVE_PROPERTY_START(METHOD_NAME, RETURN_TYPE)                              \
-RETURN_TYPE METHOD_NAME(JNIEnv* env, jclass, jlong native_ptr, jint prop_id) {            \
+static RETURN_TYPE METHOD_NAME(JNIEnv* env, jclass, jlong native_ptr, jint prop_id) {     \
   CHECK_CLOSED_RET(env, 0, native_ptr);                                                   \
   InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
 
@@ -118,7 +118,7 @@ RETURN_TYPE METHOD_NAME(JNIEnv* env, jclass, jlong native_ptr, jint prop_id) {  
 }
 
 #define GET_ENTRY_PROPERTY_START(METHOD_NAME, RETURN_TYPE)                                \
-RETURN_TYPE METHOD_NAME(JNIEnv* env, jclass, jlong native_ptr, jint index, jint prop_id) {\
+static RETURN_TYPE METHOD_NAME(JNIEnv* env, jclass, jlong native_ptr, jint index, jint prop_id) {\
   CHECK_CLOSED_RET(env, 0, native_ptr);                                                   \
   InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
 
@@ -130,11 +130,11 @@ RETURN_TYPE METHOD_NAME(JNIEnv* env, jclass, jlong native_ptr, jint index, jint 
   HRESULT result = (GETTER);                                                              \
   return result == S_OK ? prop_type : PT_UNKNOWN;
 
-GET_ARCHIVE_PROPERTY_START(a7zip_NativeGetArchivePropertyType, jint)
+GET_ARCHIVE_PROPERTY_START(NativeGetArchivePropertyType, jint)
   GET_PROPERTY_TYPE(archive->GetArchivePropertyType(static_cast<PROPID>(prop_id), &prop_type))
 GET_ARCHIVE_PROPERTY_END
 
-GET_ENTRY_PROPERTY_START(a7zip_NativeGetEntryPropertyType, jint)
+GET_ENTRY_PROPERTY_START(NativeGetEntryPropertyType, jint)
   GET_PROPERTY_TYPE(archive->GetEntryPropertyType(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &prop_type))
 GET_ENTRY_PROPERTY_END
 
@@ -143,11 +143,11 @@ GET_ENTRY_PROPERTY_END
   HRESULT result = (GETTER);                                                              \
   return result == S_OK ? bool_prop : false;
 
-GET_ARCHIVE_PROPERTY_START(a7zip_NativeGetArchiveBooleanProperty, jboolean)
+GET_ARCHIVE_PROPERTY_START(NativeGetArchiveBooleanProperty, jboolean)
   GET_BOOL_TYPE(archive->GetArchiveBooleanProperty(static_cast<PROPID>(prop_id), &bool_prop))
 GET_ARCHIVE_PROPERTY_END
 
-GET_ENTRY_PROPERTY_START(a7zip_NativeGetEntryBooleanProperty, jboolean)
+GET_ENTRY_PROPERTY_START(NativeGetEntryBooleanProperty, jboolean)
   GET_BOOL_TYPE(archive->GetEntryBooleanProperty(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &bool_prop))
 GET_ENTRY_PROPERTY_END
 
@@ -156,11 +156,11 @@ GET_ENTRY_PROPERTY_END
   HRESULT result = (GETTER);                                                              \
   return result == S_OK ? int_prop : 0;
 
-GET_ARCHIVE_PROPERTY_START(a7zip_NativeGetArchiveIntProperty, jint)
+GET_ARCHIVE_PROPERTY_START(NativeGetArchiveIntProperty, jint)
   GET_INT_TYPE(archive->GetArchiveIntProperty(static_cast<PROPID>(prop_id), &int_prop))
 GET_ARCHIVE_PROPERTY_END
 
-GET_ENTRY_PROPERTY_START(a7zip_NativeGetEntryIntProperty, jint)
+GET_ENTRY_PROPERTY_START(NativeGetEntryIntProperty, jint)
   GET_INT_TYPE(archive->GetEntryIntProperty(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &int_prop))
 GET_ENTRY_PROPERTY_END
 
@@ -169,11 +169,11 @@ GET_ENTRY_PROPERTY_END
   HRESULT result = (GETTER);                                                              \
   return result == S_OK ? long_prop : 0;
 
-GET_ARCHIVE_PROPERTY_START(a7zip_NativeGetArchiveLongProperty, jlong)
+GET_ARCHIVE_PROPERTY_START(NativeGetArchiveLongProperty, jlong)
   GET_LONG_TYPE(archive->GetArchiveLongProperty(static_cast<PROPID>(prop_id), &long_prop))
 GET_ARCHIVE_PROPERTY_END
 
-GET_ENTRY_PROPERTY_START(a7zip_NativeGetEntryLongProperty, jlong)
+GET_ENTRY_PROPERTY_START(NativeGetEntryLongProperty, jlong)
   GET_LONG_TYPE(archive->GetEntryLongProperty(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &long_prop))
 GET_ENTRY_PROPERTY_END
 
@@ -199,15 +199,15 @@ static void shrink(BSTR bstr) {
   ::SysFreeString(str_prop);                                                              \
   return jstr;
 
-GET_ARCHIVE_PROPERTY_START(a7zip_NativeGetArchiveStringProperty, jstring)
+GET_ARCHIVE_PROPERTY_START(NativeGetArchiveStringProperty, jstring)
   GET_STRING_PROPERTY(archive->GetArchiveStringProperty(static_cast<PROPID>(prop_id), &str_prop))
 GET_ARCHIVE_PROPERTY_END
 
-GET_ENTRY_PROPERTY_START(a7zip_NativeGetEntryStringProperty, jstring)
+GET_ENTRY_PROPERTY_START(NativeGetEntryStringProperty, jstring)
   GET_STRING_PROPERTY(archive->GetEntryStringProperty(static_cast<UInt32>(index), static_cast<PROPID>(prop_id), &str_prop))
 GET_ENTRY_PROPERTY_END
 
-void a7zip_NativeExtractEntry(
+static void NativeExtractEntry(
     JNIEnv* env,
     jclass,
     jlong native_ptr,
@@ -253,7 +253,7 @@ void a7zip_NativeExtractEntry(
   }
 }
 
-void a7zip_NativeClose(
+static void NativeClose(
     JNIEnv* env,
     jclass,
     jlong native_ptr
@@ -266,49 +266,49 @@ void a7zip_NativeClose(
 static JNINativeMethod archive_methods[] = {
     { "nativeOpen",
       "(Lcom/hippo/a7zip/InStream;Ljava/lang/String;)J",
-      reinterpret_cast<void *>(a7zip_NativeOpen) },
+      reinterpret_cast<void *>(NativeOpen) },
     { "nativeGetFormatName",
       "(J)Ljava/lang/String;",
-      reinterpret_cast<void *>(a7zip_NativeGetFormatName) },
+      reinterpret_cast<void *>(NativeGetFormatName) },
     { "nativeGetNumberOfEntries",
       "(J)I",
-      reinterpret_cast<void *>(a7zip_NativeGetNumberOfEntries) },
+      reinterpret_cast<void *>(NativeGetNumberOfEntries) },
     { "nativeGetArchivePropertyType",
       "(JI)I",
-      reinterpret_cast<void *>(a7zip_NativeGetArchivePropertyType) },
+      reinterpret_cast<void *>(NativeGetArchivePropertyType) },
     { "nativeGetArchiveBooleanProperty",
       "(JI)Z",
-      reinterpret_cast<void *>(a7zip_NativeGetArchiveBooleanProperty) },
+      reinterpret_cast<void *>(NativeGetArchiveBooleanProperty) },
     { "nativeGetArchiveIntProperty",
       "(JI)I",
-      reinterpret_cast<void *>(a7zip_NativeGetArchiveIntProperty) },
+      reinterpret_cast<void *>(NativeGetArchiveIntProperty) },
     { "nativeGetArchiveLongProperty",
       "(JI)J",
-      reinterpret_cast<void *>(a7zip_NativeGetArchiveLongProperty) },
+      reinterpret_cast<void *>(NativeGetArchiveLongProperty) },
     { "nativeGetArchiveStringProperty",
       "(JI)Ljava/lang/String;",
-      reinterpret_cast<void *>(a7zip_NativeGetArchiveStringProperty) },
+      reinterpret_cast<void *>(NativeGetArchiveStringProperty) },
     { "nativeGetEntryPropertyType",
       "(JII)I",
-      reinterpret_cast<void *>(a7zip_NativeGetEntryPropertyType) },
+      reinterpret_cast<void *>(NativeGetEntryPropertyType) },
     { "nativeGetEntryBooleanProperty",
       "(JII)Z",
-      reinterpret_cast<void *>(a7zip_NativeGetEntryBooleanProperty) },
+      reinterpret_cast<void *>(NativeGetEntryBooleanProperty) },
     { "nativeGetEntryIntProperty",
       "(JII)I",
-      reinterpret_cast<void *>(a7zip_NativeGetEntryIntProperty) },
+      reinterpret_cast<void *>(NativeGetEntryIntProperty) },
     { "nativeGetEntryLongProperty",
       "(JII)J",
-      reinterpret_cast<void *>(a7zip_NativeGetEntryLongProperty) },
+      reinterpret_cast<void *>(NativeGetEntryLongProperty) },
     { "nativeGetEntryStringProperty",
       "(JII)Ljava/lang/String;",
-      reinterpret_cast<void *>(a7zip_NativeGetEntryStringProperty) },
+      reinterpret_cast<void *>(NativeGetEntryStringProperty) },
     { "nativeExtractEntry",
       "(JILjava/lang/String;Lcom/hippo/a7zip/SequentialOutStream;)V",
-      reinterpret_cast<void *>(a7zip_NativeExtractEntry) },
+      reinterpret_cast<void *>(NativeExtractEntry) },
     { "nativeClose",
       "(J)V",
-      reinterpret_cast<void *>(a7zip_NativeClose) }
+      reinterpret_cast<void *>(NativeClose) }
 };
 
 HRESULT JavaInArchive::RegisterMethods(JNIEnv* env) {
