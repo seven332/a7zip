@@ -73,8 +73,8 @@ static jlong NativeSize(
   } else {
     // It's not an IStreamGetSize
     // Backup current position
-    UInt64 backup;
-    HRESULT result = stream->Seek(0, STREAM_SEEK_CUR, &backup);
+    UInt64 cur;
+    HRESULT result = stream->Seek(0, STREAM_SEEK_CUR, &cur);
     if (result != S_OK) THROW_IO_EXCEPTION_RET(env, 0, result);
 
     // Seek to the end of steam to get size
@@ -83,7 +83,8 @@ static jlong NativeSize(
     if (result != S_OK) THROW_IO_EXCEPTION_RET(env, 0, result);
 
     // Back to previous position
-    result = stream->Seek(0, STREAM_SEEK_SET, &backup);
+    UInt64 ignored;
+    result = stream->Seek(cur, STREAM_SEEK_SET, &ignored);
     if (result != S_OK) THROW_IO_EXCEPTION_RET(env, 0, result);
 
     return static_cast<jlong>(size);
