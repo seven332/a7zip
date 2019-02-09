@@ -128,48 +128,6 @@ static void NativeClose(
   stream->Release();
 }
 
-static JNINativeMethod stream_methods[] = {
-    { "nativeSeek",
-      "(JJ)V",
-      reinterpret_cast<void *>(NativeSeek) },
-    { "nativeTell",
-      "(J)J",
-      reinterpret_cast<void *>(NativeTell) },
-    { "nativeSize",
-      "(J)J",
-      reinterpret_cast<void *>(NativeSize) },
-    { "nativeRead",
-      "(J[BII)I",
-      reinterpret_cast<void *>(NativeRead) },
-    { "nativeClose",
-      "(J)V",
-      reinterpret_cast<void *>(NativeClose) }
-};
-
-HRESULT JavaInStream::RegisterMethods(JNIEnv* env) {
-  jclass clazz = env->FindClass("com/hippo/a7zip/NativeInStream");
-  if (clazz == nullptr) return E_CLASS_NOT_FOUND;
-
-  jint result = env->RegisterNatives(clazz, stream_methods, std::extent<decltype(stream_methods)>::value);
-  if (result < 0) {
-    return E_FAILED_REGISTER;
-  }
-
-  return S_OK;
-}
-
-HRESULT JavaInStream::UnregisterMethods(JNIEnv *env) {
-  jclass clazz = env->FindClass("com/hippo/a7zip/NativeInStream");
-  if (clazz == nullptr) return E_CLASS_NOT_FOUND;
-
-  jint result = env->UnregisterNatives(clazz);
-  if (result < 0) {
-    return E_FAILED_UNREGISTER;
-  }
-
-  return S_OK;
-}
-
 static bool initialized = false;
 static jclass class_native_in_stream = nullptr;
 static jmethodID constructor_native_in_stream = nullptr;
@@ -189,6 +147,49 @@ HRESULT JavaInStream::Initialize(JNIEnv* env) {
 
   initialized = true;
   return JNI_OK;
+}
+
+static JNINativeMethod stream_methods[] = {
+    { "nativeSeek",
+      "(JJ)V",
+      reinterpret_cast<void *>(NativeSeek) },
+    { "nativeTell",
+      "(J)J",
+      reinterpret_cast<void *>(NativeTell) },
+    { "nativeSize",
+      "(J)J",
+      reinterpret_cast<void *>(NativeSize) },
+    { "nativeRead",
+      "(J[BII)I",
+      reinterpret_cast<void *>(NativeRead) },
+    { "nativeClose",
+      "(J)V",
+      reinterpret_cast<void *>(NativeClose) }
+};
+
+HRESULT JavaInStream::RegisterMethods(JNIEnv* env) {
+  if (!initialized) {
+    return E_NOT_INITIALIZED;
+  }
+
+  jint result = env->RegisterNatives(class_native_in_stream, stream_methods, std::extent<decltype(stream_methods)>::value);
+  if (result < 0) {
+    return E_FAILED_REGISTER;
+  }
+
+  return S_OK;
+}
+
+HRESULT JavaInStream::UnregisterMethods(JNIEnv *env) {
+  jclass clazz = env->FindClass("com/hippo/a7zip/NativeInStream");
+  if (clazz == nullptr) return E_CLASS_NOT_FOUND;
+
+  jint result = env->UnregisterNatives(clazz);
+  if (result < 0) {
+    return E_FAILED_UNREGISTER;
+  }
+
+  return S_OK;
 }
 
 HRESULT JavaInStream::NewInstance(JNIEnv* env, IInStream* stream, jobject* object) {

@@ -25,10 +25,10 @@
 namespace a7zip {
 namespace JavaSequentialInStream {
 
+HRESULT Initialize(JNIEnv* env);
+
 HRESULT RegisterMethods(JNIEnv* env);
 HRESULT UnregisterMethods(JNIEnv* env);
-
-HRESULT Initialize(JNIEnv* env);
 
 HRESULT NewInstance(JNIEnv* env, ISequentialInStream* stream, jobject* object);
 

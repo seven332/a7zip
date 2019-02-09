@@ -61,39 +61,6 @@ static void NativeClose(
   stream->Release();
 }
 
-static JNINativeMethod stream_methods[] = {
-    { "nativeRead",
-      "(J[BII)I",
-      reinterpret_cast<void *>(NativeRead) },
-    { "nativeClose",
-      "(J)V",
-      reinterpret_cast<void *>(NativeClose) }
-};
-
-HRESULT JavaSequentialInStream::RegisterMethods(JNIEnv* env) {
-  jclass clazz = env->FindClass("com/hippo/a7zip/NativeSequentialInStream");
-  if (clazz == nullptr) return E_CLASS_NOT_FOUND;
-
-  jint result = env->RegisterNatives(clazz, stream_methods, std::extent<decltype(stream_methods)>::value);
-  if (result < 0) {
-    return E_FAILED_REGISTER;
-  }
-
-  return S_OK;
-}
-
-HRESULT JavaSequentialInStream::UnregisterMethods(JNIEnv *env) {
-  jclass clazz = env->FindClass("com/hippo/a7zip/NativeSequentialInStream");
-  if (clazz == nullptr) return E_CLASS_NOT_FOUND;
-
-  jint result = env->UnregisterNatives(clazz);
-  if (result < 0) {
-    return E_FAILED_UNREGISTER;
-  }
-
-  return S_OK;
-}
-
 static bool initialized = false;
 static jclass class_native_sequential_in_stream = nullptr;
 static jmethodID constructor_native_sequential_in_stream = nullptr;
@@ -113,6 +80,40 @@ HRESULT JavaSequentialInStream::Initialize(JNIEnv* env) {
 
   initialized = true;
   return JNI_OK;
+}
+
+static JNINativeMethod stream_methods[] = {
+    { "nativeRead",
+      "(J[BII)I",
+      reinterpret_cast<void *>(NativeRead) },
+    { "nativeClose",
+      "(J)V",
+      reinterpret_cast<void *>(NativeClose) }
+};
+
+HRESULT JavaSequentialInStream::RegisterMethods(JNIEnv* env) {
+  if (!initialized) {
+    return E_NOT_INITIALIZED;
+  }
+
+  jint result = env->RegisterNatives(class_native_sequential_in_stream, stream_methods, std::extent<decltype(stream_methods)>::value);
+  if (result < 0) {
+    return E_FAILED_REGISTER;
+  }
+
+  return S_OK;
+}
+
+HRESULT JavaSequentialInStream::UnregisterMethods(JNIEnv *env) {
+  jclass clazz = env->FindClass("com/hippo/a7zip/NativeSequentialInStream");
+  if (clazz == nullptr) return E_CLASS_NOT_FOUND;
+
+  jint result = env->UnregisterNatives(clazz);
+  if (result < 0) {
+    return E_FAILED_UNREGISTER;
+  }
+
+  return S_OK;
 }
 
 HRESULT JavaSequentialInStream::NewInstance(JNIEnv* env, ISequentialInStream* stream, jobject* object) {
