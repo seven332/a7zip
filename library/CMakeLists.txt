@@ -22,12 +22,6 @@ set(A_SEVEN_ZIP_SOURCES
 )
 
 set(A_SEVEN_ZIP_FLAGS -fvisibility=hidden)
-if(EXTRACT)
-    set(A_SEVEN_ZIP_FLAGS ${A_SEVEN_ZIP_FLAGS} -DA7ZIP_EXTRACT)
-endif()
-if (LITE)
-    set(A_SEVEN_ZIP_FLAGS ${A_SEVEN_ZIP_FLAGS} -DA7ZIP_LITE)
-endif()
 
 if(EXTRACT)
     if (LITE)
