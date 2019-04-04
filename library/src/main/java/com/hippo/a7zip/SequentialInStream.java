@@ -21,6 +21,10 @@ import java.io.IOException;
 
 public interface SequentialInStream extends Closeable {
 
+  // Fix java.lang.NoSuchMethodError
+  @Override
+  void close() throws IOException;
+
   /**
    * The same as {@link java.io.InputStream#read(byte[], int, int)}.
    */

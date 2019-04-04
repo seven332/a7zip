@@ -21,6 +21,10 @@ import java.io.IOException;
 
 public interface SequentialOutStream extends Closeable {
 
+  // Fix java.lang.NoSuchMethodError
+  @Override
+  void close() throws IOException;
+
   /**
    * The same as {@link java.io.OutputStream#write(byte[], int, int)}.
    */

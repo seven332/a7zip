@@ -20,6 +20,14 @@ import java.io.IOException;
 
 public interface InStream extends SequentialInStream {
 
+  // Fix java.lang.NoSuchMethodError
+  @Override
+  void close() throws IOException;
+
+  // Fix java.lang.NoSuchMethodError
+  @Override
+  int read(byte[] b, int off, int len) throws IOException;
+
   /**
    * Sets the position, measured from the beginning,
    * at which the next read occurs. The offset may be
