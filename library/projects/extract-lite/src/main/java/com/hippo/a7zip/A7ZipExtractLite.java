@@ -23,13 +23,13 @@ public class A7ZipExtractLite {
   public static final A7ZipLibrary LIBRARY = new A7ZipLibrary() {
     @Override
     String getMainLibraryName() {
-      return "liba7zip-extract-lite.so";
+      return "a7zip-extract-lite";
     }
 
     @NonNull
     @Override
     String[] getMinorLibraryNames() {
-      return new String[] { "libp7zip-extract-lite.so" };
+      return new String[] { "p7zip-extract-lite" };
     }
   };
 }
