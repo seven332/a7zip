@@ -24,7 +24,7 @@ class A7ZipLoader {
   static synchronized void loadLibrary(A7ZipLibrary library, A7ZipLibraryLoader loader) {
     // Ensure loader is loaded
     if (!loaderLoaded) {
-      loader.loadLibrary("liba7zip-loader.so");
+      loader.loadLibrary("a7zip-loader");
       loaderLoaded = true;
     }
 
