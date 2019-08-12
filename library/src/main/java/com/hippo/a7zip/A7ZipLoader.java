@@ -42,7 +42,7 @@ class A7ZipLoader {
     }
     loader.loadLibrary(library.getMainLibraryName());
 
-    nativeLibrary = nativeLoadLibrary(library.getMainLibraryName());
+    nativeLibrary = nativeLoadLibrary("lib" + library.getMainLibraryName() + ".so");
   }
 
   private static native long nativeLoadLibrary(String libname);
