@@ -26,7 +26,7 @@ android {
         versionName '1.0'
         externalNativeBuild {
             cmake {
-                targets 'a7zip-loader'
+                targets 'liba7zip-loader'
                 arguments '-DEXTRACT=ON'
             }
         }
