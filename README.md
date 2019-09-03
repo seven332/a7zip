@@ -16,8 +16,8 @@ A7Zip.loadLibrary(A7ZipExtract.LIBRARY);
 2. Open an archive.
 
 ```java
-InputStream stream = new FileInputStream("archive.7z");
-InputArchive archive = InputArchive.open(stream);
+RandomAccessFile file = new RandomAccessFile("archive.7z", "r");
+InputArchive archive = InputArchive.open(file);
 ```
 
 3. Operate the archive.
