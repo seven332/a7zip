@@ -16,17 +16,27 @@
 
 package com.hippo.a7zip;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
 /**
  * Wraps {@link RandomAccessFile} as {@link SeekableInputStream}.
  */
-class SeekableFileInputStream extends SeekableInputStream {
+public class SeekableFileInputStream extends SeekableInputStream {
 
     private RandomAccessFile file;
 
-    SeekableFileInputStream(RandomAccessFile file) {
+    public SeekableFileInputStream(String filename) throws FileNotFoundException {
+        this(new File(filename));
+    }
+
+    public SeekableFileInputStream(File file) throws FileNotFoundException {
+        this(new RandomAccessFile(file, "r"));
+    }
+
+    public SeekableFileInputStream(RandomAccessFile file) {
         this.file = file;
     }
 
