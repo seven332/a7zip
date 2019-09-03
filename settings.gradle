@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-include ':demo'
-
 include ':core'
 project(':core').projectDir = new File('library/projects/core')
 
