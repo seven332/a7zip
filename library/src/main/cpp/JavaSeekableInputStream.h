@@ -23,16 +23,17 @@
 #include <7zip/IStream.h>
 
 namespace a7zip {
-namespace JavaInStream {
+    namespace JavaInStream {
 
-HRESULT Initialize(JNIEnv* env);
+        HRESULT Initialize(JNIEnv *env);
 
-HRESULT RegisterMethods(JNIEnv* env);
-HRESULT UnregisterMethods(JNIEnv* env);
+        HRESULT RegisterMethods(JNIEnv *env);
 
-HRESULT NewInstance(JNIEnv* env, IInStream* stream, jobject* object);
+        HRESULT UnregisterMethods(JNIEnv *env);
 
-}
+        HRESULT NewInstance(JNIEnv *env, IInStream *stream, jobject *object);
+
+    }
 }
 
 #endif //__A7ZIP_SEEKABLE_INPUT_STREAM_H__

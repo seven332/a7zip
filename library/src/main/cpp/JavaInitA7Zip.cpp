@@ -27,42 +27,42 @@
 
 using namespace a7zip;
 
-jint JNI_OnLoad(JavaVM* vm, void*) {
-  JNIEnv* env;
+jint JNI_OnLoad(JavaVM *vm, void *) {
+    JNIEnv *env;
 
-  if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
-    return JNI_ERR;
-  }
+    if (vm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6) != JNI_OK) {
+        return JNI_ERR;
+    }
 
-  JavaEnv::Initialize(vm);
-  RETURN_JNI_ERR_IF_NOT_ZERO(InternalSeekableInputStream::Initialize(env));
-  RETURN_JNI_ERR_IF_NOT_ZERO(JavaInStream::Initialize(env));
-  RETURN_JNI_ERR_IF_NOT_ZERO(JavaSequentialInStream::Initialize(env));
-  RETURN_JNI_ERR_IF_NOT_ZERO(InternalOutputStream::Initialize(env));
-  RETURN_JNI_ERR_IF_NOT_ZERO(SevenZip::Initialize());
+    JavaEnv::Initialize(vm);
+    RETURN_JNI_ERR_IF_NOT_ZERO(InternalSeekableInputStream::Initialize(env));
+    RETURN_JNI_ERR_IF_NOT_ZERO(JavaInStream::Initialize(env));
+    RETURN_JNI_ERR_IF_NOT_ZERO(JavaSequentialInStream::Initialize(env));
+    RETURN_JNI_ERR_IF_NOT_ZERO(InternalOutputStream::Initialize(env));
+    RETURN_JNI_ERR_IF_NOT_ZERO(SevenZip::Initialize());
 
-  return JNI_VERSION_1_6;
+    return JNI_VERSION_1_6;
 }
 
 #define EXPORT __attribute__ ((visibility ("default")))
 
 extern "C" {
-  EXPORT int Initialize();
-  EXPORT int Terminate();
+EXPORT int Initialize();
+EXPORT int Terminate();
 }
 
 int Initialize() {
-  JavaEnv env;
+    JavaEnv env;
     RETURN_SAME_IF_NOT_ZERO(JavaInputArchive::RegisterMethods(static_cast<JNIEnv *>(env)));
-  RETURN_SAME_IF_NOT_ZERO(JavaInStream::RegisterMethods(static_cast<JNIEnv*>(env)));
-  RETURN_SAME_IF_NOT_ZERO(JavaSequentialInStream::RegisterMethods(static_cast<JNIEnv*>(env)));
-  return S_OK;
+    RETURN_SAME_IF_NOT_ZERO(JavaInStream::RegisterMethods(static_cast<JNIEnv *>(env)));
+    RETURN_SAME_IF_NOT_ZERO(JavaSequentialInStream::RegisterMethods(static_cast<JNIEnv *>(env)));
+    return S_OK;
 }
 
 int Terminate() {
-  JavaEnv env;
+    JavaEnv env;
     RETURN_SAME_IF_NOT_ZERO(JavaInputArchive::UnregisterMethods(static_cast<JNIEnv *>(env)));
-  RETURN_SAME_IF_NOT_ZERO(JavaInStream::UnregisterMethods(static_cast<JNIEnv*>(env)));
-  RETURN_SAME_IF_NOT_ZERO(JavaSequentialInStream::UnregisterMethods(static_cast<JNIEnv*>(env)));
-  return S_OK;
+    RETURN_SAME_IF_NOT_ZERO(JavaInStream::UnregisterMethods(static_cast<JNIEnv *>(env)));
+    RETURN_SAME_IF_NOT_ZERO(JavaSequentialInStream::UnregisterMethods(static_cast<JNIEnv *>(env)));
+    return S_OK;
 }

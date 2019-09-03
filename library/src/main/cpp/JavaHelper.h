@@ -78,12 +78,13 @@
   } while (0)
 
 namespace a7zip {
-namespace JavaHelper {
+    namespace JavaHelper {
 
-jint ThrowException(JNIEnv* env, const char* exception_name, const char* message, ...);
-jint ThrowException(JNIEnv* env, const char* exception_name, HRESULT code);
+        jint ThrowException(JNIEnv *env, const char *exception_name, const char *message, ...);
 
-}
+        jint ThrowException(JNIEnv *env, const char *exception_name, HRESULT code);
+
+    }
 }
 
 #endif //__A7ZIP_JAVA_HELPER_H__

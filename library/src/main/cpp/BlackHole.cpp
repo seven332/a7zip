@@ -18,52 +18,52 @@
 
 using namespace a7zip;
 
-BlackHole::BlackHole(): pos(0), size(0) { }
+BlackHole::BlackHole() : pos(0), size(0) {}
 
-HRESULT BlackHole::Write(const void*, UInt32 size, UInt32* processedSize) {
-  if (processedSize != nullptr) {
-    *processedSize = size;
-  }
+HRESULT BlackHole::Write(const void *, UInt32 size, UInt32 *processedSize) {
+    if (processedSize != nullptr) {
+        *processedSize = size;
+    }
 
-  this->pos += size;
-  if (this->size < this->pos) {
-    this->size = this->pos;
-  }
+    this->pos += size;
+    if (this->size < this->pos) {
+        this->size = this->pos;
+    }
 
-  return S_OK;
+    return S_OK;
 }
 
-HRESULT BlackHole::Seek(Int64 offset, UInt32 seekOrigin, UInt64* newPosition) {
-  Int64 newPos = -1;
+HRESULT BlackHole::Seek(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition) {
+    Int64 newPos = -1;
 
-  switch (seekOrigin) {
-    case STREAM_SEEK_SET:
-      newPos = offset;
-      break;
-    case STREAM_SEEK_CUR:
-      newPos = this->pos + offset;
-      break;
-    case STREAM_SEEK_END:
-      newPos = this->size + offset;
-      break;
-    default:
-      return E_INVALIDARG;
-  }
+    switch (seekOrigin) {
+        case STREAM_SEEK_SET:
+            newPos = offset;
+            break;
+        case STREAM_SEEK_CUR:
+            newPos = this->pos + offset;
+            break;
+        case STREAM_SEEK_END:
+            newPos = this->size + offset;
+            break;
+        default:
+            return E_INVALIDARG;
+    }
 
-  if (newPos < 0) {
-    return STG_E_INVALIDFUNCTION;
-  }
+    if (newPos < 0) {
+        return STG_E_INVALIDFUNCTION;
+    }
 
-  *newPosition = this->pos;
+    *newPosition = this->pos;
 
-  return S_OK;
+    return S_OK;
 }
 
 HRESULT BlackHole::SetSize(UInt64 newSize) {
-  this->size = newSize;
-  if (this->pos > this->size) {
-    this->pos = this->size;
-  }
+    this->size = newSize;
+    if (this->pos > this->size) {
+        this->pos = this->size;
+    }
 
-  return S_OK;
+    return S_OK;
 }

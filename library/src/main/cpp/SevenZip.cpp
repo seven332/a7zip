@@ -34,146 +34,151 @@ using namespace a7zip;
 
 extern "C" HRESULT GetNumberOfMethods(UINT32 *numCodecs);
 extern "C" HRESULT GetNumberOfFormats(UINT32 *numFormats);
-extern "C" HRESULT GetMethodProperty(UInt32 codecIndex, PROPID propID, PROPVARIANT* value);
-extern "C" HRESULT GetHandlerProperty2(UInt32 formatIndex, PROPID propID, PROPVARIANT* value);
-extern "C" HRESULT CreateObject(const GUID* clsid, const GUID* iid, void** outObject);
+extern "C" HRESULT GetMethodProperty(UInt32 codecIndex, PROPID propID, PROPVARIANT *value);
+extern "C" HRESULT GetHandlerProperty2(UInt32 formatIndex, PROPID propID, PROPVARIANT *value);
+extern "C" HRESULT CreateObject(const GUID *clsid, const GUID *iid, void **outObject);
 
-typedef HRESULT (*GetPropertyFunc)(UInt32 index, PROPID propID, PROPVARIANT* value);
+typedef HRESULT (*GetPropertyFunc)(UInt32 index, PROPID propID, PROPVARIANT *value);
 
 class Method {
- public:
-  bool has_name;
-  AString name;
-  bool has_encoder;
-  GUID encoder;
-  bool has_decoder;
-  GUID decoder;
+public:
+    bool has_name;
+    AString name;
+    bool has_encoder;
+    GUID encoder;
+    bool has_decoder;
+    GUID decoder;
 };
 
 class Format {
- public:
-  GUID class_id;
-  bool has_name;
-  AString name;
-  UInt32 signature_offset;
-  CObjectVector<CByteBuffer> signatures;
+public:
+    GUID class_id;
+    bool has_name;
+    AString name;
+    UInt32 signature_offset;
+    CObjectVector<CByteBuffer> signatures;
 };
 
 class CompressCodecsInfo :
-    public ICompressCodecsInfo,
-    public CMyUnknownImp {
- public:
-  MY_UNKNOWN_IMP1(ICompressCodecsInfo)
-  STDMETHOD(GetNumMethods)(UInt32* numMethods);
-  STDMETHOD(GetProperty)(UInt32 index, PROPID propID, PROPVARIANT* value);
-  STDMETHOD(CreateDecoder)(UInt32 index, const GUID* interfaceID, void** coder);
-  STDMETHOD(CreateEncoder)(UInt32 index, const GUID* interfaceID, void** coder);
+        public ICompressCodecsInfo,
+        public CMyUnknownImp {
+public:
+    MY_UNKNOWN_IMP1(ICompressCodecsInfo)
+
+    STDMETHOD(GetNumMethods)(UInt32 *numMethods);
+
+    STDMETHOD(GetProperty)(UInt32 index, PROPID propID, PROPVARIANT *value);
+
+    STDMETHOD(CreateDecoder)(UInt32 index, const GUID *interfaceID, void **coder);
+
+    STDMETHOD(CreateEncoder)(UInt32 index, const GUID *interfaceID, void **coder);
 };
 
 static bool initialized = false;
-static void* handle = nullptr;
+static void *handle = nullptr;
 static CObjectVector<Method> methods;
 static CObjectVector<Format> formats;
 static CompressCodecsInfo compress_codecs_info;
 
 HRESULT CompressCodecsInfo::GetNumMethods(UInt32 *numMethods) {
-  if (numMethods != nullptr) {
-    *numMethods = methods.Size();
-  }
-  return S_OK;
+    if (numMethods != nullptr) {
+        *numMethods = methods.Size();
+    }
+    return S_OK;
 }
 
-HRESULT CompressCodecsInfo::GetProperty(UInt32 index, PROPID propID, PROPVARIANT* value) {
-  Method& method = methods[index];
+HRESULT CompressCodecsInfo::GetProperty(UInt32 index, PROPID propID, PROPVARIANT *value) {
+    Method &method = methods[index];
 
-  switch (propID) {
-    case NMethodPropID::kDecoderIsAssigned: {
-      NWindows::NCOM::CPropVariant propVariant;
-      propVariant = method.has_decoder;
-      propVariant.Detach(value);
-      return S_OK;
+    switch (propID) {
+        case NMethodPropID::kDecoderIsAssigned: {
+            NWindows::NCOM::CPropVariant propVariant;
+            propVariant = method.has_decoder;
+            propVariant.Detach(value);
+            return S_OK;
+        }
+        case NMethodPropID::kEncoderIsAssigned: {
+            NWindows::NCOM::CPropVariant propVariant;
+            propVariant = method.has_encoder;
+            propVariant.Detach(value);
+            return S_OK;
+        }
+        default: {
+            return GetMethodProperty(index, propID, value);
+        }
     }
-    case NMethodPropID::kEncoderIsAssigned: {
-      NWindows::NCOM::CPropVariant propVariant;
-      propVariant = method.has_encoder;
-      propVariant.Detach(value);
-      return S_OK;
-    }
-    default: {
-      return GetMethodProperty(index, propID, value);
-    }
-  }
 }
 
 HRESULT CompressCodecsInfo::CreateDecoder(
-    UInt32 index,
-    const GUID* interfaceID,
-    void** coder
+        UInt32 index,
+        const GUID *interfaceID,
+        void **coder
 ) {
-  Method& method = methods[index];
+    Method &method = methods[index];
 
-  if (method.has_decoder) {
-    return CreateObject(&(method.decoder), interfaceID, coder);
-  } else {
-    return S_OK;
-  }
+    if (method.has_decoder) {
+        return CreateObject(&(method.decoder), interfaceID, coder);
+    } else {
+        return S_OK;
+    }
 }
 
 HRESULT CompressCodecsInfo::CreateEncoder(
-    UInt32 index,
-    const GUID* interfaceID,
-    void** coder
+        UInt32 index,
+        const GUID *interfaceID,
+        void **coder
 ) {
-  Method& method = methods[index];
+    Method &method = methods[index];
 
-  if (method.has_encoder) {
-    return CreateObject(&(method.encoder), interfaceID, coder);
-  } else {
-    return S_OK;
-  }
+    if (method.has_encoder) {
+        return CreateObject(&(method.encoder), interfaceID, coder);
+    } else {
+        return S_OK;
+    }
 }
 
 class ArchiveOpenCallback :
-    public IArchiveOpenCallback,
-    public ICryptoGetTextPassword,
-    public CMyUnknownImp {
- public:
-  ArchiveOpenCallback(BSTR password) {
-    this->password = ::SysAllocString(password);
-    this->has_asked_password = false;
-  }
-
-  ~ArchiveOpenCallback() {
-    ::SysFreeString(password);
-  }
-
- public:
-  MY_UNKNOWN_IMP1(ICryptoGetTextPassword)
-  INTERFACE_IArchiveOpenCallback({ return S_OK; });
-
-  STDMETHOD(CryptoGetTextPassword)(BSTR *password) {
-    has_asked_password = true;
-    *password = ::SysAllocString(this->password);
-    return this->password != nullptr ? S_OK : E_NO_PASSWORD;
-  }
-
-  HRESULT GetBetterResult(HRESULT result) {
-    if (result == S_OK) {
-      return S_OK;
-    } else if (has_asked_password) {
-      if (password != nullptr) {
-        return E_WRONG_PASSWORD;
-      } else {
-        return E_NO_PASSWORD;
-      }
-    } else {
-      return result;
+        public IArchiveOpenCallback,
+        public ICryptoGetTextPassword,
+        public CMyUnknownImp {
+public:
+    ArchiveOpenCallback(BSTR password) {
+        this->password = ::SysAllocString(password);
+        this->has_asked_password = false;
     }
-  }
 
- private:
-  BSTR password;
-  bool has_asked_password;
+    ~ArchiveOpenCallback() {
+        ::SysFreeString(password);
+    }
+
+public:
+    MY_UNKNOWN_IMP1(ICryptoGetTextPassword)
+
+    INTERFACE_IArchiveOpenCallback({ return S_OK; });
+
+    STDMETHOD(CryptoGetTextPassword)(BSTR *password) {
+        has_asked_password = true;
+        *password = ::SysAllocString(this->password);
+        return this->password != nullptr ? S_OK : E_NO_PASSWORD;
+    }
+
+    HRESULT GetBetterResult(HRESULT result) {
+        if (result == S_OK) {
+            return S_OK;
+        } else if (has_asked_password) {
+            if (password != nullptr) {
+                return E_WRONG_PASSWORD;
+            } else {
+                return E_NO_PASSWORD;
+            }
+        } else {
+            return result;
+        }
+    }
+
+private:
+    BSTR password;
+    bool has_asked_password;
 };
 
 #define GET_PROP_METHOD(METHOD_NAME, PROP_TYPE, VALUE_TYPE, CONVERTER)         \
@@ -201,21 +206,22 @@ HRESULT METHOD_NAME(                                                           \
 
 GET_PROP_METHOD(GetAString, AString, VT_BSTR, value.SetFromWStr_if_Ascii(prop.bstrVal));
 
-GET_PROP_METHOD(GetGUID, GUID, VT_BSTR, value = *reinterpret_cast<const GUID*>(prop.bstrVal));
+GET_PROP_METHOD(GetGUID, GUID, VT_BSTR, value = *reinterpret_cast<const GUID *>(prop.bstrVal));
 
-GET_PROP_METHOD(GetCByteBuffer, CByteBuffer, VT_BSTR, value.CopyFrom((const Byte *)prop.bstrVal, ::SysStringByteLen(prop.bstrVal)));
+GET_PROP_METHOD(GetCByteBuffer, CByteBuffer, VT_BSTR,
+                value.CopyFrom((const Byte *) prop.bstrVal, ::SysStringByteLen(prop.bstrVal)));
 
 GET_PROP_METHOD(GetUInt32, UInt32, VT_UI4, value = prop.ulVal);
 
 #undef GET_PROP_METHOD
 
 static HRESULT LoadMethods() {
-  UInt32 method_number = 0;
+    UInt32 method_number = 0;
 
-  RETURN_SAME_IF_NOT_ZERO(GetNumberOfMethods(&method_number));
+    RETURN_SAME_IF_NOT_ZERO(GetNumberOfMethods(&method_number));
 
-  for(UInt32 i = 0; i < method_number; i++) {
-    Method& method = methods.AddNew();
+    for (UInt32 i = 0; i < method_number; i++) {
+        Method &method = methods.AddNew();
 
 #   define GET_PROP(METHOD, PROP, VALUE, ASSIGNED)                              \
     if (METHOD(GetMethodProperty, i, PROP, VALUE, ASSIGNED) != S_OK) {        \
@@ -223,44 +229,44 @@ static HRESULT LoadMethods() {
       continue;                                                                 \
     }
 
-    // It's ok to assume all characters in method name are in ascii charset
-    GET_PROP(GetAString, NMethodPropID::kName, method.name, method.has_name);
-    GET_PROP(GetGUID, NMethodPropID::kDecoder, method.decoder, method.has_decoder);
-    GET_PROP(GetGUID, NMethodPropID::kEncoder, method.encoder, method.has_encoder);
+        // It's ok to assume all characters in method name are in ascii charset
+        GET_PROP(GetAString, NMethodPropID::kName, method.name, method.has_name);
+        GET_PROP(GetGUID, NMethodPropID::kDecoder, method.decoder, method.has_decoder);
+        GET_PROP(GetGUID, NMethodPropID::kEncoder, method.encoder, method.has_encoder);
 
 #   undef GET_PROP
-  }
+    }
 
-  return S_OK;
+    return S_OK;
 }
 
 static void AppendMultiSignature(
-    CObjectVector<CByteBuffer>& signatures,
-    const unsigned char* multi_signature,
-    size_t size
+        CObjectVector<CByteBuffer> &signatures,
+        const unsigned char *multi_signature,
+        size_t size
 ) {
-  while (size > 0) {
-    unsigned length = *multi_signature++;
-    size--;
+    while (size > 0) {
+        unsigned length = *multi_signature++;
+        size--;
 
-    if (length > size) {
-      return;
+        if (length > size) {
+            return;
+        }
+
+        signatures.AddNew().CopyFrom(multi_signature, length);
+
+        multi_signature += length;
+        size -= length;
     }
-
-    signatures.AddNew().CopyFrom(multi_signature, length);
-
-    multi_signature += length;
-    size -= length;
-  }
 }
 
 static HRESULT LoadFormats() {
-  UInt32 format_number = 0;
+    UInt32 format_number = 0;
 
-  RETURN_SAME_IF_NOT_ZERO(GetNumberOfFormats(&format_number));
+    RETURN_SAME_IF_NOT_ZERO(GetNumberOfFormats(&format_number));
 
-  for(UInt32 i = 0; i < format_number; i++) {
-    Format& format = formats.AddNew();
+    for (UInt32 i = 0; i < format_number; i++) {
+        Format &format = formats.AddNew();
 
 #   define GET_PROP(METHOD, PROP, VALUE, ASSIGNED)                              \
     if (METHOD(GetHandlerProperty2, i, PROP, VALUE, ASSIGNED) != S_OK) {        \
@@ -268,190 +274,196 @@ static HRESULT LoadFormats() {
       continue;                                                                 \
     }
 
-    // ClassID is required
-    bool has_class_id;
-    GET_PROP(GetGUID, NArchive::NHandlerPropID::kClassID, format.class_id, has_class_id);
-    if (!has_class_id) {
-      formats.DeleteBack();
-      continue;
-    }
+        // ClassID is required
+        bool has_class_id;
+        GET_PROP(GetGUID, NArchive::NHandlerPropID::kClassID, format.class_id, has_class_id);
+        if (!has_class_id) {
+            formats.DeleteBack();
+            continue;
+        }
 
-    // It's ok to assume all characters in format name are in ascii charset
-    GET_PROP(GetAString, NArchive::NHandlerPropID::kName, format.name, format.has_name);
+        // It's ok to assume all characters in format name are in ascii charset
+        GET_PROP(GetAString, NArchive::NHandlerPropID::kName, format.name, format.has_name);
 
-    bool has_signature;
-    CByteBuffer signature;
-    GET_PROP(GetUInt32, NArchive::NHandlerPropID::kSignatureOffset, format.signature_offset, has_signature);
-    if (!has_signature) {
-      format.signature_offset = 0;
-    }
-    GET_PROP(GetCByteBuffer, NArchive::NHandlerPropID::kSignature, signature, has_signature);
-    if (has_signature) {
-      format.signatures.AddNew().CopyFrom(signature, signature.Size());
-    }
-    GET_PROP(GetCByteBuffer, NArchive::NHandlerPropID::kMultiSignature, signature, has_signature);
-    if (has_signature) {
-      AppendMultiSignature(format.signatures, signature, signature.Size());
-    }
+        bool has_signature;
+        CByteBuffer signature;
+        GET_PROP(GetUInt32, NArchive::NHandlerPropID::kSignatureOffset, format.signature_offset,
+                 has_signature);
+        if (!has_signature) {
+            format.signature_offset = 0;
+        }
+        GET_PROP(GetCByteBuffer, NArchive::NHandlerPropID::kSignature, signature, has_signature);
+        if (has_signature) {
+            format.signatures.AddNew().CopyFrom(signature, signature.Size());
+        }
+        GET_PROP(GetCByteBuffer, NArchive::NHandlerPropID::kMultiSignature, signature,
+                 has_signature);
+        if (has_signature) {
+            AppendMultiSignature(format.signatures, signature, signature.Size());
+        }
 
 #   undef GET_PROP
-  }
+    }
 
-  return S_OK;
+    return S_OK;
 }
 
 HRESULT SevenZip::Initialize() {
-  if (initialized) {
+    if (initialized) {
+        return S_OK;
+    }
+
+    RETURN_SAME_IF_NOT_ZERO(LoadMethods());
+    RETURN_SAME_IF_NOT_ZERO(LoadFormats());
+
+    initialized = true;
     return S_OK;
-  }
-
-  RETURN_SAME_IF_NOT_ZERO(LoadMethods());
-  RETURN_SAME_IF_NOT_ZERO(LoadFormats());
-
-  initialized = true;
-  return S_OK;
 }
 
-static HRESULT ReadFully(CMyComPtr<IInStream>& stream, Byte* data, UInt32 size, UInt32* processedSize) {
-  UInt32 read = 0;
+static HRESULT
+ReadFully(CMyComPtr<IInStream> &stream, Byte *data, UInt32 size, UInt32 *processedSize) {
+    UInt32 read = 0;
 
-  while (read < size) {
-    RETURN_SAME_IF_NOT_ZERO(stream->Read(data + read, size - read, processedSize));
+    while (read < size) {
+        RETURN_SAME_IF_NOT_ZERO(stream->Read(data + read, size - read, processedSize));
 
-    if (*processedSize == 0) {
-      // EOF
-      break;
+        if (*processedSize == 0) {
+            // EOF
+            break;
+        }
+
+        read += *processedSize;
     }
 
-    read += *processedSize;
-  }
-
-  *processedSize = read;
-  return S_OK;
+    *processedSize = read;
+    return S_OK;
 }
 
 static HRESULT OpenInArchive(
-    GUID& class_id,
-    CMyComPtr<IInStream>& in_stream,
-    BSTR password,
-    CMyComPtr<IInArchive>& in_archive
+        GUID &class_id,
+        CMyComPtr<IInStream> &in_stream,
+        BSTR password,
+        CMyComPtr<IInArchive> &in_archive
 ) {
-  RETURN_SAME_IF_NOT_ZERO(CreateObject(&class_id, &IID_IInArchive, reinterpret_cast<void **>(&in_archive)));
+    RETURN_SAME_IF_NOT_ZERO(
+            CreateObject(&class_id, &IID_IInArchive, reinterpret_cast<void **>(&in_archive)));
 
-  UInt64 newPosition = 0;
-  HRESULT result = in_stream->Seek(0, STREAM_SEEK_SET, &newPosition);
-  if (result != S_OK) {
-    in_archive->Close();
-    in_archive = nullptr;
-    return result;
-  }
+    UInt64 newPosition = 0;
+    HRESULT result = in_stream->Seek(0, STREAM_SEEK_SET, &newPosition);
+    if (result != S_OK) {
+        in_archive->Close();
+        in_archive = nullptr;
+        return result;
+    }
 
-  UInt64 maxCheckStartPosition = 1 << 22;
-  CMyComPtr<ArchiveOpenCallback> callback(new ArchiveOpenCallback(password));
-  result = in_archive->Open(in_stream, &maxCheckStartPosition, callback);
-  result = callback->GetBetterResult(result);
-  if (result != S_OK) {
-    in_archive->Close();
-    in_archive = nullptr;
-    return result;
-  }
+    UInt64 maxCheckStartPosition = 1 << 22;
+    CMyComPtr<ArchiveOpenCallback> callback(new ArchiveOpenCallback(password));
+    result = in_archive->Open(in_stream, &maxCheckStartPosition, callback);
+    result = callback->GetBetterResult(result);
+    if (result != S_OK) {
+        in_archive->Close();
+        in_archive = nullptr;
+        return result;
+    }
 
-  return S_OK;
+    return S_OK;
 }
 
 static HRESULT OpenInArchive(
-    CMyComPtr<IInStream>& in_stream,
-    BSTR password,
-    CMyComPtr<IInArchive>& in_archive,
-    AString& format_name
+        CMyComPtr<IInStream> &in_stream,
+        BSTR password,
+        CMyComPtr<IInArchive> &in_archive,
+        AString &format_name
 ) {
-  bool formats_checked[formats.Size()];
-  memset(formats_checked, 0, formats.Size() * sizeof(bool));
+    bool formats_checked[formats.Size()];
+    memset(formats_checked, 0, formats.Size() * sizeof(bool));
 
-  for (int i = 0; i < formats.Size(); i++) {
-    Format& format = formats[i];
+    for (int i = 0; i < formats.Size(); i++) {
+        Format &format = formats[i];
 
-    // Skip format without signatures
-    if (format.signatures.Size() == 0) {
-      continue;
+        // Skip format without signatures
+        if (format.signatures.Size() == 0) {
+            continue;
+        }
+
+        // Mark the format
+        formats_checked[i] = true;
+
+        // Check each signature
+        for (int j = 0; j < format.signatures.Size(); j++) {
+            CByteBuffer &signature = format.signatures[j];
+
+            UInt32 processedSize;
+            CByteBuffer bytes(signature.Size());
+
+            UInt64 newPosition;
+            CONTINUE_IF_NOT_ZERO(
+                    in_stream->Seek(format.signature_offset, STREAM_SEEK_SET, &newPosition));
+            if (newPosition != format.signature_offset) continue;
+            CONTINUE_IF_NOT_ZERO(ReadFully(in_stream, bytes, static_cast<UInt32>(signature.Size()),
+                                           &processedSize));
+            if (processedSize != signature.Size() || bytes != signature) continue;
+
+            // The signature matched, try to open it
+            HRESULT result = OpenInArchive(format.class_id, in_stream, password, in_archive);
+
+            if (result == S_OK) {
+                format_name = format.name;
+                return S_OK;
+            }
+
+            if (result == E_NO_PASSWORD || result == E_WRONG_PASSWORD) {
+                // It's a password error, the archive format is confirmed
+                return result;
+            }
+
+            // Can't open archive in this format
+            // Skip this format
+            break;
+        }
     }
 
-    // Mark the format
-    formats_checked[i] = true;
+    // Try other unchecked formats
+    for (int i = 0; i < formats.Size(); i++) {
+        if (!formats_checked[i]) {
+            Format &format = formats[i];
+            HRESULT result = OpenInArchive(format.class_id, in_stream, password, in_archive);
 
-    // Check each signature
-    for (int j = 0; j < format.signatures.Size(); j++) {
-      CByteBuffer& signature = format.signatures[j];
+            if (result == S_OK) {
+                format_name = format.name;
+                return S_OK;
+            }
 
-      UInt32 processedSize;
-      CByteBuffer bytes(signature.Size());
-
-      UInt64 newPosition;
-      CONTINUE_IF_NOT_ZERO(in_stream->Seek(format.signature_offset, STREAM_SEEK_SET, &newPosition));
-      if (newPosition != format.signature_offset) continue;
-      CONTINUE_IF_NOT_ZERO(ReadFully(in_stream, bytes, static_cast<UInt32>(signature.Size()), &processedSize));
-      if (processedSize != signature.Size() || bytes != signature) continue;
-
-      // The signature matched, try to open it
-      HRESULT result = OpenInArchive(format.class_id, in_stream, password, in_archive);
-
-      if (result == S_OK) {
-        format_name = format.name;
-        return S_OK;
-      }
-
-      if (result == E_NO_PASSWORD || result == E_WRONG_PASSWORD) {
-        // It's a password error, the archive format is confirmed
-        return result;
-      }
-
-      // Can't open archive in this format
-      // Skip this format
-      break;
+            if (result == E_NO_PASSWORD || result == E_WRONG_PASSWORD) {
+                // It's a password error, the archive format is confirmed
+                return result;
+            }
+        }
     }
-  }
 
-  // Try other unchecked formats
-  for (int i = 0; i < formats.Size(); i++) {
-    if (!formats_checked[i]) {
-      Format& format = formats[i];
-      HRESULT result = OpenInArchive(format.class_id, in_stream, password, in_archive);
-
-      if (result == S_OK) {
-        format_name = format.name;
-        return S_OK;
-      }
-
-      if (result == E_NO_PASSWORD || result == E_WRONG_PASSWORD) {
-        // It's a password error, the archive format is confirmed
-        return result;
-      }
-    }
-  }
-
-  return E_UNKNOWN_FORMAT;
+    return E_UNKNOWN_FORMAT;
 }
 
 HRESULT
 SevenZip::OpenArchive(CMyComPtr<IInStream> in_stream, BSTR password, InputArchive **archive) {
-  CMyComPtr<IInArchive> in_archive = nullptr;
-  AString format_name;
+    CMyComPtr<IInArchive> in_archive = nullptr;
+    AString format_name;
 
-  HRESULT result = OpenInArchive(in_stream, password, in_archive, format_name);
+    HRESULT result = OpenInArchive(in_stream, password, in_archive, format_name);
 
-  if (result == S_OK && in_archive != nullptr) {
-    *archive = new InputArchive(in_archive, format_name);
-    return S_OK;
-  }
+    if (result == S_OK && in_archive != nullptr) {
+        *archive = new InputArchive(in_archive, format_name);
+        return S_OK;
+    }
 
-  if (in_archive != nullptr) {
-    in_archive->Close();
-    in_archive = nullptr;
-  }
+    if (in_archive != nullptr) {
+        in_archive->Close();
+        in_archive = nullptr;
+    }
 
-  if (result != S_OK) {
-    return result;
-  } else {
-    return E_INTERNAL;
-  }
+    if (result != S_OK) {
+        return result;
+    } else {
+        return E_INTERNAL;
+    }
 }

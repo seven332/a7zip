@@ -27,173 +27,177 @@
 using namespace a7zip;
 
 class ArchiveExtractCallback :
-    public IArchiveExtractCallback,
-    public ICryptoGetTextPassword,
-    public CMyUnknownImp
-{
- public:
-  ArchiveExtractCallback(UInt32 index, BSTR password, CMyComPtr<ISequentialOutStream> out_stream);
-  ~ArchiveExtractCallback();
+        public IArchiveExtractCallback,
+        public ICryptoGetTextPassword,
+        public CMyUnknownImp {
+public:
+    ArchiveExtractCallback(UInt32 index, BSTR password, CMyComPtr<ISequentialOutStream> out_stream);
 
- public:
-  MY_UNKNOWN_IMP2(IArchiveExtractCallback, ICryptoGetTextPassword)
+    ~ArchiveExtractCallback();
 
-  STDMETHOD(SetTotal)(UInt64 total);
-  STDMETHOD(SetCompleted)(const UInt64 *completeValue);
+public:
+    MY_UNKNOWN_IMP2(IArchiveExtractCallback, ICryptoGetTextPassword)
 
-  STDMETHOD(GetStream)(UInt32 index, ISequentialOutStream** outStream, Int32 askExtractMode);
-  STDMETHOD(PrepareOperation)(Int32 askExtractMode);
-  STDMETHOD(SetOperationResult)(Int32 opRes);
+    STDMETHOD(SetTotal)(UInt64 total);
 
-  STDMETHOD(CryptoGetTextPassword)(BSTR *password);
+    STDMETHOD(SetCompleted)(const UInt64 *completeValue);
 
-  HRESULT GetBetterResult(HRESULT result);
+    STDMETHOD(GetStream)(UInt32 index, ISequentialOutStream **outStream, Int32 askExtractMode);
 
- private:
-  UInt32 index;
-  BSTR password;
-  CMyComPtr<ISequentialOutStream> out_stream;
-  bool has_asked_password;
+    STDMETHOD(PrepareOperation)(Int32 askExtractMode);
+
+    STDMETHOD(SetOperationResult)(Int32 opRes);
+
+    STDMETHOD(CryptoGetTextPassword)(BSTR *password);
+
+    HRESULT GetBetterResult(HRESULT result);
+
+private:
+    UInt32 index;
+    BSTR password;
+    CMyComPtr<ISequentialOutStream> out_stream;
+    bool has_asked_password;
 };
 
-ArchiveExtractCallback::ArchiveExtractCallback(UInt32 index, BSTR password, CMyComPtr<ISequentialOutStream> out_stream) {
-  this->index = index;
-  this->password = ::SysAllocString(password);
-  this->out_stream = out_stream;
-  this->has_asked_password = false;
+ArchiveExtractCallback::ArchiveExtractCallback(UInt32 index, BSTR password,
+                                               CMyComPtr<ISequentialOutStream> out_stream) {
+    this->index = index;
+    this->password = ::SysAllocString(password);
+    this->out_stream = out_stream;
+    this->has_asked_password = false;
 }
 
 ArchiveExtractCallback::~ArchiveExtractCallback() {
-  ::SysFreeString(password);
+    ::SysFreeString(password);
 }
 
 HRESULT ArchiveExtractCallback::SetTotal(UInt64 total) {
-  // Ignored
-  return S_OK;
+    // Ignored
+    return S_OK;
 }
 
 HRESULT ArchiveExtractCallback::SetCompleted(const UInt64 *completeValue) {
-  // Ignored
-  return S_OK;
+    // Ignored
+    return S_OK;
 }
 
 HRESULT ArchiveExtractCallback::GetStream(
-    UInt32 index,
-    ISequentialOutStream** outStream,
-    Int32 askExtractMode
+        UInt32 index,
+        ISequentialOutStream **outStream,
+        Int32 askExtractMode
 ) {
-  // If it's not extract mode or the index is different, return a black hole to skip data
-  if (askExtractMode != NArchive::NExtract::NAskMode::kExtract || this->index != index) {
-    CMyComPtr<ISequentialOutStream> black_hole(new BlackHole());
-    *outStream = black_hole.Detach();
+    // If it's not extract mode or the index is different, return a black hole to skip data
+    if (askExtractMode != NArchive::NExtract::NAskMode::kExtract || this->index != index) {
+        CMyComPtr<ISequentialOutStream> black_hole(new BlackHole());
+        *outStream = black_hole.Detach();
+        return S_OK;
+    }
+
+    if (out_stream == nullptr) {
+        return E_NO_OUT_STREAM;
+    }
+
+    CMyComPtr<ISequentialOutStream> steam_copy(out_stream);
+    *outStream = steam_copy.Detach();
+
     return S_OK;
-  }
-
-  if (out_stream == nullptr) {
-    return E_NO_OUT_STREAM;
-  }
-
-  CMyComPtr<ISequentialOutStream> steam_copy(out_stream);
-  *outStream = steam_copy.Detach();
-
-  return S_OK;
 }
 
 HRESULT ArchiveExtractCallback::PrepareOperation(Int32 askExtractMode) {
-  // Always return S_OK
-  return S_OK;
+    // Always return S_OK
+    return S_OK;
 }
 
 HRESULT ArchiveExtractCallback::SetOperationResult(Int32 opRes) {
-  // Stop extracting action if operation result is not OK
-  switch (opRes) {
-    case NArchive::NExtract::NOperationResult::kOK:
-      return S_OK;
-    case NArchive::NExtract::NOperationResult::kUnsupportedMethod:
-      return E_UNSUPPORTED_METHOD;
-    case NArchive::NExtract::NOperationResult::kDataError:
-      return E_DATA_ERROR;
-    case NArchive::NExtract::NOperationResult::kCRCError:
-      return E_CRC_ERROR;
-    case NArchive::NExtract::NOperationResult::kUnavailable:
-      return E_UNAVAILABLE;
-    case NArchive::NExtract::NOperationResult::kUnexpectedEnd:
-      return E_UNEXPECTED_END;
-    case NArchive::NExtract::NOperationResult::kDataAfterEnd:
-      return E_DATA_AFTER_END;
-    case NArchive::NExtract::NOperationResult::kIsNotArc:
-      return E_IS_NOT_ARC;
-    case NArchive::NExtract::NOperationResult::kHeadersError:
-      return E_HEADERS_ERROR;
-    case NArchive::NExtract::NOperationResult::kWrongPassword:
-      return E_WRONG_PASSWORD;
-    default:
-      return E_UNKNOWN_ERROR;
-  }
+    // Stop extracting action if operation result is not OK
+    switch (opRes) {
+        case NArchive::NExtract::NOperationResult::kOK:
+            return S_OK;
+        case NArchive::NExtract::NOperationResult::kUnsupportedMethod:
+            return E_UNSUPPORTED_METHOD;
+        case NArchive::NExtract::NOperationResult::kDataError:
+            return E_DATA_ERROR;
+        case NArchive::NExtract::NOperationResult::kCRCError:
+            return E_CRC_ERROR;
+        case NArchive::NExtract::NOperationResult::kUnavailable:
+            return E_UNAVAILABLE;
+        case NArchive::NExtract::NOperationResult::kUnexpectedEnd:
+            return E_UNEXPECTED_END;
+        case NArchive::NExtract::NOperationResult::kDataAfterEnd:
+            return E_DATA_AFTER_END;
+        case NArchive::NExtract::NOperationResult::kIsNotArc:
+            return E_IS_NOT_ARC;
+        case NArchive::NExtract::NOperationResult::kHeadersError:
+            return E_HEADERS_ERROR;
+        case NArchive::NExtract::NOperationResult::kWrongPassword:
+            return E_WRONG_PASSWORD;
+        default:
+            return E_UNKNOWN_ERROR;
+    }
 }
 
-HRESULT ArchiveExtractCallback::CryptoGetTextPassword(BSTR* password) {
-  has_asked_password = true;
-  *password = ::SysAllocString(this->password);
-  return this->password != nullptr ? S_OK : E_NO_PASSWORD;
+HRESULT ArchiveExtractCallback::CryptoGetTextPassword(BSTR *password) {
+    has_asked_password = true;
+    *password = ::SysAllocString(this->password);
+    return this->password != nullptr ? S_OK : E_NO_PASSWORD;
 }
 
 HRESULT ArchiveExtractCallback::GetBetterResult(HRESULT result) {
-  if (result == S_OK) {
-    return S_OK;
-  } else if (has_asked_password) {
-    if (password != nullptr) {
-      return E_WRONG_PASSWORD;
+    if (result == S_OK) {
+        return S_OK;
+    } else if (has_asked_password) {
+        if (password != nullptr) {
+            return E_WRONG_PASSWORD;
+        } else {
+            return E_NO_PASSWORD;
+        }
     } else {
-      return E_NO_PASSWORD;
+        return result;
     }
-  } else {
-    return result;
-  }
 }
 
 InputArchive::InputArchive(CMyComPtr<IInArchive> in_archive, AString format_name) {
-  this->in_archive = in_archive;
-  this->format_name = format_name;
+    this->in_archive = in_archive;
+    this->format_name = format_name;
 }
 
 InputArchive::~InputArchive() {
-  this->in_archive->Close();
+    this->in_archive->Close();
 }
 
 const AString &InputArchive::GetFormatName() {
-  return this->format_name;
+    return this->format_name;
 }
 
 HRESULT InputArchive::GetNumberOfEntries(UInt32 &number) {
-  return this->in_archive->GetNumberOfItems(&number);
+    return this->in_archive->GetNumberOfItems(&number);
 }
 
 static PropType VarTypeToPropType(VARTYPE var_enum) {
-  // TODO VT_ERROR
-  switch (var_enum) {
-    case VT_EMPTY:
-      return PT_EMPTY;
-    case VT_BOOL:
-      return PT_BOOL;
-    case VT_I1:
-    case VT_I2:
-    case VT_I4:
-    case VT_INT:
-    case VT_UI1:
-    case VT_UI2:
-    case VT_UI4:
-    case VT_UINT:
-      return PT_INT;
-    case VT_I8:
-    case VT_UI8:
-    case VT_FILETIME:
-      return PT_LONG;
-    case VT_BSTR:
-      return PT_STRING;
-    default:
-      return PT_UNKNOWN;
-  }
+    // TODO VT_ERROR
+    switch (var_enum) {
+        case VT_EMPTY:
+            return PT_EMPTY;
+        case VT_BOOL:
+            return PT_BOOL;
+        case VT_I1:
+        case VT_I2:
+        case VT_I4:
+        case VT_INT:
+        case VT_UI1:
+        case VT_UI2:
+        case VT_UI4:
+        case VT_UINT:
+            return PT_INT;
+        case VT_I8:
+        case VT_UI8:
+        case VT_FILETIME:
+            return PT_LONG;
+        case VT_BSTR:
+            return PT_STRING;
+        default:
+            return PT_UNKNOWN;
+    }
 }
 
 #define GET_ARCHIVE_PROPERTY_START(METHOD_NAME, VALUE_TYPE)                               \
@@ -217,11 +221,11 @@ HRESULT InputArchive::METHOD_NAME(UInt32 index, PROPID prop_id, VALUE_TYPE value
   return S_OK;
 
 GET_ARCHIVE_PROPERTY_START(GetArchivePropertyType, PropType*)
-  GET_PROPERTY_TYPE
+    GET_PROPERTY_TYPE
 GET_ARCHIVE_PROPERTY_END
 
 GET_ENTRY_PROPERTY_START(GetEntryPropertyType, PropType*)
-  GET_PROPERTY_TYPE
+    GET_PROPERTY_TYPE
 GET_ENTRY_PROPERTY_END
 
 #define GET_BOOLEAN_PROPERTY                                                              \
@@ -236,11 +240,11 @@ GET_ENTRY_PROPERTY_END
   }
 
 GET_ARCHIVE_PROPERTY_START(GetArchiveBooleanProperty, bool*)
-  GET_BOOLEAN_PROPERTY
+    GET_BOOLEAN_PROPERTY
 GET_ARCHIVE_PROPERTY_END
 
 GET_ENTRY_PROPERTY_START(GetEntryBooleanProperty, bool*)
-  GET_BOOLEAN_PROPERTY
+    GET_BOOLEAN_PROPERTY
 GET_ENTRY_PROPERTY_END
 
 #define GET_INT_PROPERTY                                                                  \
@@ -276,11 +280,11 @@ GET_ENTRY_PROPERTY_END
   }
 
 GET_ARCHIVE_PROPERTY_START(GetArchiveIntProperty, Int32*)
-  GET_INT_PROPERTY
+    GET_INT_PROPERTY
 GET_ARCHIVE_PROPERTY_END
 
 GET_ENTRY_PROPERTY_START(GetEntryIntProperty, Int32*)
-  GET_INT_PROPERTY
+    GET_INT_PROPERTY
 GET_ENTRY_PROPERTY_END
 
 static const UInt64 FILE_TIME_OFFSET = (369 * 365 + 89) * 86400ULL * 10000000ULL;
@@ -305,11 +309,11 @@ static const UInt64 FILE_TIME_MULTIPLE = 10000ULL;
   }
 
 GET_ARCHIVE_PROPERTY_START(GetArchiveLongProperty, Int64*)
-  GET_LONG_PROPERTY
+    GET_LONG_PROPERTY
 GET_ARCHIVE_PROPERTY_END
 
 GET_ENTRY_PROPERTY_START(GetEntryLongProperty, Int64*)
-  GET_LONG_PROPERTY
+    GET_LONG_PROPERTY
 GET_ENTRY_PROPERTY_END
 
 #define GET_STRING_PROPERTY                                                               \
@@ -324,27 +328,29 @@ GET_ENTRY_PROPERTY_END
   }
 
 GET_ARCHIVE_PROPERTY_START(GetArchiveStringProperty, BSTR*)
-  GET_STRING_PROPERTY
+    GET_STRING_PROPERTY
 GET_ARCHIVE_PROPERTY_END
 
 GET_ENTRY_PROPERTY_START(GetEntryStringProperty, BSTR*)
-  GET_STRING_PROPERTY
+    GET_STRING_PROPERTY
 GET_ENTRY_PROPERTY_END
 
 HRESULT InputArchive::GetEntryStream(UInt32 index, ISequentialInStream **stream) {
-  *stream = nullptr;
-  CMyComPtr<IInArchiveGetStream> in_archive_get_stream;
-  in_archive->QueryInterface(IID_IInArchiveGetStream, reinterpret_cast<void **>(&in_archive_get_stream));
-  if (in_archive_get_stream != nullptr) {
-    return in_archive_get_stream->GetStream(index, stream);
-  } else {
-    return E_NOTIMPL;
-  }
+    *stream = nullptr;
+    CMyComPtr<IInArchiveGetStream> in_archive_get_stream;
+    in_archive->QueryInterface(IID_IInArchiveGetStream,
+                               reinterpret_cast<void **>(&in_archive_get_stream));
+    if (in_archive_get_stream != nullptr) {
+        return in_archive_get_stream->GetStream(index, stream);
+    } else {
+        return E_NOTIMPL;
+    }
 }
 
 HRESULT InputArchive::ExtractEntry(UInt32 index, BSTR password,
                                    CMyComPtr<ISequentialOutStream> out_stream) {
-  CMyComPtr<ArchiveExtractCallback> callback(new ArchiveExtractCallback(index, password, out_stream));
-  HRESULT result = this->in_archive->Extract(&index, 1, false, callback);
-  return callback->GetBetterResult(result);
+    CMyComPtr<ArchiveExtractCallback> callback(
+            new ArchiveExtractCallback(index, password, out_stream));
+    HRESULT result = this->in_archive->Extract(&index, 1, false, callback);
+    return callback->GetBetterResult(result);
 }

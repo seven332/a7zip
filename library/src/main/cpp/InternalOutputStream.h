@@ -25,32 +25,34 @@
 namespace a7zip {
 
     class InternalOutputStream :
-    public ISequentialOutStream,
-    public CMyUnknownImp
-{
- private:
+            public ISequentialOutStream,
+            public CMyUnknownImp {
+    private:
         InternalOutputStream(jobject stream, jbyteArray array);
 
- public:
+    public:
         virtual ~InternalOutputStream();
 
- public:
-  MY_UNKNOWN_IMP
-  STDMETHOD(Write)(const void *data, UInt32 size, UInt32 *processedSize);
+    public:
+        MY_UNKNOWN_IMP
 
- private:
-  jobject stream;
-  jbyteArray array;
+        STDMETHOD(Write)(const void *data, UInt32 size, UInt32 *processedSize);
 
- public:
-  static HRESULT Initialize(JNIEnv* env);
-  static HRESULT Create(JNIEnv* env, jobject stream, CMyComPtr<ISequentialOutStream>& out_stream);
+    private:
+        jobject stream;
+        jbyteArray array;
 
- private:
-  static bool initialized;
-  static jmethodID method_write;
-  static jmethodID method_close;
-};
+    public:
+        static HRESULT Initialize(JNIEnv *env);
+
+        static HRESULT
+        Create(JNIEnv *env, jobject stream, CMyComPtr<ISequentialOutStream> &out_stream);
+
+    private:
+        static bool initialized;
+        static jmethodID method_write;
+        static jmethodID method_close;
+    };
 
 }
 

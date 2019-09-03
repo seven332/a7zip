@@ -24,10 +24,11 @@
 namespace a7zip {
     namespace JavaInputArchive {
 
-HRESULT RegisterMethods(JNIEnv* env);
-HRESULT UnregisterMethods(JNIEnv* env);
+        HRESULT RegisterMethods(JNIEnv *env);
 
-}
+        HRESULT UnregisterMethods(JNIEnv *env);
+
+    }
 }
 
 #endif //__A7ZIP_JAVA_INPUT_ARCHIVE_H__

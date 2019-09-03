@@ -21,25 +21,29 @@
 
 namespace a7zip {
 
-class JavaEnv {
+    class JavaEnv {
 
- public:
-  JavaEnv();
-  ~JavaEnv();
-  bool IsValid();
-  JNIEnv* operator->() const { return env; }
-  explicit operator JNIEnv*() const { return env; }
+    public:
+        JavaEnv();
 
- private:
-  JNIEnv* env;
-  bool should_detach;
+        ~JavaEnv();
 
- public:
-  static void Initialize(JavaVM* jvm);
+        bool IsValid();
 
- private:
-  static JavaVM* jvm;
-};
+        JNIEnv *operator->() const { return env; }
+
+        explicit operator JNIEnv *() const { return env; }
+
+    private:
+        JNIEnv *env;
+        bool should_detach;
+
+    public:
+        static void Initialize(JavaVM *jvm);
+
+    private:
+        static JavaVM *jvm;
+    };
 
 }
 

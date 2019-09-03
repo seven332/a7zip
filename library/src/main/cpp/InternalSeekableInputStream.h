@@ -25,40 +25,41 @@
 namespace a7zip {
 
     class InternalSeekableInputStream :
-    public IInStream,
-    public IStreamGetSize,
-    public CMyUnknownImp
-{
- private:
+            public IInStream,
+            public IStreamGetSize,
+            public CMyUnknownImp {
+    private:
         InternalSeekableInputStream(jobject stream, jbyteArray array);
 
- public:
+    public:
         virtual ~InternalSeekableInputStream();
 
- public:
-  MY_UNKNOWN_IMP2(IInStream, IStreamGetSize)
+    public:
+        MY_UNKNOWN_IMP2(IInStream, IStreamGetSize)
 
-  STDMETHOD(Read)(void* data, UInt32 size, UInt32* processedSize);
-  STDMETHOD(Seek)(Int64 offset, UInt32 seekOrigin, UInt64* newPosition);
+        STDMETHOD(Read)(void *data, UInt32 size, UInt32 *processedSize);
 
-  STDMETHOD(GetSize)(UInt64* size);
+        STDMETHOD(Seek)(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition);
 
- private:
-  jobject stream;
-  jbyteArray array;
+        STDMETHOD(GetSize)(UInt64 *size);
 
- public:
-  static HRESULT Initialize(JNIEnv* env);
-  static HRESULT Create(JNIEnv* env, jobject stream, CMyComPtr<IInStream>& in_stream);
+    private:
+        jobject stream;
+        jbyteArray array;
 
- private:
-  static bool initialized;
-  static jmethodID method_read;
-  static jmethodID method_seek;
-  static jmethodID method_tell;
-  static jmethodID method_size;
-  static jmethodID method_close;
-};
+    public:
+        static HRESULT Initialize(JNIEnv *env);
+
+        static HRESULT Create(JNIEnv *env, jobject stream, CMyComPtr<IInStream> &in_stream);
+
+    private:
+        static bool initialized;
+        static jmethodID method_read;
+        static jmethodID method_seek;
+        static jmethodID method_tell;
+        static jmethodID method_size;
+        static jmethodID method_close;
+    };
 
 }
 

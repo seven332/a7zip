@@ -19,18 +19,18 @@
 
 namespace a7zip {
 
-enum PropTypeEnum {
-  PT_UNKNOWN,
-  PT_EMPTY,
-  PT_BOOL,
-  PT_INT,
-  PT_LONG,
-  PT_FLOAT,
-  PT_DOUBLE,
-  PT_STRING,
-};
+    enum PropTypeEnum {
+        PT_UNKNOWN,
+        PT_EMPTY,
+        PT_BOOL,
+        PT_INT,
+        PT_LONG,
+        PT_FLOAT,
+        PT_DOUBLE,
+        PT_STRING,
+    };
 
-typedef unsigned short PropType;
+    typedef unsigned short PropType;
 
 }
 

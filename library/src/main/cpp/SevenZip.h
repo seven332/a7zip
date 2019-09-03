@@ -29,13 +29,13 @@
 #include "InputArchive.h"
 
 namespace a7zip {
-namespace SevenZip {
+    namespace SevenZip {
 
-HRESULT Initialize();
+        HRESULT Initialize();
 
-    HRESULT OpenArchive(CMyComPtr<IInStream> stream, BSTR password, InputArchive **archive);
+        HRESULT OpenArchive(CMyComPtr<IInStream> stream, BSTR password, InputArchive **archive);
 
-}
+    }
 }
 
 #endif //__A7ZIP_P7ZIP_H__

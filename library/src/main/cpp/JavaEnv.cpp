@@ -18,29 +18,29 @@
 
 using namespace a7zip;
 
-JavaVM* JavaEnv::jvm = nullptr;
+JavaVM *JavaEnv::jvm = nullptr;
 
-void JavaEnv::Initialize(JavaVM* jvm) {
-  JavaEnv::jvm = jvm;
+void JavaEnv::Initialize(JavaVM *jvm) {
+    JavaEnv::jvm = jvm;
 }
 
 JavaEnv::JavaEnv() {
-  env = nullptr;
-  if (jvm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) == JNI_EDETACHED) {
-    should_detach = jvm->AttachCurrentThread(&env, nullptr) == JNI_OK;
-  } else {
-    should_detach = false;
-  }
+    env = nullptr;
+    if (jvm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6) == JNI_EDETACHED) {
+        should_detach = jvm->AttachCurrentThread(&env, nullptr) == JNI_OK;
+    } else {
+        should_detach = false;
+    }
 }
 
 JavaEnv::~JavaEnv() {
-  if (jvm != nullptr && should_detach) {
-    jvm->DetachCurrentThread();
-    env = nullptr;
-    should_detach = false;
-  }
+    if (jvm != nullptr && should_detach) {
+        jvm->DetachCurrentThread();
+        env = nullptr;
+        should_detach = false;
+    }
 }
 
 bool JavaEnv::IsValid() {
-  return env != nullptr;
+    return env != nullptr;
 }

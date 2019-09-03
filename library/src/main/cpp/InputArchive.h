@@ -27,35 +27,45 @@
 namespace a7zip {
 
     class InputArchive {
- public:
+    public:
         InputArchive(CMyComPtr<IInArchive> in_archive, AString format_name);
 
         ~InputArchive();
 
- public:
-  const AString& GetFormatName();
-  HRESULT GetNumberOfEntries(UInt32& number);
+    public:
+        const AString &GetFormatName();
 
-  HRESULT GetArchivePropertyType(PROPID prop_id, PropType* prop_type);
-  HRESULT GetArchiveBooleanProperty(PROPID prop_id, bool *bool_prop);
-  HRESULT GetArchiveIntProperty(PROPID prop_id, Int32* int_prop);
-  HRESULT GetArchiveLongProperty(PROPID prop_id, Int64* long_prop);
-  HRESULT GetArchiveStringProperty(PROPID prop_id, BSTR* str_prop);
+        HRESULT GetNumberOfEntries(UInt32 &number);
 
-  HRESULT GetEntryPropertyType(UInt32 index, PROPID prop_id, PropType* prop_type);
-  HRESULT GetEntryBooleanProperty(UInt32 index, PROPID prop_id, bool *bool_prop);
-  HRESULT GetEntryIntProperty(UInt32 index, PROPID prop_id, Int32* int_prop);
-  HRESULT GetEntryLongProperty(UInt32 index, PROPID prop_id, Int64* long_prop);
-  HRESULT GetEntryStringProperty(UInt32 index, PROPID prop_id, BSTR* str_prop);
+        HRESULT GetArchivePropertyType(PROPID prop_id, PropType *prop_type);
 
-  HRESULT GetEntryStream(UInt32 index, ISequentialInStream** stream);
+        HRESULT GetArchiveBooleanProperty(PROPID prop_id, bool *bool_prop);
 
-  HRESULT ExtractEntry(UInt32 index, BSTR password, CMyComPtr<ISequentialOutStream> out_stream);
+        HRESULT GetArchiveIntProperty(PROPID prop_id, Int32 *int_prop);
 
- private:
-  CMyComPtr<IInArchive> in_archive;
-  AString format_name;
-};
+        HRESULT GetArchiveLongProperty(PROPID prop_id, Int64 *long_prop);
+
+        HRESULT GetArchiveStringProperty(PROPID prop_id, BSTR *str_prop);
+
+        HRESULT GetEntryPropertyType(UInt32 index, PROPID prop_id, PropType *prop_type);
+
+        HRESULT GetEntryBooleanProperty(UInt32 index, PROPID prop_id, bool *bool_prop);
+
+        HRESULT GetEntryIntProperty(UInt32 index, PROPID prop_id, Int32 *int_prop);
+
+        HRESULT GetEntryLongProperty(UInt32 index, PROPID prop_id, Int64 *long_prop);
+
+        HRESULT GetEntryStringProperty(UInt32 index, PROPID prop_id, BSTR *str_prop);
+
+        HRESULT GetEntryStream(UInt32 index, ISequentialInStream **stream);
+
+        HRESULT
+        ExtractEntry(UInt32 index, BSTR password, CMyComPtr<ISequentialOutStream> out_stream);
+
+    private:
+        CMyComPtr<IInArchive> in_archive;
+        AString format_name;
+    };
 
 }
 
