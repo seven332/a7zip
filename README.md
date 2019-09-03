@@ -16,8 +16,8 @@ A7Zip.loadLibrary(A7ZipExtract.LIBRARY);
 2. Open an archive.
 
 ```java
-InStream stream = new FileInStream("archive.7z");
-InArchive archive = InArchive.open(stream);
+InputStream stream = new FileInputStream("archive.7z");
+InputArchive archive = InputArchive.open(stream);
 ```
 
 3. Operate the archive.
@@ -30,7 +30,7 @@ for (int i = 0; i < number; i++) {
     // Get the path of the entry
     String path = archive.getEntryPath(i);
     // Extract the entry
-    archive.extractEntry(i, new IoSequentialOutStream(new FileOutputStream(path)));
+    archive.extractEntry(i, new FileOutputStream(path));
 }
 
 // Close the archive
