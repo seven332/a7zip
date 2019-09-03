@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "InArchive.h"
+#include "InputArchive.h"
 
 #include <Windows/PropVariant.h>
 #include <7zip/ICoder.h>
@@ -152,20 +152,20 @@ HRESULT ArchiveExtractCallback::GetBetterResult(HRESULT result) {
   }
 }
 
-InArchive::InArchive(CMyComPtr<IInArchive> in_archive, AString format_name) {
+InputArchive::InputArchive(CMyComPtr<IInArchive> in_archive, AString format_name) {
   this->in_archive = in_archive;
   this->format_name = format_name;
 }
 
-InArchive::~InArchive() {
+InputArchive::~InputArchive() {
   this->in_archive->Close();
 }
 
-const AString& InArchive::GetFormatName() {
+const AString &InputArchive::GetFormatName() {
   return this->format_name;
 }
 
-HRESULT InArchive::GetNumberOfEntries(UInt32& number) {
+HRESULT InputArchive::GetNumberOfEntries(UInt32 &number) {
   return this->in_archive->GetNumberOfItems(&number);
 }
 
@@ -197,7 +197,7 @@ static PropType VarTypeToPropType(VARTYPE var_enum) {
 }
 
 #define GET_ARCHIVE_PROPERTY_START(METHOD_NAME, VALUE_TYPE)                               \
-HRESULT InArchive::METHOD_NAME(PROPID prop_id, VALUE_TYPE value) {                        \
+HRESULT InputArchive::METHOD_NAME(PROPID prop_id, VALUE_TYPE value) {                        \
   NWindows::NCOM::CPropVariant prop;                                                      \
   RETURN_SAME_IF_NOT_ZERO(this->in_archive->GetArchiveProperty(prop_id, &prop));
 
@@ -205,7 +205,7 @@ HRESULT InArchive::METHOD_NAME(PROPID prop_id, VALUE_TYPE value) {              
 }
 
 #define GET_ENTRY_PROPERTY_START(METHOD_NAME, VALUE_TYPE)                                 \
-HRESULT InArchive::METHOD_NAME(UInt32 index, PROPID prop_id, VALUE_TYPE value) {          \
+HRESULT InputArchive::METHOD_NAME(UInt32 index, PROPID prop_id, VALUE_TYPE value) {          \
   NWindows::NCOM::CPropVariant prop;                                                      \
   RETURN_SAME_IF_NOT_ZERO(this->in_archive->GetProperty(index, prop_id, &prop));
 
@@ -331,7 +331,7 @@ GET_ENTRY_PROPERTY_START(GetEntryStringProperty, BSTR*)
   GET_STRING_PROPERTY
 GET_ENTRY_PROPERTY_END
 
-HRESULT InArchive::GetEntryStream(UInt32 index, ISequentialInStream** stream) {
+HRESULT InputArchive::GetEntryStream(UInt32 index, ISequentialInStream **stream) {
   *stream = nullptr;
   CMyComPtr<IInArchiveGetStream> in_archive_get_stream;
   in_archive->QueryInterface(IID_IInArchiveGetStream, reinterpret_cast<void **>(&in_archive_get_stream));
@@ -342,7 +342,8 @@ HRESULT InArchive::GetEntryStream(UInt32 index, ISequentialInStream** stream) {
   }
 }
 
-HRESULT InArchive::ExtractEntry(UInt32 index, BSTR password, CMyComPtr<ISequentialOutStream> out_stream) {
+HRESULT InputArchive::ExtractEntry(UInt32 index, BSTR password,
+                                   CMyComPtr<ISequentialOutStream> out_stream) {
   CMyComPtr<ArchiveExtractCallback> callback(new ArchiveExtractCallback(index, password, out_stream));
   HRESULT result = this->in_archive->Extract(&index, 1, false, callback);
   return callback->GetBetterResult(result);

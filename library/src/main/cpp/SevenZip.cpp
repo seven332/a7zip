@@ -432,14 +432,15 @@ static HRESULT OpenInArchive(
   return E_UNKNOWN_FORMAT;
 }
 
-HRESULT SevenZip::OpenArchive(CMyComPtr<IInStream> in_stream, BSTR password, InArchive** archive) {
+HRESULT
+SevenZip::OpenArchive(CMyComPtr<IInStream> in_stream, BSTR password, InputArchive **archive) {
   CMyComPtr<IInArchive> in_archive = nullptr;
   AString format_name;
 
   HRESULT result = OpenInArchive(in_stream, password, in_archive, format_name);
 
   if (result == S_OK && in_archive != nullptr) {
-    *archive = new InArchive(in_archive, format_name);
+    *archive = new InputArchive(in_archive, format_name);
     return S_OK;
   }
 

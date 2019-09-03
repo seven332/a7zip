@@ -9,11 +9,11 @@ add_subdirectory(p7zip)
 
 set(A_SEVEN_ZIP_SOURCES
         src/main/cpp/BlackHole.cpp
-        src/main/cpp/InArchive.cpp
+        src/main/cpp/InputArchive.cpp
         src/main/cpp/InternalSeekableInputStream.cpp
         src/main/cpp/JavaEnv.cpp
         src/main/cpp/JavaHelper.cpp
-        src/main/cpp/JavaInArchive.cpp
+        src/main/cpp/JavaInputArchive.cpp
         src/main/cpp/JavaInitA7Zip.cpp
         src/main/cpp/JavaSeekableInputStream.cpp
         src/main/cpp/JavaInputStream.cpp

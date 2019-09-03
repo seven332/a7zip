@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef __A7ZIP_IN_ARCHIVE_H__
-#define __A7ZIP_IN_ARCHIVE_H__
+#ifndef __A7ZIP_INPUT_ARCHIVE_H__
+#define __A7ZIP_INPUT_ARCHIVE_H__
 
 #include <include_windows/windows.h>
 #include <Common/MyCom.h>
@@ -26,10 +26,11 @@
 
 namespace a7zip {
 
-class InArchive {
+    class InputArchive {
  public:
-  InArchive(CMyComPtr<IInArchive> in_archive, AString format_name);
-  ~InArchive();
+        InputArchive(CMyComPtr<IInArchive> in_archive, AString format_name);
+
+        ~InputArchive();
 
  public:
   const AString& GetFormatName();
@@ -58,4 +59,4 @@ class InArchive {
 
 }
 
-#endif //__A7ZIP_IN_ARCHIVE_H__
+#endif //__A7ZIP_INPUT_ARCHIVE_H__

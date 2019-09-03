@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-#ifndef __A7ZIP_JAVA_IN_ARCHIVE_H__
-#define __A7ZIP_JAVA_IN_ARCHIVE_H__
+#ifndef __A7ZIP_JAVA_INPUT_ARCHIVE_H__
+#define __A7ZIP_JAVA_INPUT_ARCHIVE_H__
 
 #include <jni.h>
 
 #include <Common/MyWindows.h>
 
 namespace a7zip {
-namespace JavaInArchive {
+    namespace JavaInputArchive {
 
 HRESULT RegisterMethods(JNIEnv* env);
 HRESULT UnregisterMethods(JNIEnv* env);
@@ -30,4 +30,4 @@ HRESULT UnregisterMethods(JNIEnv* env);
 }
 }
 
-#endif //__A7ZIP_JAVA_IN_ARCHIVE_H__
+#endif //__A7ZIP_JAVA_INPUT_ARCHIVE_H__

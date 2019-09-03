@@ -18,6 +18,7 @@ package com.hippo.a7zip;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -26,7 +27,7 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
 
-public class InArchive implements Closeable {
+public class InputArchive implements Closeable {
 
     private long nativePtr;
     @Nullable
@@ -34,7 +35,7 @@ public class InArchive implements Closeable {
     @Nullable
     private String password;
 
-    private InArchive(long nativePtr, @Nullable Charset charset, @Nullable String password) {
+    private InputArchive(long nativePtr, @Nullable Charset charset, @Nullable String password) {
         this.nativePtr = nativePtr;
         this.charset = charset;
         this.password = password;
@@ -42,7 +43,7 @@ public class InArchive implements Closeable {
 
     private void checkClosed() {
         if (nativePtr == 0) {
-            throw new IllegalStateException("This InArchive is closed.");
+            throw new IllegalStateException("This InputArchive is closed.");
         }
     }
 
@@ -280,7 +281,16 @@ public class InArchive implements Closeable {
      */
     @NonNull
     public InputStream getEntryStream(int index) throws ArchiveException {
-        return (NativeInputStream) nativeGetEntryStream(nativePtr, index);
+        InternalInputStream result = nativeGetEntryStream(nativePtr, index);
+
+        Log.e("", result.getClass().toString());
+        if (result instanceof NativeInputStream)
+            return (NativeInputStream) result;
+        else if (result instanceof NativeSeekableInputStream) {
+            return (NativeSeekableInputStream) result;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -335,17 +345,17 @@ public class InArchive implements Closeable {
     }
 
     @NonNull
-    public static InArchive open(SeekableInputStream stream) throws ArchiveException {
+    public static InputArchive open(SeekableInputStream stream) throws ArchiveException {
         return open(stream, null, null);
     }
 
     @NonNull
-    public static InArchive open(RandomAccessFile file) throws ArchiveException {
+    public static InputArchive open(RandomAccessFile file) throws ArchiveException {
         return open(file, null, null);
     }
 
     @NonNull
-    public static InArchive open(
+    public static InputArchive open(
             RandomAccessFile file,
             @Nullable Charset charset,
             @Nullable String password
@@ -354,7 +364,7 @@ public class InArchive implements Closeable {
     }
 
     @NonNull
-    public static InArchive open(
+    public static InputArchive open(
             SeekableInputStream stream,
             @Nullable Charset charset,
             @Nullable String password
@@ -366,7 +376,7 @@ public class InArchive implements Closeable {
             throw new ArchiveException("a7zip is buggy");
         }
 
-        return new InArchive(nativePtr, charset, password);
+        return new InputArchive(nativePtr, charset, password);
     }
 
     private static native long nativeOpen(InternalSeekableInputStream stream, String password) throws ArchiveException;

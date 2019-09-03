@@ -18,7 +18,7 @@
 
 #include "InternalSeekableInputStream.h"
 #include "JavaEnv.h"
-#include "JavaInArchive.h"
+#include "JavaInputArchive.h"
 #include "JavaSeekableInputStream.h"
 #include "JavaInputStream.h"
 #include "InternalOutputStream.h"
@@ -53,7 +53,7 @@ extern "C" {
 
 int Initialize() {
   JavaEnv env;
-  RETURN_SAME_IF_NOT_ZERO(JavaInArchive::RegisterMethods(static_cast<JNIEnv*>(env)));
+    RETURN_SAME_IF_NOT_ZERO(JavaInputArchive::RegisterMethods(static_cast<JNIEnv *>(env)));
   RETURN_SAME_IF_NOT_ZERO(JavaInStream::RegisterMethods(static_cast<JNIEnv*>(env)));
   RETURN_SAME_IF_NOT_ZERO(JavaSequentialInStream::RegisterMethods(static_cast<JNIEnv*>(env)));
   return S_OK;
@@ -61,7 +61,7 @@ int Initialize() {
 
 int Terminate() {
   JavaEnv env;
-  RETURN_SAME_IF_NOT_ZERO(JavaInArchive::UnregisterMethods(static_cast<JNIEnv*>(env)));
+    RETURN_SAME_IF_NOT_ZERO(JavaInputArchive::UnregisterMethods(static_cast<JNIEnv *>(env)));
   RETURN_SAME_IF_NOT_ZERO(JavaInStream::UnregisterMethods(static_cast<JNIEnv*>(env)));
   RETURN_SAME_IF_NOT_ZERO(JavaSequentialInStream::UnregisterMethods(static_cast<JNIEnv*>(env)));
   return S_OK;

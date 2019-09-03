@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "JavaInArchive.h"
+#include "JavaInputArchive.h"
 
 #include <cstdio>
 #include <type_traits>
@@ -70,7 +70,7 @@ static jlong NativeOpen(
     CopyJStringToBSTR(bstr_password, j_password, length);
   }
 
-  InArchive* archive = nullptr;
+    InputArchive *archive = nullptr;
   result = SevenZip::OpenArchive(in_stream, bstr_password, &archive);
 
   if (password != nullptr) {
@@ -94,7 +94,7 @@ static jstring NativeGetFormatName(
     jlong native_ptr
 ) {
   CHECK_CLOSED_RET(env, nullptr, native_ptr);
-  InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
+    InputArchive *archive = reinterpret_cast<InputArchive *>(native_ptr);
   return env->NewStringUTF(archive->GetFormatName());
 }
 
@@ -104,7 +104,7 @@ static jint NativeGetNumberOfEntries(
     jlong native_ptr
 ) {
   CHECK_CLOSED_RET(env, 0, native_ptr);
-  InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
+    InputArchive *archive = reinterpret_cast<InputArchive *>(native_ptr);
 
   UInt32 number = 0;
   HRESULT result = archive->GetNumberOfEntries(number);
@@ -114,7 +114,7 @@ static jint NativeGetNumberOfEntries(
 #define GET_ARCHIVE_PROPERTY_START(METHOD_NAME, RETURN_TYPE)                              \
 static RETURN_TYPE METHOD_NAME(JNIEnv* env, jclass, jlong native_ptr, jint prop_id) {     \
   CHECK_CLOSED_RET(env, 0, native_ptr);                                                   \
-  InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
+  InputArchive* archive = reinterpret_cast<InputArchive*>(native_ptr);
 
 #define GET_ARCHIVE_PROPERTY_END                                                          \
 }
@@ -122,7 +122,7 @@ static RETURN_TYPE METHOD_NAME(JNIEnv* env, jclass, jlong native_ptr, jint prop_
 #define GET_ENTRY_PROPERTY_START(METHOD_NAME, RETURN_TYPE)                                \
 static RETURN_TYPE METHOD_NAME(JNIEnv* env, jclass, jlong native_ptr, jint index, jint prop_id) {\
   CHECK_CLOSED_RET(env, 0, native_ptr);                                                   \
-  InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
+  InputArchive* archive = reinterpret_cast<InputArchive*>(native_ptr);
 
 #define GET_ENTRY_PROPERTY_END                                                            \
 }
@@ -216,7 +216,7 @@ static jobject NativeGetEntryStream(
     jint index
 ) {
   CHECK_CLOSED_RET(env, nullptr, native_ptr);
-  InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
+    InputArchive *archive = reinterpret_cast<InputArchive *>(native_ptr);
 
   CMyComPtr<ISequentialInStream> sequential_in_stream = nullptr;
   HRESULT result = archive->GetEntryStream(static_cast<UInt32>(index), &sequential_in_stream);
@@ -265,7 +265,7 @@ static void NativeExtractEntry(
     jobject stream
 ) {
   CHECK_CLOSED(env, native_ptr);
-  InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
+    InputArchive *archive = reinterpret_cast<InputArchive *>(native_ptr);
 
   CMyComPtr<ISequentialOutStream> out_stream = nullptr;
   HRESULT result = InternalOutputStream::Create(env, stream, out_stream);
@@ -308,7 +308,7 @@ static void NativeClose(
     jlong native_ptr
 ) {
   CHECK_CLOSED(env, native_ptr);
-  InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
+    InputArchive *archive = reinterpret_cast<InputArchive *>(native_ptr);
   delete archive;
 }
 
@@ -363,8 +363,8 @@ static JNINativeMethod archive_methods[] = {
       reinterpret_cast<void *>(NativeClose) }
 };
 
-HRESULT JavaInArchive::RegisterMethods(JNIEnv* env) {
-  jclass clazz = env->FindClass("com/hippo/a7zip/InArchive");
+HRESULT JavaInputArchive::RegisterMethods(JNIEnv *env) {
+    jclass clazz = env->FindClass("com/hippo/a7zip/InputArchive");
   if (clazz == nullptr) return E_CLASS_NOT_FOUND;
 
   jint result = env->RegisterNatives(clazz, archive_methods, std::extent<decltype(archive_methods)>::value);
@@ -375,8 +375,8 @@ HRESULT JavaInArchive::RegisterMethods(JNIEnv* env) {
   return S_OK;
 }
 
-HRESULT JavaInArchive::UnregisterMethods(JNIEnv *env) {
-  jclass clazz = env->FindClass("com/hippo/a7zip/InArchive");
+HRESULT JavaInputArchive::UnregisterMethods(JNIEnv *env) {
+    jclass clazz = env->FindClass("com/hippo/a7zip/InputArchive");
   if (clazz == nullptr) return E_CLASS_NOT_FOUND;
 
   jint result = env->UnregisterNatives(clazz);

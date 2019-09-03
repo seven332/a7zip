@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef __A7ZIP_OUTPUT_STREAM_OUT_STREAM_H__
-#define __A7ZIP_OUTPUT_STREAM_OUT_STREAM_H__
+#ifndef __A7ZIP_INTERNAL_OUTPUT_STREAM_H__
+#define __A7ZIP_INTERNAL_OUTPUT_STREAM_H__
 
 #include <jni.h>
 
@@ -54,4 +54,4 @@ namespace a7zip {
 
 }
 
-#endif //__A7ZIP_OUTPUT_STREAM_OUT_STREAM_H__
+#endif //__A7ZIP_INTERNAL_OUTPUT_STREAM_H__

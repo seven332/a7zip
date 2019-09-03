@@ -26,13 +26,14 @@
 
 #include <7zip/ICoder.h>
 
-#include "InArchive.h"
+#include "InputArchive.h"
 
 namespace a7zip {
 namespace SevenZip {
 
 HRESULT Initialize();
-HRESULT OpenArchive(CMyComPtr<IInStream> stream, BSTR password, InArchive** archive);
+
+    HRESULT OpenArchive(CMyComPtr<IInStream> stream, BSTR password, InputArchive **archive);
 
 }
 }

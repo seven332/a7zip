@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef __A7ZIP_JAVA_IN_STREAM_H__
-#define __A7ZIP_JAVA_IN_STREAM_H__
+#ifndef __A7ZIP_SEEKABLE_INPUT_STREAM_H__
+#define __A7ZIP_SEEKABLE_INPUT_STREAM_H__
 
 #include <jni.h>
 
@@ -35,4 +35,4 @@ HRESULT NewInstance(JNIEnv* env, IInStream* stream, jobject* object);
 }
 }
 
-#endif //__A7ZIP_JAVA_IN_STREAM_H__
+#endif //__A7ZIP_SEEKABLE_INPUT_STREAM_H__
