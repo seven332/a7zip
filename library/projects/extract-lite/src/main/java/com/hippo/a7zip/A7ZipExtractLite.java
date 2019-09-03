@@ -16,7 +16,7 @@
 
 package com.hippo.a7zip;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public class A7ZipExtractLite {
 
