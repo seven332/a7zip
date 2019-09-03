@@ -16,8 +16,9 @@
 
 package com.hippo.a7zip;
 
-import android.support.test.InstrumentationRegistry;
 import android.util.Log;
+
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.getkeepsafe.relinker.ReLinker;
 
@@ -37,13 +38,13 @@ public class NativeTest {
 
     @BeforeClass
     public static void beforeClass() {
-        ReLinker.loadLibrary(InstrumentationRegistry.getContext(), "a7zip_test");
+        ReLinker.loadLibrary(InstrumentationRegistry.getInstrumentation().getTargetContext(), "a7zip_test");
     }
 
     @SuppressWarnings("deprecation")
     @Test
     public void testNative() throws IOException {
-        File tempDir = InstrumentationRegistry.getContext().getCacheDir();
+        File tempDir = InstrumentationRegistry.getInstrumentation().getTargetContext().getCacheDir();
         File logFile = new File(tempDir, "native_test.xml");
 
         int code = nativeTest(logFile.getCanonicalPath());

@@ -16,7 +16,7 @@
 
 package com.hippo.a7zip;
 
-import android.support.test.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.AfterClass;
@@ -39,7 +39,7 @@ public class BaseTestCase {
         InputStream is = null;
         OutputStream os = null;
         try {
-            is = InstrumentationRegistry.getContext().getAssets().open(path);
+            is = InstrumentationRegistry.getInstrumentation().getTargetContext().getAssets().open(path);
             os = new FileOutputStream(of);
             IOUtils.copy(is, os);
         } finally {

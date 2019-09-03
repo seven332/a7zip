@@ -16,7 +16,7 @@
 
 package com.hippo.a7zip;
 
-import android.support.test.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.getkeepsafe.relinker.ReLinker;
 
@@ -24,6 +24,6 @@ public class ReLinkerLibraryLoader implements A7ZipLibraryLoader {
 
     @Override
     public void loadLibrary(String libname) {
-        ReLinker.loadLibrary(InstrumentationRegistry.getContext(), libname);
+        ReLinker.loadLibrary(InstrumentationRegistry.getInstrumentation().getTargetContext(), libname);
     }
 }
