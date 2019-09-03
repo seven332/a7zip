@@ -21,11 +21,11 @@ import android.support.annotation.Keep;
 @Keep
 public class PasswordException extends ArchiveException {
 
-  public PasswordException(String message) {
-    super(message);
-  }
+    public PasswordException(String message) {
+        super(message);
+    }
 
-  public PasswordException(String message, Throwable cause) {
-    super(message, cause);
-  }
+    public PasswordException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

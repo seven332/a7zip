@@ -21,40 +21,40 @@ import java.io.InputStream;
 
 class NativeInputStream extends InputStream implements InternalInputStream {
 
-  private long nativePtr;
+    private long nativePtr;
 
-  private NativeInputStream(long nativePtr) {
-    this.nativePtr = nativePtr;
-  }
-
-  private void checkClosed() {
-    if (nativePtr == 0) {
-      throw new IllegalStateException("This NativeInputStream is closed.");
+    private NativeInputStream(long nativePtr) {
+        this.nativePtr = nativePtr;
     }
-  }
 
-  @Override
-  public int read() throws IOException {
-    byte[] buffer = new byte[1];
-
-    return read(buffer) == 1 ? buffer[0] : -1;
-  }
-
-  @Override
-  public int read(byte[] b, int off, int len) throws IOException {
-    checkClosed();
-    return nativeRead(nativePtr, b, off, len);
-  }
-
-  @Override
-  public void close() throws IOException {
-    if (nativePtr != 0) {
-      nativeClose(nativePtr);
-      nativePtr = 0;
+    private void checkClosed() {
+        if (nativePtr == 0) {
+            throw new IllegalStateException("This NativeInputStream is closed.");
+        }
     }
-  }
 
-  private static native int nativeRead(long nativePtr, byte[] b, int off, int len) throws IOException;
+    @Override
+    public int read() throws IOException {
+        byte[] buffer = new byte[1];
 
-  private static native void nativeClose(long nativePtr) throws IOException;
+        return read(buffer) == 1 ? buffer[0] : -1;
+    }
+
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+        checkClosed();
+        return nativeRead(nativePtr, b, off, len);
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (nativePtr != 0) {
+            nativeClose(nativePtr);
+            nativePtr = 0;
+        }
+    }
+
+    private static native int nativeRead(long nativePtr, byte[] b, int off, int len) throws IOException;
+
+    private static native void nativeClose(long nativePtr) throws IOException;
 }

@@ -20,16 +20,16 @@ import android.support.annotation.NonNull;
 
 public class A7ZipExtractLite {
 
-  public static final A7ZipLibrary LIBRARY = new A7ZipLibrary() {
-    @Override
-    String getMainLibraryName() {
-      return "a7zip-extract-lite";
-    }
+    public static final A7ZipLibrary LIBRARY = new A7ZipLibrary() {
+        @Override
+        String getMainLibraryName() {
+            return "a7zip-extract-lite";
+        }
 
-    @NonNull
-    @Override
-    String[] getMinorLibraryNames() {
-      return new String[] { "p7zip-extract-lite" };
-    }
-  };
+        @NonNull
+        @Override
+        String[] getMinorLibraryNames() {
+            return new String[]{"p7zip-extract-lite"};
+        }
+    };
 }

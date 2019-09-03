@@ -21,12 +21,12 @@ import java.io.IOException;
 
 public interface InternalInputStream extends Closeable {
 
-  // Fix java.lang.NoSuchMethodError
-  @Override
-  void close() throws IOException;
+    // Fix java.lang.NoSuchMethodError
+    @Override
+    void close() throws IOException;
 
-  /**
-   * The same as {@link java.io.InputStream#read(byte[], int, int)}.
-   */
-  int read(byte[] b, int off, int len) throws IOException;
+    /**
+     * The same as {@link java.io.InputStream#read(byte[], int, int)}.
+     */
+    int read(byte[] b, int off, int len) throws IOException;
 }

@@ -19,20 +19,20 @@ package com.hippo.a7zip;
 import java.io.IOException;
 
 public interface InternalSeekableInputStream extends InternalInputStream {
-  /**
-   * Sets the position, measured from the beginning,
-   * at which the next read occurs. The offset may be
-   * set beyond the end of the file.
-   */
-  void seek(long pos) throws IOException;
+    /**
+     * Sets the position, measured from the beginning,
+     * at which the next read occurs. The offset may be
+     * set beyond the end of the file.
+     */
+    void seek(long pos) throws IOException;
 
-  /**
-   * Returns current position, measured from the beginning.
-   */
-  long tell() throws IOException;
+    /**
+     * Returns current position, measured from the beginning.
+     */
+    long tell() throws IOException;
 
-  /**
-   * Returns the size.
-   */
-  long size() throws IOException;
+    /**
+     * Returns the size.
+     */
+    long size() throws IOException;
 }

@@ -23,10 +23,11 @@ import android.support.annotation.NonNull;
  */
 public abstract class A7ZipLibrary {
 
-  A7ZipLibrary() { }
+    A7ZipLibrary() {
+    }
 
-  abstract String getMainLibraryName();
+    abstract String getMainLibraryName();
 
-  @NonNull
-  abstract String[] getMinorLibraryNames();
+    @NonNull
+    abstract String[] getMinorLibraryNames();
 }

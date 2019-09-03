@@ -20,25 +20,25 @@ import java.io.IOException;
 
 public interface InternalSeekableOutputStream extends InternalOutputStream {
 
-  /**
-   * Sets the position, measured from the beginning,
-   * at which the next write occurs. The offset may be
-   * set beyond the end of the file.
-   */
-  void seek(long pos) throws IOException;
+    /**
+     * Sets the position, measured from the beginning,
+     * at which the next write occurs. The offset may be
+     * set beyond the end of the file.
+     */
+    void seek(long pos) throws IOException;
 
-  /**
-   * Returns current position, measured from the beginning.
-   */
-  long tell() throws IOException;
+    /**
+     * Returns current position, measured from the beginning.
+     */
+    long tell() throws IOException;
 
-  /**
-   * Returns the size.
-   */
-  long size() throws IOException;
+    /**
+     * Returns the size.
+     */
+    long size() throws IOException;
 
-  /**
-   * Sets the size.
-   */
-  void truncate(long size) throws IOException;
+    /**
+     * Sets the size.
+     */
+    void truncate(long size) throws IOException;
 }

@@ -21,15 +21,15 @@ package com.hippo.a7zip;
  */
 public interface A7ZipLibraryLoader {
 
-  /**
-   * Loads the native library. Using {@link System#loadLibrary(String)}
-   * directly may cause {@link UnsatisfiedLinkError} on some
-   * devices. Some libraries can fix it,
-   * like <a href="https://github.com/KeepSafe/ReLinker">ReLinker</a>
-   * and <a href="https://github.com/facebook/SoLoader">SoLoader</a>.
-   * The method could be a wrapper.
-   *
-   * @param libname the name of the library
-   */
-  void loadLibrary(String libname);
+    /**
+     * Loads the native library. Using {@link System#loadLibrary(String)}
+     * directly may cause {@link UnsatisfiedLinkError} on some
+     * devices. Some libraries can fix it,
+     * like <a href="https://github.com/KeepSafe/ReLinker">ReLinker</a>
+     * and <a href="https://github.com/facebook/SoLoader">SoLoader</a>.
+     * The method could be a wrapper.
+     *
+     * @param libname the name of the library
+     */
+    void loadLibrary(String libname);
 }

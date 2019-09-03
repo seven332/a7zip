@@ -20,35 +20,35 @@ import java.io.IOException;
 
 class NativeSeekableInputStream extends SeekableInputStream {
 
-  private long nativePtr;
+    private long nativePtr;
 
     private NativeSeekableInputStream(long nativePtr) {
-    this.nativePtr = nativePtr;
-  }
-
-  private void checkClosed() {
-    if (nativePtr == 0) {
-        throw new IllegalStateException("This NativeSeekableInputStream is closed.");
+        this.nativePtr = nativePtr;
     }
-  }
 
-  @Override
-  public void seek(long pos) throws IOException {
-    checkClosed();
-    nativeSeek(nativePtr, pos);
-  }
+    private void checkClosed() {
+        if (nativePtr == 0) {
+            throw new IllegalStateException("This NativeSeekableInputStream is closed.");
+        }
+    }
 
-  @Override
-  public long tell() throws IOException {
-    checkClosed();
-    return nativeTell(nativePtr);
-  }
+    @Override
+    public void seek(long pos) throws IOException {
+        checkClosed();
+        nativeSeek(nativePtr, pos);
+    }
 
-  @Override
-  public long size() throws IOException {
-    checkClosed();
-    return nativeSize(nativePtr);
-  }
+    @Override
+    public long tell() throws IOException {
+        checkClosed();
+        return nativeTell(nativePtr);
+    }
+
+    @Override
+    public long size() throws IOException {
+        checkClosed();
+        return nativeSize(nativePtr);
+    }
 
     @Override
     public int read() throws IOException {
@@ -57,27 +57,27 @@ class NativeSeekableInputStream extends SeekableInputStream {
         return read(buffer) == 1 ? buffer[0] : -1;
     }
 
-  @Override
-  public int read(byte[] b, int off, int len) throws IOException {
-    checkClosed();
-    return nativeRead(nativePtr, b, off, len);
-  }
-
-  @Override
-  public void close() throws IOException {
-    if (nativePtr != 0) {
-      nativeClose(nativePtr);
-      nativePtr = 0;
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+        checkClosed();
+        return nativeRead(nativePtr, b, off, len);
     }
-  }
 
-  private static native void nativeSeek(long nativePtr, long pos) throws IOException;
+    @Override
+    public void close() throws IOException {
+        if (nativePtr != 0) {
+            nativeClose(nativePtr);
+            nativePtr = 0;
+        }
+    }
 
-  private static native long nativeTell(long nativePtr) throws IOException;
+    private static native void nativeSeek(long nativePtr, long pos) throws IOException;
 
-  private static native long nativeSize(long nativePtr) throws IOException;
+    private static native long nativeTell(long nativePtr) throws IOException;
 
-  private static native int nativeRead(long nativePtr, byte[] b, int off, int len) throws IOException;
+    private static native long nativeSize(long nativePtr) throws IOException;
 
-  private static native void nativeClose(long nativePtr) throws IOException;
+    private static native int nativeRead(long nativePtr, byte[] b, int off, int len) throws IOException;
+
+    private static native void nativeClose(long nativePtr) throws IOException;
 }

@@ -19,23 +19,23 @@ set(A_SEVEN_ZIP_SOURCES
         src/main/cpp/JavaInputStream.cpp
         src/main/cpp/InternalOutputStream.cpp
         src/main/cpp/SevenZip.cpp
-)
+        )
 
 set(A_SEVEN_ZIP_FLAGS -fvisibility=hidden)
 
-if(EXTRACT)
+if (EXTRACT)
     if (LITE)
         set(A_SEVEN_ZIP_NAME "a7zip-extract-lite")
-    else()
+    else ()
         set(A_SEVEN_ZIP_NAME "a7zip-extract")
-    endif()
-else()
+    endif ()
+else ()
     if (LITE)
         set(A_SEVEN_ZIP_NAME "a7zip-lite")
-    else()
+    else ()
         set(A_SEVEN_ZIP_NAME "a7zip-full")
-    endif()
-endif()
+    endif ()
+endif ()
 
 add_library(a7zip SHARED ${A_SEVEN_ZIP_SOURCES})
 target_link_libraries(a7zip PUBLIC p7zip log)
@@ -52,4 +52,4 @@ target_link_libraries(a7zip_test PRIVATE a7zip gtest)
 target_include_directories(a7zip_test PRIVATE
         src/main/cpp
         googletest/include
-)
+        )

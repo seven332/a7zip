@@ -18,24 +18,24 @@ package com.hippo.a7zip;
 
 public class A7Zip {
 
-  /**
-   * Load native libraries for A7Zip with {@link System#loadLibrary(String)} directly.
-   */
-  public static void loadLibrary(A7ZipLibrary library) {
-    A7ZipLoader.loadLibrary(library, SYSTEM_LIBRARY_LOADER);
-  }
-
-  /**
-   * Load native libraries for A7Zip with custom library loader.
-   */
-  public static void loadLibrary(A7ZipLibrary library, A7ZipLibraryLoader loader) {
-    A7ZipLoader.loadLibrary(library, loader);
-  }
-
-  private static final A7ZipLibraryLoader SYSTEM_LIBRARY_LOADER = new A7ZipLibraryLoader() {
-    @Override
-    public void loadLibrary(String library) {
-      System.loadLibrary(library);
+    /**
+     * Load native libraries for A7Zip with {@link System#loadLibrary(String)} directly.
+     */
+    public static void loadLibrary(A7ZipLibrary library) {
+        A7ZipLoader.loadLibrary(library, SYSTEM_LIBRARY_LOADER);
     }
-  };
+
+    /**
+     * Load native libraries for A7Zip with custom library loader.
+     */
+    public static void loadLibrary(A7ZipLibrary library, A7ZipLibraryLoader loader) {
+        A7ZipLoader.loadLibrary(library, loader);
+    }
+
+    private static final A7ZipLibraryLoader SYSTEM_LIBRARY_LOADER = new A7ZipLibraryLoader() {
+        @Override
+        public void loadLibrary(String library) {
+            System.loadLibrary(library);
+        }
+    };
 }

@@ -24,39 +24,39 @@ import java.io.RandomAccessFile;
  */
 class SeekableFileInputStream extends SeekableInputStream {
 
-  private RandomAccessFile file;
+    private RandomAccessFile file;
 
     SeekableFileInputStream(RandomAccessFile file) {
-    this.file = file;
-  }
+        this.file = file;
+    }
 
-  @Override
-  public void seek(long pos) throws IOException {
-    file.seek(pos);
-  }
+    @Override
+    public void seek(long pos) throws IOException {
+        file.seek(pos);
+    }
 
-  @Override
-  public long tell() throws IOException {
-    return file.getFilePointer();
-  }
+    @Override
+    public long tell() throws IOException {
+        return file.getFilePointer();
+    }
 
-  @Override
-  public long size() throws IOException {
-    return file.length();
-  }
+    @Override
+    public long size() throws IOException {
+        return file.length();
+    }
 
     @Override
     public int read() throws IOException {
         return file.read();
     }
 
-  @Override
-  public int read(byte[] b, int off, int len) throws IOException {
-    return file.read(b, off, len);
-  }
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+        return file.read(b, off, len);
+    }
 
-  @Override
-  public void close() throws IOException {
-    file.close();
-  }
+    @Override
+    public void close() throws IOException {
+        file.close();
+    }
 }

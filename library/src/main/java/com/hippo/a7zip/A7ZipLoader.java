@@ -18,34 +18,34 @@ package com.hippo.a7zip;
 
 class A7ZipLoader {
 
-  private static boolean loaderLoaded = false;
-  private static long nativeLibrary = 0;
+    private static boolean loaderLoaded = false;
+    private static long nativeLibrary = 0;
 
-  static synchronized void loadLibrary(A7ZipLibrary library, A7ZipLibraryLoader loader) {
-    // Ensure loader is loaded
-    if (!loaderLoaded) {
-      loader.loadLibrary("a7zip-loader");
-      loaderLoaded = true;
+    static synchronized void loadLibrary(A7ZipLibrary library, A7ZipLibraryLoader loader) {
+        // Ensure loader is loaded
+        if (!loaderLoaded) {
+            loader.loadLibrary("a7zip-loader");
+            loaderLoaded = true;
+        }
+
+        // Unload current native library
+        if (nativeLibrary != 0) {
+            try {
+                nativeUnloadLibrary(nativeLibrary);
+            } finally {
+                nativeLibrary = 0;
+            }
+        }
+
+        for (String libname : library.getMinorLibraryNames()) {
+            loader.loadLibrary(libname);
+        }
+        loader.loadLibrary(library.getMainLibraryName());
+
+        nativeLibrary = nativeLoadLibrary("lib" + library.getMainLibraryName() + ".so");
     }
 
-    // Unload current native library
-    if (nativeLibrary != 0) {
-      try {
-        nativeUnloadLibrary(nativeLibrary);
-      } finally {
-        nativeLibrary = 0;
-      }
-    }
+    private static native long nativeLoadLibrary(String libname);
 
-    for (String libname : library.getMinorLibraryNames()) {
-      loader.loadLibrary(libname);
-    }
-    loader.loadLibrary(library.getMainLibraryName());
-
-    nativeLibrary = nativeLoadLibrary("lib" + library.getMainLibraryName() + ".so");
-  }
-
-  private static native long nativeLoadLibrary(String libname);
-
-  private static native void nativeUnloadLibrary(long nativePtr);
+    private static native void nativeUnloadLibrary(long nativePtr);
 }

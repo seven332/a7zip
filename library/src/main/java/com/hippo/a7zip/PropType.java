@@ -17,12 +17,12 @@
 package com.hippo.a7zip;
 
 public enum PropType {
-  UNKNOWN,
-  EMPTY,
-  BOOL,
-  INT,
-  LONG,
-  FLOAT,
-  DOUBLE,
-  STRING,
+    UNKNOWN,
+    EMPTY,
+    BOOL,
+    INT,
+    LONG,
+    FLOAT,
+    DOUBLE,
+    STRING,
 }

@@ -17,12 +17,13 @@
 package com.hippo.a7zip;
 
 import android.support.test.InstrumentationRegistry;
+
 import com.getkeepsafe.relinker.ReLinker;
 
 public class ReLinkerLibraryLoader implements A7ZipLibraryLoader {
 
-  @Override
-  public void loadLibrary(String libname) {
-    ReLinker.loadLibrary(InstrumentationRegistry.getContext(), libname);
-  }
+    @Override
+    public void loadLibrary(String libname) {
+        ReLinker.loadLibrary(InstrumentationRegistry.getContext(), libname);
+    }
 }

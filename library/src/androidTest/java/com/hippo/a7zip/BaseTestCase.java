@@ -17,6 +17,10 @@
 package com.hippo.a7zip;
 
 import android.support.test.InstrumentationRegistry;
+
+import org.apache.commons.io.IOUtils;
+import org.junit.AfterClass;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -24,56 +28,54 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.io.IOUtils;
-import org.junit.AfterClass;
 
 public class BaseTestCase {
 
-  private static final List<File> tempCopies = new ArrayList<>();
+    private static final List<File> tempCopies = new ArrayList<>();
 
-  protected static File getAsset(String path) throws IOException {
-    File of = File.createTempFile("copyFile", new File(path).getName());
+    protected static File getAsset(String path) throws IOException {
+        File of = File.createTempFile("copyFile", new File(path).getName());
 
-    InputStream is = null;
-    OutputStream os = null;
-    try {
-      is = InstrumentationRegistry.getContext().getAssets().open(path);
-      os = new FileOutputStream(of);
-      IOUtils.copy(is, os);
-    } finally {
-      IOUtils.closeQuietly(is);
-      IOUtils.closeQuietly(os);
+        InputStream is = null;
+        OutputStream os = null;
+        try {
+            is = InstrumentationRegistry.getContext().getAssets().open(path);
+            os = new FileOutputStream(of);
+            IOUtils.copy(is, os);
+        } finally {
+            IOUtils.closeQuietly(is);
+            IOUtils.closeQuietly(os);
+        }
+
+        synchronized (tempCopies) {
+            tempCopies.add(of);
+        }
+
+        return of;
     }
 
-    synchronized (tempCopies) {
-      tempCopies.add(of);
+    @AfterClass
+    public static void clearTempCopies() {
+        synchronized (tempCopies) {
+            for (File f : tempCopies) {
+                delete(f);
+            }
+            tempCopies.clear();
+        }
     }
 
-    return of;
-  }
+    private static void delete(File file) {
+        if (file == null) {
+            return;
+        }
 
-  @AfterClass
-  public static void clearTempCopies() {
-    synchronized (tempCopies) {
-      for (File f : tempCopies) {
-        delete(f);
-      }
-      tempCopies.clear();
+        File[] files = file.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                delete(f);
+            }
+        }
+
+        file.delete();
     }
-  }
-
-  private static void delete(File file) {
-    if (file == null) {
-      return;
-    }
-
-    File[] files = file.listFiles();
-    if (files != null) {
-      for (File f: files) {
-        delete(f);
-      }
-    }
-
-    file.delete();
-  }
 }
