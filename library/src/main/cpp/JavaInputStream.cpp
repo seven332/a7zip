@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "JavaSequentialInStream.h"
+#include "JavaInputStream.h"
 
 #include <type_traits>
 #include <Common/MyCom.h>
@@ -70,7 +70,7 @@ HRESULT JavaSequentialInStream::Initialize(JNIEnv* env) {
     return S_OK;
   }
 
-  class_native_sequential_in_stream = env->FindClass("com/hippo/a7zip/NativeSequentialInStream");
+    class_native_sequential_in_stream = env->FindClass("com/hippo/a7zip/NativeInputStream");
   if (class_native_sequential_in_stream == nullptr) return E_CLASS_NOT_FOUND;
   class_native_sequential_in_stream = static_cast<jclass>(env->NewGlobalRef(class_native_sequential_in_stream));
   if (class_native_sequential_in_stream == nullptr) return E_OUTOFMEMORY;
@@ -105,7 +105,7 @@ HRESULT JavaSequentialInStream::RegisterMethods(JNIEnv* env) {
 }
 
 HRESULT JavaSequentialInStream::UnregisterMethods(JNIEnv *env) {
-  jclass clazz = env->FindClass("com/hippo/a7zip/NativeSequentialInStream");
+    jclass clazz = env->FindClass("com/hippo/a7zip/NativeInputStream");
   if (clazz == nullptr) return E_CLASS_NOT_FOUND;
 
   jint result = env->UnregisterNatives(clazz);

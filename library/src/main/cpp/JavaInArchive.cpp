@@ -22,12 +22,12 @@
 #include <include_windows/windows.h>
 #include <7zip/Archive/IArchive.h>
 
-#include "InStream.h"
+#include "InternalSeekableInputStream.h"
 #include "JavaHelper.h"
-#include "JavaInStream.h"
-#include "JavaSequentialInStream.h"
+#include "JavaSeekableInputStream.h"
+#include "JavaInputStream.h"
 #include "Log.h"
-#include "SequentialOutStream.h"
+#include "InternalOutputStream.h"
 #include "SevenZip.h"
 #include "Utils.h"
 
@@ -52,7 +52,7 @@ static jlong NativeOpen(
     jstring password
 ) {
   CMyComPtr<IInStream> in_stream = nullptr;
-  HRESULT result = InStream::Create(env, stream, in_stream);
+  HRESULT result = InternalSeekableInputStream::Create(env, stream, in_stream);
   if (result != S_OK || in_stream == nullptr) {
     // Call java methods before throw exception
     if (in_stream != nullptr) {
@@ -268,13 +268,13 @@ static void NativeExtractEntry(
   InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
 
   CMyComPtr<ISequentialOutStream> out_stream = nullptr;
-  HRESULT result = SequentialOutStream::Create(env, stream, out_stream);
+  HRESULT result = InternalOutputStream::Create(env, stream, out_stream);
   if (result != S_OK || out_stream == nullptr) {
     if (out_stream != nullptr) {
       // Call java methods before throw exception
       out_stream.Release();
     } else {
-      // Let java code closes the OutStream
+      // Let java code closes the InternalSeekableOutputStream
     }
     THROW_ARCHIVE_EXCEPTION(env, result);
   }
@@ -314,52 +314,52 @@ static void NativeClose(
 
 static JNINativeMethod archive_methods[] = {
     { "nativeOpen",
-      "(Lcom/hippo/a7zip/InStream;Ljava/lang/String;)J",
+            "(Lcom/hippo/a7zip/InternalSeekableInputStream;Ljava/lang/String;)J",
       reinterpret_cast<void *>(NativeOpen) },
     { "nativeGetFormatName",
-      "(J)Ljava/lang/String;",
+            "(J)Ljava/lang/String;",
       reinterpret_cast<void *>(NativeGetFormatName) },
     { "nativeGetNumberOfEntries",
-      "(J)I",
+            "(J)I",
       reinterpret_cast<void *>(NativeGetNumberOfEntries) },
     { "nativeGetArchivePropertyType",
-      "(JI)I",
+            "(JI)I",
       reinterpret_cast<void *>(NativeGetArchivePropertyType) },
     { "nativeGetArchiveBooleanProperty",
-      "(JI)Z",
+            "(JI)Z",
       reinterpret_cast<void *>(NativeGetArchiveBooleanProperty) },
     { "nativeGetArchiveIntProperty",
-      "(JI)I",
+            "(JI)I",
       reinterpret_cast<void *>(NativeGetArchiveIntProperty) },
     { "nativeGetArchiveLongProperty",
-      "(JI)J",
+            "(JI)J",
       reinterpret_cast<void *>(NativeGetArchiveLongProperty) },
     { "nativeGetArchiveStringProperty",
-      "(JI)Ljava/lang/String;",
+            "(JI)Ljava/lang/String;",
       reinterpret_cast<void *>(NativeGetArchiveStringProperty) },
     { "nativeGetEntryPropertyType",
-      "(JII)I",
+            "(JII)I",
       reinterpret_cast<void *>(NativeGetEntryPropertyType) },
     { "nativeGetEntryBooleanProperty",
-      "(JII)Z",
+            "(JII)Z",
       reinterpret_cast<void *>(NativeGetEntryBooleanProperty) },
     { "nativeGetEntryIntProperty",
-      "(JII)I",
+            "(JII)I",
       reinterpret_cast<void *>(NativeGetEntryIntProperty) },
     { "nativeGetEntryLongProperty",
-      "(JII)J",
+            "(JII)J",
       reinterpret_cast<void *>(NativeGetEntryLongProperty) },
     { "nativeGetEntryStringProperty",
-      "(JII)Ljava/lang/String;",
+            "(JII)Ljava/lang/String;",
       reinterpret_cast<void *>(NativeGetEntryStringProperty) },
     { "nativeGetEntryStream",
-      "(JI)Lcom/hippo/a7zip/SequentialInStream;",
+            "(JI)Lcom/hippo/a7zip/InternalInputStream;",
       reinterpret_cast<void *>(NativeGetEntryStream) },
     { "nativeExtractEntry",
-      "(JILjava/lang/String;Lcom/hippo/a7zip/SequentialOutStream;)V",
+            "(JILjava/lang/String;Lcom/hippo/a7zip/InternalOutputStream;)V",
       reinterpret_cast<void *>(NativeExtractEntry) },
     { "nativeClose",
-      "(J)V",
+            "(J)V",
       reinterpret_cast<void *>(NativeClose) }
 };
 

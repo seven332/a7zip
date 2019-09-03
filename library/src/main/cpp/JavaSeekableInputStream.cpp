@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "JavaInStream.h"
+#include "JavaSeekableInputStream.h"
 
 #include <type_traits>
 #include <Common/MyCom.h>
@@ -137,7 +137,7 @@ HRESULT JavaInStream::Initialize(JNIEnv* env) {
     return S_OK;
   }
 
-  class_native_in_stream = env->FindClass("com/hippo/a7zip/NativeInStream");
+    class_native_in_stream = env->FindClass("com/hippo/a7zip/NativeSeekableInputStream");
   if (class_native_in_stream == nullptr) return E_CLASS_NOT_FOUND;
   class_native_in_stream = static_cast<jclass>(env->NewGlobalRef(class_native_in_stream));
   if (class_native_in_stream == nullptr) return E_OUTOFMEMORY;
@@ -181,7 +181,7 @@ HRESULT JavaInStream::RegisterMethods(JNIEnv* env) {
 }
 
 HRESULT JavaInStream::UnregisterMethods(JNIEnv *env) {
-  jclass clazz = env->FindClass("com/hippo/a7zip/NativeInStream");
+    jclass clazz = env->FindClass("com/hippo/a7zip/NativeSeekableInputStream");
   if (clazz == nullptr) return E_CLASS_NOT_FOUND;
 
   jint result = env->UnregisterNatives(clazz);

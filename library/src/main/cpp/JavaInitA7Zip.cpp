@@ -16,12 +16,12 @@
 
 #include <jni.h>
 
-#include "InStream.h"
+#include "InternalSeekableInputStream.h"
 #include "JavaEnv.h"
 #include "JavaInArchive.h"
-#include "JavaInStream.h"
-#include "JavaSequentialInStream.h"
-#include "SequentialOutStream.h"
+#include "JavaSeekableInputStream.h"
+#include "JavaInputStream.h"
+#include "InternalOutputStream.h"
 #include "SevenZip.h"
 #include "Utils.h"
 
@@ -35,10 +35,10 @@ jint JNI_OnLoad(JavaVM* vm, void*) {
   }
 
   JavaEnv::Initialize(vm);
-  RETURN_JNI_ERR_IF_NOT_ZERO(InStream::Initialize(env));
+  RETURN_JNI_ERR_IF_NOT_ZERO(InternalSeekableInputStream::Initialize(env));
   RETURN_JNI_ERR_IF_NOT_ZERO(JavaInStream::Initialize(env));
   RETURN_JNI_ERR_IF_NOT_ZERO(JavaSequentialInStream::Initialize(env));
-  RETURN_JNI_ERR_IF_NOT_ZERO(SequentialOutStream::Initialize(env));
+  RETURN_JNI_ERR_IF_NOT_ZERO(InternalOutputStream::Initialize(env));
   RETURN_JNI_ERR_IF_NOT_ZERO(SevenZip::Initialize());
 
   return JNI_VERSION_1_6;

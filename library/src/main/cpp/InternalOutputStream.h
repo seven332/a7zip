@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Hippo Seven
+ * Copyright 2018 Hippo Seven
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,34 +14,29 @@
  * limitations under the License.
  */
 
-#ifndef __A7ZIP_IN_STREAM_H__
-#define __A7ZIP_IN_STREAM_H__
+#ifndef __A7ZIP_OUTPUT_STREAM_OUT_STREAM_H__
+#define __A7ZIP_OUTPUT_STREAM_OUT_STREAM_H__
 
 #include <jni.h>
 
-#include <7zip/IStream.h>
 #include <Common/MyCom.h>
+#include <7zip/IStream.h>
 
 namespace a7zip {
 
-class InStream :
-    public IInStream,
-    public IStreamGetSize,
+    class InternalOutputStream :
+    public ISequentialOutStream,
     public CMyUnknownImp
 {
  private:
-  InStream(jobject stream, jbyteArray array);
+        InternalOutputStream(jobject stream, jbyteArray array);
 
  public:
-  virtual ~InStream();
+        virtual ~InternalOutputStream();
 
  public:
-  MY_UNKNOWN_IMP2(IInStream, IStreamGetSize)
-
-  STDMETHOD(Read)(void* data, UInt32 size, UInt32* processedSize);
-  STDMETHOD(Seek)(Int64 offset, UInt32 seekOrigin, UInt64* newPosition);
-
-  STDMETHOD(GetSize)(UInt64* size);
+  MY_UNKNOWN_IMP
+  STDMETHOD(Write)(const void *data, UInt32 size, UInt32 *processedSize);
 
  private:
   jobject stream;
@@ -49,17 +44,14 @@ class InStream :
 
  public:
   static HRESULT Initialize(JNIEnv* env);
-  static HRESULT Create(JNIEnv* env, jobject stream, CMyComPtr<IInStream>& in_stream);
+  static HRESULT Create(JNIEnv* env, jobject stream, CMyComPtr<ISequentialOutStream>& out_stream);
 
  private:
   static bool initialized;
-  static jmethodID method_read;
-  static jmethodID method_seek;
-  static jmethodID method_tell;
-  static jmethodID method_size;
+  static jmethodID method_write;
   static jmethodID method_close;
 };
 
 }
 
-#endif //__A7ZIP_IN_STREAM_H__
+#endif //__A7ZIP_OUTPUT_STREAM_OUT_STREAM_H__

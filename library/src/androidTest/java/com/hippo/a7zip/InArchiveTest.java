@@ -16,24 +16,27 @@
 
 package com.hippo.a7zip;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @RunWith(Parameterized.class)
 public class InArchiveTest extends BaseTestCase {
@@ -171,16 +174,16 @@ public class InArchiveTest extends BaseTestCase {
 
   private static String getContentByExtractingEntry(InArchive archive, int index)
       throws ArchiveException, UnsupportedEncodingException {
-    ByteArrayOutStream os = new ByteArrayOutStream();
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
     archive.extractEntry(index, os);
     return os.toString("UTF-8");
   }
 
   private static String getContentByGettingEntryStream(InArchive archive, int index)
       throws IOException, ArchiveException {
-    SequentialInStream stream = archive.getEntryStream(index);
+    InputStream stream = archive.getEntryStream(index);
     ByteArrayOutputStream os = new ByteArrayOutputStream();
-    IOUtils.copy(new SequentialInputStream(stream), os);
+    IOUtils.copy(stream, os);
     stream.close();
     return os.toString("UTF-8");
   }
@@ -291,7 +294,7 @@ public class InArchiveTest extends BaseTestCase {
     try (InArchive archive = openInArchiveFromAsset(name)) {
       assertEquals("password.txt", archive.getEntryPath(0));
 
-      ByteArrayOutStream os = new ByteArrayOutStream();
+      ByteArrayOutputStream os = new ByteArrayOutputStream();
       archive.extractEntry(0, password, os);
       String content = os.toString("UTF-8");
       assertEquals("password", content);
@@ -320,7 +323,7 @@ public class InArchiveTest extends BaseTestCase {
     try (InArchive archive = openInArchiveFromAsset(name, null, password)) {
       assertEquals("password.txt", archive.getEntryPath(0));
 
-      ByteArrayOutStream os = new ByteArrayOutStream();
+      ByteArrayOutputStream os = new ByteArrayOutputStream();
       archive.extractEntry(0, os);
       String content = os.toString("UTF-8");
       assertEquals("password", content);
@@ -387,7 +390,7 @@ public class InArchiveTest extends BaseTestCase {
 
   private void assertExtractPasswordException(String name, String wrongPassword) throws IOException, ArchiveException {
     try (InArchive archive = openInArchiveFromAsset(name)) {
-      ByteArrayOutStream os = new ByteArrayOutStream();
+      ByteArrayOutputStream os = new ByteArrayOutputStream();
 
       try {
         archive.extractEntry(0, os);
@@ -406,10 +409,10 @@ public class InArchiveTest extends BaseTestCase {
   }
 
   private InArchive openInArchiveFromAsset(String name) throws IOException, ArchiveException {
-    return InArchive.open(new FileInStream(getAsset(name)));
+    return InArchive.open(new RandomAccessFile(getAsset(name), "r"));
   }
 
   private InArchive openInArchiveFromAsset(String name, Charset charset, String password) throws IOException, ArchiveException {
-    return InArchive.open(new FileInStream(getAsset(name)), charset, password);
+    return InArchive.open(new RandomAccessFile(getAsset(name), "r"), charset, password);
   }
 }

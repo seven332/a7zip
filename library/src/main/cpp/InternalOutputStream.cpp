@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "SequentialOutStream.h"
+#include "InternalOutputStream.h"
 
 #include "JavaEnv.h"
 #include "Utils.h"
@@ -23,16 +23,16 @@
 
 using namespace a7zip;
 
-bool SequentialOutStream::initialized = false;
-jmethodID SequentialOutStream::method_write = nullptr;
-jmethodID SequentialOutStream::method_close = nullptr;
+bool InternalOutputStream::initialized = false;
+jmethodID InternalOutputStream::method_write = nullptr;
+jmethodID InternalOutputStream::method_close = nullptr;
 
-SequentialOutStream::SequentialOutStream(jobject stream, jbyteArray array) {
+InternalOutputStream::InternalOutputStream(jobject stream, jbyteArray array) {
   this->stream = stream;
   this->array = array;
 }
 
-SequentialOutStream::~SequentialOutStream() {
+InternalOutputStream::~InternalOutputStream() {
   JavaEnv env;
   if (!env.IsValid()) return;
 
@@ -43,7 +43,7 @@ SequentialOutStream::~SequentialOutStream() {
   env->DeleteGlobalRef(array);
 }
 
-HRESULT SequentialOutStream::Write(const void* data, UInt32 size, UInt32* processedSize) {
+HRESULT InternalOutputStream::Write(const void *data, UInt32 size, UInt32 *processedSize) {
   if (processedSize != nullptr) {
     *processedSize = 0;
   }
@@ -73,12 +73,12 @@ HRESULT SequentialOutStream::Write(const void* data, UInt32 size, UInt32* proces
   return S_OK;
 }
 
-HRESULT SequentialOutStream::Initialize(JNIEnv* env) {
+HRESULT InternalOutputStream::Initialize(JNIEnv *env) {
   if (initialized) {
     return S_OK;
   }
 
-  jclass clazz = env->FindClass("com/hippo/a7zip/SequentialOutStream");
+    jclass clazz = env->FindClass("com/hippo/a7zip/InternalOutputStream");
   if (clazz == nullptr) return E_CLASS_NOT_FOUND;
 
   method_write = env->GetMethodID(clazz, "write", "([BII)V");
@@ -90,7 +90,7 @@ HRESULT SequentialOutStream::Initialize(JNIEnv* env) {
   return S_OK;
 }
 
-HRESULT SequentialOutStream::Create(
+HRESULT InternalOutputStream::Create(
     JNIEnv* env,
     jobject stream,
     CMyComPtr<ISequentialOutStream>& out_stream
@@ -116,7 +116,7 @@ HRESULT SequentialOutStream::Create(
     return E_OUTOFMEMORY;
   }
 
-  out_stream = new SequentialOutStream(g_stream, g_array);
+    out_stream = new InternalOutputStream(g_stream, g_array);
 
   return S_OK;
 }

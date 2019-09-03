@@ -16,17 +16,23 @@
 
 package com.hippo.a7zip;
 
-import java.io.Closeable;
 import java.io.IOException;
 
-public interface SequentialOutStream extends Closeable {
-
-  // Fix java.lang.NoSuchMethodError
-  @Override
-  void close() throws IOException;
+public interface InternalSeekableInputStream extends InternalInputStream {
+  /**
+   * Sets the position, measured from the beginning,
+   * at which the next read occurs. The offset may be
+   * set beyond the end of the file.
+   */
+  void seek(long pos) throws IOException;
 
   /**
-   * The same as {@link java.io.OutputStream#write(byte[], int, int)}.
+   * Returns current position, measured from the beginning.
    */
-  void write(byte b[], int off, int len) throws IOException;
+  long tell() throws IOException;
+
+  /**
+   * Returns the size.
+   */
+  long size() throws IOException;
 }

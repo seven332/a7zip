@@ -18,19 +18,44 @@ package com.hippo.a7zip;
 
 import java.io.IOException;
 
-class NativeSequentialInStream implements SequentialInStream {
+class NativeSeekableInputStream extends SeekableInputStream {
 
   private long nativePtr;
 
-  private NativeSequentialInStream(long nativePtr) {
+    private NativeSeekableInputStream(long nativePtr) {
     this.nativePtr = nativePtr;
   }
 
   private void checkClosed() {
     if (nativePtr == 0) {
-      throw new IllegalStateException("This NativeSequentialInStream is closed.");
+        throw new IllegalStateException("This NativeSeekableInputStream is closed.");
     }
   }
+
+  @Override
+  public void seek(long pos) throws IOException {
+    checkClosed();
+    nativeSeek(nativePtr, pos);
+  }
+
+  @Override
+  public long tell() throws IOException {
+    checkClosed();
+    return nativeTell(nativePtr);
+  }
+
+  @Override
+  public long size() throws IOException {
+    checkClosed();
+    return nativeSize(nativePtr);
+  }
+
+    @Override
+    public int read() throws IOException {
+        byte[] buffer = new byte[1];
+
+        return read(buffer) == 1 ? buffer[0] : -1;
+    }
 
   @Override
   public int read(byte[] b, int off, int len) throws IOException {
@@ -45,6 +70,12 @@ class NativeSequentialInStream implements SequentialInStream {
       nativePtr = 0;
     }
   }
+
+  private static native void nativeSeek(long nativePtr, long pos) throws IOException;
+
+  private static native long nativeTell(long nativePtr) throws IOException;
+
+  private static native long nativeSize(long nativePtr) throws IOException;
 
   private static native int nativeRead(long nativePtr, byte[] b, int off, int len) throws IOException;
 

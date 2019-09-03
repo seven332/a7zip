@@ -18,7 +18,7 @@ package com.hippo.a7zip;
 
 import java.io.IOException;
 
-public interface OutStream extends SequentialOutStream {
+public interface InternalSeekableOutputStream extends InternalOutputStream {
 
   /**
    * Sets the position, measured from the beginning,

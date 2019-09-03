@@ -19,14 +19,14 @@ package com.hippo.a7zip;
 import java.io.Closeable;
 import java.io.IOException;
 
-public interface SequentialInStream extends Closeable {
+public interface InternalOutputStream extends Closeable {
 
   // Fix java.lang.NoSuchMethodError
   @Override
   void close() throws IOException;
 
   /**
-   * The same as {@link java.io.InputStream#read(byte[], int, int)}.
+   * The same as {@link java.io.OutputStream#write(byte[], int, int)}.
    */
-  int read(byte b[], int off, int len) throws IOException;
+  void write(byte[] b, int off, int len) throws IOException;
 }

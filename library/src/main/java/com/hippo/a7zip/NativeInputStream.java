@@ -17,37 +17,27 @@
 package com.hippo.a7zip;
 
 import java.io.IOException;
+import java.io.InputStream;
 
-class NativeInStream implements InStream {
+class NativeInputStream extends InputStream implements InternalInputStream {
 
   private long nativePtr;
 
-  private NativeInStream(long nativePtr) {
+  private NativeInputStream(long nativePtr) {
     this.nativePtr = nativePtr;
   }
 
   private void checkClosed() {
     if (nativePtr == 0) {
-      throw new IllegalStateException("This NativeInStream is closed.");
+      throw new IllegalStateException("This NativeInputStream is closed.");
     }
   }
 
   @Override
-  public void seek(long pos) throws IOException {
-    checkClosed();
-    nativeSeek(nativePtr, pos);
-  }
+  public int read() throws IOException {
+    byte[] buffer = new byte[1];
 
-  @Override
-  public long tell() throws IOException {
-    checkClosed();
-    return nativeTell(nativePtr);
-  }
-
-  @Override
-  public long size() throws IOException {
-    checkClosed();
-    return nativeSize(nativePtr);
+    return read(buffer) == 1 ? buffer[0] : -1;
   }
 
   @Override
@@ -63,12 +53,6 @@ class NativeInStream implements InStream {
       nativePtr = 0;
     }
   }
-
-  private static native void nativeSeek(long nativePtr, long pos) throws IOException;
-
-  private static native long nativeTell(long nativePtr) throws IOException;
-
-  private static native long nativeSize(long nativePtr) throws IOException;
 
   private static native int nativeRead(long nativePtr, byte[] b, int off, int len) throws IOException;
 

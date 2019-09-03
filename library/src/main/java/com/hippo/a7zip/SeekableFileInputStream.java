@@ -16,27 +16,17 @@
 
 package com.hippo.a7zip;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
 /**
- * Wraps {@link RandomAccessFile} as {@link InStream}.
+ * Wraps {@link RandomAccessFile} as {@link SeekableInputStream}.
  */
-public class FileInStream implements InStream {
+class SeekableFileInputStream extends SeekableInputStream {
 
   private RandomAccessFile file;
 
-  public FileInStream(String path) throws FileNotFoundException {
-    this(new File(path));
-  }
-
-  public FileInStream(File file) throws FileNotFoundException {
-    this(new RandomAccessFile(file, "r"));
-  }
-
-  public FileInStream(RandomAccessFile file) {
+    SeekableFileInputStream(RandomAccessFile file) {
     this.file = file;
   }
 
@@ -54,6 +44,11 @@ public class FileInStream implements InStream {
   public long size() throws IOException {
     return file.length();
   }
+
+    @Override
+    public int read() throws IOException {
+        return file.read();
+    }
 
   @Override
   public int read(byte[] b, int off, int len) throws IOException {

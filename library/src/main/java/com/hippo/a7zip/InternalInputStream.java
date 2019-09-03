@@ -16,34 +16,17 @@
 
 package com.hippo.a7zip;
 
-import android.support.annotation.NonNull;
+import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStream;
 
-public class SequentialInputStream extends InputStream {
+public interface InternalInputStream extends Closeable {
 
-  private SequentialInStream stream;
-
-  public SequentialInputStream(SequentialInStream stream) {
-    this.stream = stream;
-  }
-
+  // Fix java.lang.NoSuchMethodError
   @Override
-  public int read() throws IOException {
-    byte[] b = new byte[1];
-    if (stream.read(b, 0, 1) != 1) {
-      return -1;
-    }
-    return b[0];
-  }
+  void close() throws IOException;
 
-  @Override
-  public int read(@NonNull byte[] b) throws IOException {
-    return stream.read(b, 0, b.length);
-  }
-
-  @Override
-  public int read(@NonNull byte[] b, int off, int len) throws IOException {
-    return stream.read(b, off, len);
-  }
+  /**
+   * The same as {@link java.io.InputStream#read(byte[], int, int)}.
+   */
+  int read(byte[] b, int off, int len) throws IOException;
 }
