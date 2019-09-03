@@ -103,8 +103,10 @@ public class InputArchive implements Closeable {
      */
     public PropType getArchivePropertyType(PropID propID) {
         int type = nativeGetArchivePropertyType(nativePtr, propID.ordinal());
-        if (type >= 0 || type < PropType.values().length) {
-            return PropType.values()[type];
+
+        PropType[] values = PropType.values();
+        if (type >= 0 && type < values.length) {
+            return values[type];
         } else {
             return PropType.UNKNOWN;
         }
@@ -177,8 +179,10 @@ public class InputArchive implements Closeable {
      */
     public PropType getEntryPropertyType(int index, PropID propID) {
         int type = nativeGetEntryPropertyType(nativePtr, index, propID.ordinal());
-        if (type >= 0 || type < PropType.values().length) {
-            return PropType.values()[type];
+
+        PropType[] values = PropType.values();
+        if (type >= 0 && type < values.length) {
+            return values[type];
         } else {
             return PropType.UNKNOWN;
         }
@@ -290,7 +294,7 @@ public class InputArchive implements Closeable {
         else if (result instanceof NativeSeekableInputStream) {
             return (NativeSeekableInputStream) result;
         } else {
-            return null;
+            throw new ArchiveException("Unknown stream type");
         }
     }
 
