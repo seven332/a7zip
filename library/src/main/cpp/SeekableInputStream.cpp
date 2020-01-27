@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "InStream.h"
+#include "SeekableInputStream.h"
 
 #include "JavaEnv.h"
 #include "Utils.h"
@@ -23,19 +23,19 @@
 
 using namespace a7zip;
 
-bool InStream::initialized = false;
-jmethodID InStream::method_read = nullptr;
-jmethodID InStream::method_seek = nullptr;
-jmethodID InStream::method_tell = nullptr;
-jmethodID InStream::method_size = nullptr;
-jmethodID InStream::method_close = nullptr;
+bool SeekableInputStream::initialized = false;
+jmethodID SeekableInputStream::method_read = nullptr;
+jmethodID SeekableInputStream::method_seek = nullptr;
+jmethodID SeekableInputStream::method_tell = nullptr;
+jmethodID SeekableInputStream::method_size = nullptr;
+jmethodID SeekableInputStream::method_close = nullptr;
 
-InStream::InStream(jobject stream, jbyteArray array) {
+SeekableInputStream::SeekableInputStream(jobject stream, jbyteArray array) {
   this->stream = stream;
   this->array = array;
 }
 
-InStream::~InStream() {
+SeekableInputStream::~SeekableInputStream() {
   JavaEnv env;
   if (!env.IsValid()) return;
 
@@ -46,7 +46,7 @@ InStream::~InStream() {
   env->DeleteGlobalRef(array);
 }
 
-HRESULT InStream::Read(void* data, UInt32 size, UInt32* processedSize) {
+HRESULT SeekableInputStream::Read(void* data, UInt32 size, UInt32* processedSize) {
   if (processedSize != nullptr) {
     *processedSize = 0;
   }
@@ -79,7 +79,7 @@ HRESULT InStream::Read(void* data, UInt32 size, UInt32* processedSize) {
   return S_OK;
 }
 
-HRESULT InStream::Seek(Int64 offset, UInt32 seekOrigin, UInt64* newPosition) {
+HRESULT SeekableInputStream::Seek(Int64 offset, UInt32 seekOrigin, UInt64* newPosition) {
   JavaEnv env;
   if (!env.IsValid()) return E_JAVA_EXCEPTION;
 
@@ -121,7 +121,7 @@ HRESULT InStream::Seek(Int64 offset, UInt32 seekOrigin, UInt64* newPosition) {
   return S_OK;
 }
 
-HRESULT InStream::GetSize(UInt64* size) {
+HRESULT SeekableInputStream::GetSize(UInt64* size) {
   JavaEnv env;
   if (!env.IsValid()) return E_JAVA_EXCEPTION;
 
@@ -135,12 +135,12 @@ HRESULT InStream::GetSize(UInt64* size) {
   return S_OK;
 }
 
-HRESULT InStream::Initialize(JNIEnv* env) {
+HRESULT SeekableInputStream::Initialize(JNIEnv* env) {
   if (initialized) {
     return S_OK;
   }
 
-  jclass clazz = env->FindClass("com/hippo/a7zip/InStream");
+  jclass clazz = env->FindClass("com/hippo/a7zip/SeekableInputStream");
   if (clazz == nullptr) return E_CLASS_NOT_FOUND;
 
   method_read = env->GetMethodID(clazz, "read", "([BII)I");
@@ -158,7 +158,7 @@ HRESULT InStream::Initialize(JNIEnv* env) {
   return JNI_OK;
 }
 
-HRESULT InStream::Create(
+HRESULT SeekableInputStream::Create(
     JNIEnv* env,
     jobject stream,
     CMyComPtr<IInStream>& in_stream
@@ -184,7 +184,7 @@ HRESULT InStream::Create(
     return E_OUTOFMEMORY;
   }
 
-  in_stream = new InStream(g_stream, g_array);
+  in_stream = new SeekableInputStream(g_stream, g_array);
 
   return S_OK;
 }

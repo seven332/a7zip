@@ -20,6 +20,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 
 public class InArchive implements Closeable {
@@ -271,11 +273,11 @@ public class InArchive implements Closeable {
    * @param index the index of the entry
    * @return the stream of the entry
    * @throws ArchiveException if the archive format doesn't support the operation or get error
-   * @see #extractEntry(int, SequentialOutStream)
-   * @see #extractEntry(int, String, SequentialOutStream)
+   * @see #extractEntry(int, OutputStream)
+   * @see #extractEntry(int, String, OutputStream)
    */
   @NonNull
-  public SequentialInStream getEntryStream(int index) throws ArchiveException {
+  public InputStream getEntryStream(int index) throws ArchiveException {
     return nativeGetEntryStream(nativePtr, index);
   }
 
@@ -288,7 +290,7 @@ public class InArchive implements Closeable {
    * @throws ArchiveException if get error
    * @see #getEntryStream(int)
    */
-  public void extractEntry(int index, @NonNull SequentialOutStream os) throws ArchiveException {
+  public void extractEntry(int index, @NonNull OutputStream os) throws ArchiveException {
     extractEntry(index, password, os);
   }
 
@@ -302,7 +304,7 @@ public class InArchive implements Closeable {
    * @throws ArchiveException if get error
    */
   @SuppressWarnings("ThrowFromFinallyBlock")
-  public void extractEntry(int index, String password, @NonNull SequentialOutStream os) throws ArchiveException {
+  public void extractEntry(int index, String password, @NonNull OutputStream os) throws ArchiveException {
     try {
       checkClosed();
       nativeExtractEntry(nativePtr, index, password, os);
@@ -331,13 +333,13 @@ public class InArchive implements Closeable {
   }
 
   @NonNull
-  public static InArchive open(InStream stream) throws ArchiveException {
+  public static InArchive open(SeekableInputStream stream) throws ArchiveException {
     return open(stream, null, null);
   }
 
   @NonNull
   public static InArchive open(
-      InStream stream,
+      SeekableInputStream stream,
       @Nullable Charset charset,
       @Nullable String password
   ) throws ArchiveException {
@@ -351,7 +353,7 @@ public class InArchive implements Closeable {
     return new InArchive(nativePtr, charset, password);
   }
 
-  private static native long nativeOpen(InStream stream, String password) throws ArchiveException;
+  private static native long nativeOpen(SeekableInputStream stream, String password) throws ArchiveException;
 
   private static native String nativeGetFormatName(long nativePtr);
 
@@ -380,9 +382,9 @@ public class InArchive implements Closeable {
   private static native String nativeGetEntryStringProperty(long nativePtr, int index, int propID);
 
   @NonNull
-  private static native SequentialInStream nativeGetEntryStream(long nativePtr, int index) throws ArchiveException;
+  private static native InputStream nativeGetEntryStream(long nativePtr, int index) throws ArchiveException;
 
-  private static native void nativeExtractEntry(long nativePtr, int index, String password, SequentialOutStream os) throws ArchiveException;
+  private static native void nativeExtractEntry(long nativePtr, int index, String password, OutputStream os) throws ArchiveException;
 
   private static native void nativeClose(long nativePtr);
 }

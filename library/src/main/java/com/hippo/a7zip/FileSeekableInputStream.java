@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Hippo Seven
+ * Copyright 2020 Hippo Seven
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,25 @@
 
 package com.hippo.a7zip;
 
+import android.support.annotation.NonNull;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-/**
- * Wraps {@link RandomAccessFile} as {@link InStream}.
- */
-public class FileInStream implements InStream {
+public class FileSeekableInputStream extends SeekableInputStream {
 
   private RandomAccessFile file;
 
-  public FileInStream(String path) throws FileNotFoundException {
+  public FileSeekableInputStream(String path) throws FileNotFoundException {
     this(new File(path));
   }
 
-  public FileInStream(File file) throws FileNotFoundException {
+  public FileSeekableInputStream(File file) throws FileNotFoundException {
     this(new RandomAccessFile(file, "r"));
   }
 
-  public FileInStream(RandomAccessFile file) {
+  public FileSeekableInputStream(RandomAccessFile file) {
     this.file = file;
   }
 
@@ -56,7 +54,17 @@ public class FileInStream implements InStream {
   }
 
   @Override
-  public int read(byte[] b, int off, int len) throws IOException {
+  public int read() throws IOException {
+    return file.read();
+  }
+
+  @Override
+  public int read(@NonNull byte[] b) throws IOException {
+    return file.read(b);
+  }
+
+  @Override
+  public int read(@NonNull byte[] b, int off, int len) throws IOException {
     return file.read(b, off, len);
   }
 

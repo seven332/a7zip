@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "JavaInStream.h"
+#include "JavaSeekableInputStream.h"
 
 #include <type_traits>
 #include <Common/MyCom.h>
@@ -132,12 +132,12 @@ static bool initialized = false;
 static jclass class_native_in_stream = nullptr;
 static jmethodID constructor_native_in_stream = nullptr;
 
-HRESULT JavaInStream::Initialize(JNIEnv* env) {
+HRESULT JavaSeekableInputStream::Initialize(JNIEnv* env) {
   if (initialized) {
     return S_OK;
   }
 
-  class_native_in_stream = env->FindClass("com/hippo/a7zip/NativeInStream");
+  class_native_in_stream = env->FindClass("com/hippo/a7zip/NativeSeekableInputStream");
   if (class_native_in_stream == nullptr) return E_CLASS_NOT_FOUND;
   class_native_in_stream = static_cast<jclass>(env->NewGlobalRef(class_native_in_stream));
   if (class_native_in_stream == nullptr) return E_OUTOFMEMORY;
@@ -167,7 +167,7 @@ static JNINativeMethod stream_methods[] = {
       reinterpret_cast<void *>(NativeClose) }
 };
 
-HRESULT JavaInStream::RegisterMethods(JNIEnv* env) {
+HRESULT JavaSeekableInputStream::RegisterMethods(JNIEnv* env) {
   if (!initialized) {
     return E_NOT_INITIALIZED;
   }
@@ -180,8 +180,8 @@ HRESULT JavaInStream::RegisterMethods(JNIEnv* env) {
   return S_OK;
 }
 
-HRESULT JavaInStream::UnregisterMethods(JNIEnv *env) {
-  jclass clazz = env->FindClass("com/hippo/a7zip/NativeInStream");
+HRESULT JavaSeekableInputStream::UnregisterMethods(JNIEnv *env) {
+  jclass clazz = env->FindClass("com/hippo/a7zip/NativeSeekableInputStream");
   if (clazz == nullptr) return E_CLASS_NOT_FOUND;
 
   jint result = env->UnregisterNatives(clazz);
@@ -192,7 +192,7 @@ HRESULT JavaInStream::UnregisterMethods(JNIEnv *env) {
   return S_OK;
 }
 
-HRESULT JavaInStream::NewInstance(JNIEnv* env, IInStream* stream, jobject* object) {
+HRESULT JavaSeekableInputStream::NewInstance(JNIEnv* env, IInStream* stream, jobject* object) {
   *object = nullptr;
 
   if (!initialized) {

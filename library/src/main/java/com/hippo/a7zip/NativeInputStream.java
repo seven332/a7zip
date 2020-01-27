@@ -16,20 +16,33 @@
 
 package com.hippo.a7zip;
 
+import android.support.annotation.NonNull;
 import java.io.IOException;
+import java.io.InputStream;
 
-class NativeSequentialInStream implements SequentialInStream {
+class NativeInputStream extends InputStream {
 
   private long nativePtr;
+  private final byte[] scratch = new byte[8];
 
-  private NativeSequentialInStream(long nativePtr) {
+  private NativeInputStream(long nativePtr) {
     this.nativePtr = nativePtr;
   }
 
   private void checkClosed() {
     if (nativePtr == 0) {
-      throw new IllegalStateException("This NativeSequentialInStream is closed.");
+      throw new IllegalStateException("This JavaInputStream is closed.");
     }
+  }
+
+  @Override
+  public int read() throws IOException {
+    return (read(scratch, 0, 1) != -1) ? scratch[0] & 0xff : -1;
+  }
+
+  @Override
+  public int read(@NonNull byte[] b) throws IOException {
+    return read(b, 0, b.length);
   }
 
   @Override

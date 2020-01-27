@@ -16,12 +16,12 @@
 
 #include <jni.h>
 
-#include "InStream.h"
+#include "SeekableInputStream.h"
 #include "JavaEnv.h"
 #include "JavaInArchive.h"
-#include "JavaInStream.h"
-#include "JavaSequentialInStream.h"
-#include "SequentialOutStream.h"
+#include "JavaSeekableInputStream.h"
+#include "JavaInputStream.h"
+#include "OutputStream.h"
 #include "SevenZip.h"
 #include "Utils.h"
 
@@ -35,15 +35,15 @@ jint JNI_OnLoad(JavaVM* vm, void*) {
   }
 
   JavaEnv::Initialize(vm);
-  RETURN_JNI_ERR_IF_NOT_ZERO(InStream::Initialize(env));
-  RETURN_JNI_ERR_IF_NOT_ZERO(JavaInStream::Initialize(env));
-  RETURN_JNI_ERR_IF_NOT_ZERO(JavaSequentialInStream::Initialize(env));
-  RETURN_JNI_ERR_IF_NOT_ZERO(SequentialOutStream::Initialize(env));
+  RETURN_JNI_ERR_IF_NOT_ZERO(SeekableInputStream::Initialize(env));
+  RETURN_JNI_ERR_IF_NOT_ZERO(JavaSeekableInputStream::Initialize(env));
+  RETURN_JNI_ERR_IF_NOT_ZERO(JavaInputStream::Initialize(env));
+  RETURN_JNI_ERR_IF_NOT_ZERO(OutputStream::Initialize(env));
   RETURN_JNI_ERR_IF_NOT_ZERO(SevenZip::Initialize());
 
   RETURN_JNI_ERR_IF_NOT_ZERO(JavaInArchive::RegisterMethods(static_cast<JNIEnv*>(env)));
-  RETURN_JNI_ERR_IF_NOT_ZERO(JavaInStream::RegisterMethods(static_cast<JNIEnv*>(env)));
-  RETURN_JNI_ERR_IF_NOT_ZERO(JavaSequentialInStream::RegisterMethods(static_cast<JNIEnv*>(env)));
+  RETURN_JNI_ERR_IF_NOT_ZERO(JavaSeekableInputStream::RegisterMethods(static_cast<JNIEnv*>(env)));
+  RETURN_JNI_ERR_IF_NOT_ZERO(JavaInputStream::RegisterMethods(static_cast<JNIEnv*>(env)));
 
   return JNI_VERSION_1_6;
 }

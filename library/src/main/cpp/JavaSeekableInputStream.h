@@ -23,7 +23,7 @@
 #include <7zip/IStream.h>
 
 namespace a7zip {
-namespace JavaInStream {
+namespace JavaSeekableInputStream {
 
 HRESULT Initialize(JNIEnv* env);
 

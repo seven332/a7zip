@@ -22,12 +22,12 @@
 #include <include_windows/windows.h>
 #include <7zip/Archive/IArchive.h>
 
-#include "InStream.h"
+#include "SeekableInputStream.h"
 #include "JavaHelper.h"
-#include "JavaInStream.h"
-#include "JavaSequentialInStream.h"
+#include "JavaSeekableInputStream.h"
+#include "JavaInputStream.h"
 #include "Log.h"
-#include "SequentialOutStream.h"
+#include "OutputStream.h"
 #include "SevenZip.h"
 #include "Utils.h"
 
@@ -52,7 +52,7 @@ static jlong NativeOpen(
     jstring password
 ) {
   CMyComPtr<IInStream> in_stream = nullptr;
-  HRESULT result = InStream::Create(env, stream, in_stream);
+  HRESULT result = SeekableInputStream::Create(env, stream, in_stream);
   if (result != S_OK || in_stream == nullptr) {
     // Call java methods before throw exception
     if (in_stream != nullptr) {
@@ -235,7 +235,7 @@ static jobject NativeGetEntryStream(
   if (in_stream != nullptr) {
     // It's an IInStream
     jobject object = nullptr;
-    result = JavaInStream::NewInstance(env, in_stream, &object);
+    result = JavaSeekableInputStream::NewInstance(env, in_stream, &object);
     if (object == nullptr) {
       // Release the stream manually before throw java exception
       in_stream->Release();
@@ -246,7 +246,7 @@ static jobject NativeGetEntryStream(
   } else {
     // It's just an ISequentialInStream
     jobject object = nullptr;
-    result = JavaSequentialInStream::NewInstance(env, sequential_in_stream, &object);
+    result = JavaInputStream::NewInstance(env, sequential_in_stream, &object);
     if (object == nullptr) {
       // Release the stream manually before throw java exception
       sequential_in_stream->Release();
@@ -268,7 +268,7 @@ static void NativeExtractEntry(
   InArchive* archive = reinterpret_cast<InArchive*>(native_ptr);
 
   CMyComPtr<ISequentialOutStream> out_stream = nullptr;
-  HRESULT result = SequentialOutStream::Create(env, stream, out_stream);
+  HRESULT result = OutputStream::Create(env, stream, out_stream);
   if (result != S_OK || out_stream == nullptr) {
     if (out_stream != nullptr) {
       // Call java methods before throw exception
@@ -314,7 +314,7 @@ static void NativeClose(
 
 static JNINativeMethod archive_methods[] = {
     { "nativeOpen",
-      "(Lcom/hippo/a7zip/InStream;Ljava/lang/String;)J",
+      "(Lcom/hippo/a7zip/SeekableInputStream;Ljava/lang/String;)J",
       reinterpret_cast<void *>(NativeOpen) },
     { "nativeGetFormatName",
       "(J)Ljava/lang/String;",
@@ -353,10 +353,10 @@ static JNINativeMethod archive_methods[] = {
       "(JII)Ljava/lang/String;",
       reinterpret_cast<void *>(NativeGetEntryStringProperty) },
     { "nativeGetEntryStream",
-      "(JI)Lcom/hippo/a7zip/SequentialInStream;",
+      "(JI)Ljava/io/InputStream;",
       reinterpret_cast<void *>(NativeGetEntryStream) },
     { "nativeExtractEntry",
-      "(JILjava/lang/String;Lcom/hippo/a7zip/SequentialOutStream;)V",
+      "(JILjava/lang/String;Ljava/io/OutputStream;)V",
       reinterpret_cast<void *>(NativeExtractEntry) },
     { "nativeClose",
       "(J)V",

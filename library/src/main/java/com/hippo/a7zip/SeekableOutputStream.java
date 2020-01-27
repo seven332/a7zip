@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Hippo Seven
+ * Copyright 2020 Hippo Seven
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,30 @@
 
 package com.hippo.a7zip;
 
-import java.io.Closeable;
 import java.io.IOException;
+import java.io.OutputStream;
 
-public interface SequentialInStream extends Closeable {
-
-  // Fix java.lang.NoSuchMethodError
-  @Override
-  void close() throws IOException;
+public abstract class SeekableOutputStream extends OutputStream {
 
   /**
-   * The same as {@link java.io.InputStream#read(byte[], int, int)}.
+   * Sets the position, measured from the beginning,
+   * at which the next write occurs. The offset may be
+   * set beyond the end of the file.
    */
-  int read(byte b[], int off, int len) throws IOException;
+  public abstract void seek(long pos) throws IOException;
+
+  /**
+   * Returns current position, measured from the beginning.
+   */
+  public abstract long tell() throws IOException;
+
+  /**
+   * Returns the size.
+   */
+  public abstract long size() throws IOException;
+
+  /**
+   * Sets the size.
+   */
+  public abstract void truncate(long size) throws IOException;
 }

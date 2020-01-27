@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "JavaSequentialInStream.h"
+#include "JavaInputStream.h"
 
 #include <type_traits>
 #include <Common/MyCom.h>
@@ -65,12 +65,12 @@ static bool initialized = false;
 static jclass class_native_sequential_in_stream = nullptr;
 static jmethodID constructor_native_sequential_in_stream = nullptr;
 
-HRESULT JavaSequentialInStream::Initialize(JNIEnv* env) {
+HRESULT JavaInputStream::Initialize(JNIEnv* env) {
   if (initialized) {
     return S_OK;
   }
 
-  class_native_sequential_in_stream = env->FindClass("com/hippo/a7zip/NativeSequentialInStream");
+  class_native_sequential_in_stream = env->FindClass("com/hippo/a7zip/NativeInputStream");
   if (class_native_sequential_in_stream == nullptr) return E_CLASS_NOT_FOUND;
   class_native_sequential_in_stream = static_cast<jclass>(env->NewGlobalRef(class_native_sequential_in_stream));
   if (class_native_sequential_in_stream == nullptr) return E_OUTOFMEMORY;
@@ -91,7 +91,7 @@ static JNINativeMethod stream_methods[] = {
       reinterpret_cast<void *>(NativeClose) }
 };
 
-HRESULT JavaSequentialInStream::RegisterMethods(JNIEnv* env) {
+HRESULT JavaInputStream::RegisterMethods(JNIEnv* env) {
   if (!initialized) {
     return E_NOT_INITIALIZED;
   }
@@ -104,8 +104,8 @@ HRESULT JavaSequentialInStream::RegisterMethods(JNIEnv* env) {
   return S_OK;
 }
 
-HRESULT JavaSequentialInStream::UnregisterMethods(JNIEnv *env) {
-  jclass clazz = env->FindClass("com/hippo/a7zip/NativeSequentialInStream");
+HRESULT JavaInputStream::UnregisterMethods(JNIEnv *env) {
+  jclass clazz = env->FindClass("com/hippo/a7zip/NativeInputStream");
   if (clazz == nullptr) return E_CLASS_NOT_FOUND;
 
   jint result = env->UnregisterNatives(clazz);
@@ -116,7 +116,7 @@ HRESULT JavaSequentialInStream::UnregisterMethods(JNIEnv *env) {
   return S_OK;
 }
 
-HRESULT JavaSequentialInStream::NewInstance(JNIEnv* env, ISequentialInStream* stream, jobject* object) {
+HRESULT JavaInputStream::NewInstance(JNIEnv* env, ISequentialInStream* stream, jobject* object) {
   *object = nullptr;
 
   if (!initialized) {

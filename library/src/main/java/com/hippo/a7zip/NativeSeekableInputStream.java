@@ -16,19 +16,21 @@
 
 package com.hippo.a7zip;
 
+import android.support.annotation.NonNull;
 import java.io.IOException;
 
-class NativeInStream implements InStream {
+class NativeSeekableInputStream extends SeekableInputStream {
 
   private long nativePtr;
+  private final byte[] scratch = new byte[8];
 
-  private NativeInStream(long nativePtr) {
+  private NativeSeekableInputStream(long nativePtr) {
     this.nativePtr = nativePtr;
   }
 
   private void checkClosed() {
     if (nativePtr == 0) {
-      throw new IllegalStateException("This NativeInStream is closed.");
+      throw new IllegalStateException("This JavaSeekableInputStream is closed.");
     }
   }
 
@@ -48,6 +50,16 @@ class NativeInStream implements InStream {
   public long size() throws IOException {
     checkClosed();
     return nativeSize(nativePtr);
+  }
+
+  @Override
+  public int read() throws IOException {
+    return (read(scratch, 0, 1) != -1) ? scratch[0] & 0xff : -1;
+  }
+
+  @Override
+  public int read(@NonNull byte[] b) throws IOException {
+    return read(b, 0, b.length);
   }
 
   @Override
