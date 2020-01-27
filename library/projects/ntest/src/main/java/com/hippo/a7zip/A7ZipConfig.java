@@ -18,5 +18,5 @@ package com.hippo.a7zip;
 
 class A7ZipConfig {
 
-  static String LIBRARY_NAME = "a7zip_test";
+  static String LIBRARY_NAME = "a7zip-test";
 }

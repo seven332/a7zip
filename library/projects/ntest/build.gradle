@@ -26,7 +26,7 @@ android {
         versionName '1.0'
         externalNativeBuild {
             cmake {
-                targets 'a7zip_test'
+                targets 'a7zip-test'
                 arguments '-DANDROID_CPP_FEATURES=exceptions', '-DEXTRACT=ON'
             }
         }

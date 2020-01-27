@@ -45,9 +45,9 @@ target_compile_options(a7zip PRIVATE ${A_SEVEN_ZIP_FLAGS})
 add_library(gtest STATIC IMPORTED)
 set_target_properties(gtest PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/googletest/lib/${ANDROID_ABI}/libgtest.a)
 
-add_library(a7zip_test SHARED src/androidTest/cpp/JavaInit.cpp)
-target_link_libraries(a7zip_test PRIVATE a7zip gtest)
-target_include_directories(a7zip_test PRIVATE
+add_library(a7zip-test SHARED src/androidTest/cpp/JavaInit.cpp)
+target_link_libraries(a7zip-test PRIVATE a7zip gtest)
+target_include_directories(a7zip-test PRIVATE
         src/main/cpp
         googletest/include
 )

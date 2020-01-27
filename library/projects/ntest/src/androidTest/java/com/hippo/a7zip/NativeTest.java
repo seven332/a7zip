@@ -34,7 +34,7 @@ public class NativeTest {
 
   @BeforeClass
   public static void beforeClass() {
-    ReLinker.loadLibrary(InstrumentationRegistry.getContext(), "a7zip_test");
+    ReLinker.loadLibrary(InstrumentationRegistry.getContext(), "a7zip-test");
   }
 
   @SuppressWarnings("deprecation")

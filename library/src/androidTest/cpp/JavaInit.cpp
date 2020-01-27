@@ -33,7 +33,7 @@ jint a7zip_native_test(
   std::string xml_path("--gtest_output=xml:");
 
   int argc = 2;
-  const char* argv[3] = {"/a7zip_test", (xml_path + c_log_file).c_str(), nullptr};
+  const char* argv[3] = {"/a7zip-test", (xml_path + c_log_file).c_str(), nullptr};
 
   testing::InitGoogleTest(&argc, const_cast<char**>(argv));
   int result = RUN_ALL_TESTS();
