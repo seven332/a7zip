@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Hippo Seven
+ * Copyright 2020 Hippo Seven
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,8 @@
 
 package com.hippo.a7zip;
 
-import android.support.annotation.NonNull;
+class A7ZipTestConfig {
 
-public class A7ZipExtract {
-
-  public static final A7ZipLibrary LIBRARY = new A7ZipLibrary() {
-    @Override
-    String getMainLibraryName() {
-      return "liba7zip-extract.so";
-    }
-
-    @NonNull
-    @Override
-    String[] getMinorLibraryNames() {
-      return new String[] { "libp7zip-extract.so" };
-    }
-  };
+  static String[] SUPPORTED_FORMATS = { "7z", "Rar", "Rar5", "zip" };
+  static String[] GET_STREAM_SUPPORTED_FORMATS = { };
 }

@@ -16,14 +16,11 @@
 
 include ':demo'
 
-include ':core'
-project(':core').projectDir = new File('library/projects/core')
-
 include ':extract-lite'
 project(':extract-lite').projectDir = new File('library/projects/extract-lite')
 
 include ':extract'
 project(':extract').projectDir = new File('library/projects/extract')
 
-include ':test'
-project(':test').projectDir = new File('library/projects/test')
+include ':ntest'
+project(':ntest').projectDir = new File('library/projects/ntest')

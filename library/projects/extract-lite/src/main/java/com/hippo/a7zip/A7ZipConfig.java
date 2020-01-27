@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Hippo Seven
+ * Copyright 2020 Hippo Seven
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,7 @@
 
 package com.hippo.a7zip;
 
-/**
- * Native library loader.
- */
-public interface A7ZipLibraryLoader {
+class A7ZipConfig {
 
-  /**
-   * Loads the native library. Using {@link System#loadLibrary(String)}
-   * directly may cause {@link UnsatisfiedLinkError} on some
-   * devices. Some libraries can fix it,
-   * like <a href="https://github.com/KeepSafe/ReLinker">ReLinker</a>
-   * and <a href="https://github.com/facebook/SoLoader">SoLoader</a>.
-   * The method could be a wrapper.
-   *
-   * @param libname the name of the library
-   */
-  void loadLibrary(String libname);
+  static String LIBRARY_NAME = "a7zip-extract-lite";
 }

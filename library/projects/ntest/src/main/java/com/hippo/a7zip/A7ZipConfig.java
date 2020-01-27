@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Hippo Seven
+ * Copyright 2020 Hippo Seven
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,7 @@
 
 package com.hippo.a7zip;
 
-import android.support.test.InstrumentationRegistry;
-import com.getkeepsafe.relinker.ReLinker;
+class A7ZipConfig {
 
-public class ReLinkerLibraryLoader implements A7ZipLibraryLoader {
-
-  @Override
-  public void loadLibrary(String libname) {
-    ReLinker.loadLibrary(InstrumentationRegistry.getContext(), libname);
-  }
+  static String LIBRARY_NAME = "a7zip_test";
 }

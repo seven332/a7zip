@@ -26,52 +26,19 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
-@RunWith(Parameterized.class)
 public class InArchiveTest extends BaseTestCase {
-
-  @Parameterized.Parameters(name = "{0}")
-  public static Collection<Object[]> data() {
-    return Arrays.asList(new Object[][] {
-        {
-            "Extract",
-            A7ZipExtract.LIBRARY,
-            new String[] { "7z", "Rar", "Rar5", "zip", "tar", "wim", "Cpio" },
-            new String[] { "tar", "Cpio" }
-        },
-        {
-            "Extract-Lite",
-            A7ZipExtractLite.LIBRARY,
-            new String[] { "7z", "Rar", "Rar5", "zip" },
-            new String[] { }
-        },
-    });
-  }
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-  private List<String> supportedFormats;
-  private List<String> supportedGetStreamFormats;
-
-  public InArchiveTest(
-      @SuppressWarnings("unused") String name,
-      A7ZipLibrary library,
-      String[] supportedFormats,
-      String[] supportedGetStreamFormats
-  ) {
-    A7Zip.loadLibrary(library, new ReLinkerLibraryLoader());
-    this.supportedFormats = Arrays.asList(supportedFormats);
-    this.supportedGetStreamFormats = Arrays.asList(supportedGetStreamFormats);
-  }
+  private List<String> supportedFormats = Arrays.asList(A7ZipTestConfig.SUPPORTED_FORMATS);
+  private List<String> getStreamSupportedFormats = Arrays.asList(A7ZipTestConfig.GET_STREAM_SUPPORTED_FORMATS);
 
   private void checkFormat(String format) {
     if (!supportedFormats.contains(format)) {
@@ -154,7 +121,7 @@ public class InArchiveTest extends BaseTestCase {
         String content1 = getContentByExtractingEntry(archive, i);
         assertContent(path, content1);
 
-        if (supportedGetStreamFormats.contains(format)) {
+        if (getStreamSupportedFormats.contains(format)) {
           String content2 = getContentByGettingEntryStream(archive, i);
           assertContent(path, content2);
         } else {

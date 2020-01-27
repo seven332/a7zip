@@ -16,20 +16,7 @@
 
 package com.hippo.a7zip;
 
-import android.support.annotation.NonNull;
+class A7ZipConfig {
 
-public class A7ZipExtractLite {
-
-  public static final A7ZipLibrary LIBRARY = new A7ZipLibrary() {
-    @Override
-    String getMainLibraryName() {
-      return "liba7zip-extract-lite.so";
-    }
-
-    @NonNull
-    @Override
-    String[] getMinorLibraryNames() {
-      return new String[] { "libp7zip-extract-lite.so" };
-    }
-  };
+  static String LIBRARY_NAME = "a7zip-extract";
 }

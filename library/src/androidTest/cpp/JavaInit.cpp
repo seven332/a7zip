@@ -23,11 +23,6 @@ TEST(Test, Pass)
   EXPECT_EQ(1, 1);
 }
 
-TEST(Test, Fail)
-{
-  EXPECT_EQ(1, 2);
-}
-
 jint a7zip_native_test(
     JNIEnv* env,
     jclass,

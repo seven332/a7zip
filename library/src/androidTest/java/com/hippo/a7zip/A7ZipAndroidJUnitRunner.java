@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Hippo Seven
+ * Copyright 2020 Hippo Seven
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,13 @@
 
 package com.hippo.a7zip;
 
-import android.support.annotation.NonNull;
+import android.support.test.runner.AndroidJUnitRunner;
 
-/**
- * The native library of A7Zip.
- */
-public abstract class A7ZipLibrary {
+public class A7ZipAndroidJUnitRunner extends AndroidJUnitRunner {
 
-  A7ZipLibrary() { }
-
-  abstract String getMainLibraryName();
-
-  @NonNull
-  abstract String[] getMinorLibraryNames();
+  @Override
+  public void onStart() {
+    A7Zip.initialize(getContext());
+    super.onStart();
+  }
 }

@@ -16,12 +16,8 @@
 
 package com.hippo.a7zip;
 
-import android.content.Context;
-import com.getkeepsafe.relinker.ReLinker;
+class A7ZipTestConfig {
 
-public class A7Zip {
-
-  public static void initialize(Context context) {
-    ReLinker.loadLibrary(context, A7ZipConfig.LIBRARY_NAME);
-  }
+  static String[] SUPPORTED_FORMATS = { "7z", "Rar", "Rar5", "zip", "tar", "wim", "Cpio" };
+  static String[] GET_STREAM_SUPPORTED_FORMATS = { "tar", "Cpio" };
 }

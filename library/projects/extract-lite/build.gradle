@@ -30,6 +30,13 @@ android {
                 arguments '-DANDROID_CPP_FEATURES=exceptions', '-DEXTRACT=ON', '-DLITE=ON'
             }
         }
+        testInstrumentationRunner 'com.hippo.a7zip.A7ZipAndroidJUnitRunner'
+    }
+
+    sourceSets {
+        main.java.srcDirs += '../../src/main/java'
+        androidTest.java.srcDirs += '../../src/androidTest/java'
+        androidTest.assets.srcDirs += '../../src/androidTest/assets'
     }
 
     buildTypes {
@@ -47,8 +54,11 @@ android {
 }
 
 dependencies {
-    api project(':core')
     implementation 'com.android.support:support-annotations:28.0.0'
+    implementation 'com.getkeepsafe.relinker:relinker:1.4.0'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.github.seven332.okio:okio:1.16.0'
+    androidTestImplementation 'commons-io:commons-io:2.5'
 }
 
 apply from: rootProject.file('android-maven-gradle.gradle')
