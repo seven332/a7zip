@@ -31,15 +31,13 @@ dependencies {
 1. Load native libraries.
 
 ```java
-A7Zip.loadLibrary(A7ZipExtract.LIBRARY);
-//A7Zip.loadLibrary(A7ZipExtractLite.LIBRARY);
+A7Zip.initialize(context);
 ```
 
 2. Open an archive.
 
 ```java
-InStream stream = new FileInStream("archive.7z");
-InArchive archive = InArchive.open(stream);
+InArchive archive = InArchive.open(new File("archive.7z"));
 ```
 
 3. Operate the archive.
@@ -52,7 +50,7 @@ for (int i = 0; i < number; i++) {
     // Get the path of the entry
     String path = archive.getEntryPath(i);
     // Extract the entry
-    archive.extractEntry(i, new IoSequentialOutStream(new FileOutputStream(path)));
+    archive.extractEntry(i, new FileOutputStream(path));
 }
 
 // Close the archive
