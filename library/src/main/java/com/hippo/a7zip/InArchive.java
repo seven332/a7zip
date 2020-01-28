@@ -19,6 +19,8 @@ package com.hippo.a7zip;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import java.io.Closeable;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -330,6 +332,15 @@ public class InArchive implements Closeable {
    */
   public boolean isClosed() {
     return nativePtr == 0;
+  }
+
+  @NonNull
+  public static InArchive open(File file) throws ArchiveException {
+    try {
+      return open(new FileSeekableInputStream(file));
+    } catch (FileNotFoundException e) {
+      throw new ArchiveException("Can't open the archive: " + file.getAbsolutePath(), e);
+    }
   }
 
   @NonNull
