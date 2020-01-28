@@ -99,7 +99,7 @@ public class InArchive implements Closeable {
    */
   public PropType getArchivePropertyType(PropID propID) {
     int type = nativeGetArchivePropertyType(nativePtr, propID.ordinal());
-    if (type >= 0 || type < PropType.values().length) {
+    if (type >= 0 && type < PropType.values().length) {
       return PropType.values()[type];
     } else {
       return PropType.UNKNOWN;
@@ -173,7 +173,7 @@ public class InArchive implements Closeable {
    */
   public PropType getEntryPropertyType(int index, PropID propID) {
     int type = nativeGetEntryPropertyType(nativePtr, index, propID.ordinal());
-    if (type >= 0 || type < PropType.values().length) {
+    if (type >= 0 && type < PropType.values().length) {
       return PropType.values()[type];
     } else {
       return PropType.UNKNOWN;
