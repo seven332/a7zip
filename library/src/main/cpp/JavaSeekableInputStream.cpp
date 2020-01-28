@@ -180,18 +180,6 @@ HRESULT JavaSeekableInputStream::RegisterMethods(JNIEnv* env) {
   return S_OK;
 }
 
-HRESULT JavaSeekableInputStream::UnregisterMethods(JNIEnv *env) {
-  jclass clazz = env->FindClass("com/hippo/a7zip/NativeSeekableInputStream");
-  if (clazz == nullptr) return E_CLASS_NOT_FOUND;
-
-  jint result = env->UnregisterNatives(clazz);
-  if (result < 0) {
-    return E_FAILED_UNREGISTER;
-  }
-
-  return S_OK;
-}
-
 HRESULT JavaSeekableInputStream::NewInstance(JNIEnv* env, IInStream* stream, jobject* object) {
   *object = nullptr;
 

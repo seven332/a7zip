@@ -104,18 +104,6 @@ HRESULT JavaInputStream::RegisterMethods(JNIEnv* env) {
   return S_OK;
 }
 
-HRESULT JavaInputStream::UnregisterMethods(JNIEnv *env) {
-  jclass clazz = env->FindClass("com/hippo/a7zip/NativeInputStream");
-  if (clazz == nullptr) return E_CLASS_NOT_FOUND;
-
-  jint result = env->UnregisterNatives(clazz);
-  if (result < 0) {
-    return E_FAILED_UNREGISTER;
-  }
-
-  return S_OK;
-}
-
 HRESULT JavaInputStream::NewInstance(JNIEnv* env, ISequentialInStream* stream, jobject* object) {
   *object = nullptr;
 
