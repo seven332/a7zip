@@ -32,7 +32,7 @@ class ArchiveExtractCallback :
     public CMyUnknownImp
 {
  public:
-  ArchiveExtractCallback(UInt32 index, BSTR password, CMyComPtr<ISequentialOutStream> out_stream);
+  ArchiveExtractCallback(UInt32 index, BSTR password, CMyComPtr<ISequentialOutStream>& out_stream);
   ~ArchiveExtractCallback();
 
  public:
@@ -56,12 +56,15 @@ class ArchiveExtractCallback :
   bool has_asked_password;
 };
 
-ArchiveExtractCallback::ArchiveExtractCallback(UInt32 index, BSTR password, CMyComPtr<ISequentialOutStream> out_stream) {
-  this->index = index;
-  this->password = ::SysAllocString(password);
-  this->out_stream = out_stream;
-  this->has_asked_password = false;
-}
+ArchiveExtractCallback::ArchiveExtractCallback(
+    UInt32 index,
+    BSTR password,
+    CMyComPtr<ISequentialOutStream>& out_stream
+) :
+    index(index),
+    password(::SysAllocString(password)),
+    out_stream(out_stream),
+    has_asked_password(false) {}
 
 ArchiveExtractCallback::~ArchiveExtractCallback() {
   ::SysFreeString(password);
@@ -152,10 +155,12 @@ HRESULT ArchiveExtractCallback::GetBetterResult(HRESULT result) {
   }
 }
 
-InArchive::InArchive(CMyComPtr<IInArchive> in_archive, AString format_name) {
-  this->in_archive = in_archive;
-  this->format_name = format_name;
-}
+InArchive::InArchive(
+    CMyComPtr<IInArchive>& in_archive,
+    AString& format_name
+) :
+    in_archive(in_archive),
+    format_name(format_name) { }
 
 InArchive::~InArchive() {
   this->in_archive->Close();
@@ -342,7 +347,7 @@ HRESULT InArchive::GetEntryStream(UInt32 index, ISequentialInStream** stream) {
   }
 }
 
-HRESULT InArchive::ExtractEntry(UInt32 index, BSTR password, CMyComPtr<ISequentialOutStream> out_stream) {
+HRESULT InArchive::ExtractEntry(UInt32 index, BSTR password, CMyComPtr<ISequentialOutStream>& out_stream) {
   CMyComPtr<ArchiveExtractCallback> callback(new ArchiveExtractCallback(index, password, out_stream));
   HRESULT result = this->in_archive->Extract(&index, 1, false, callback);
   return callback->GetBetterResult(result);

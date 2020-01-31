@@ -28,7 +28,7 @@ namespace a7zip {
 
 class InArchive {
  public:
-  InArchive(CMyComPtr<IInArchive> in_archive, AString format_name);
+  InArchive(CMyComPtr<IInArchive>& in_archive, AString& format_name);
   ~InArchive();
 
  public:
@@ -49,7 +49,7 @@ class InArchive {
 
   HRESULT GetEntryStream(UInt32 index, ISequentialInStream** stream);
 
-  HRESULT ExtractEntry(UInt32 index, BSTR password, CMyComPtr<ISequentialOutStream> out_stream);
+  HRESULT ExtractEntry(UInt32 index, BSTR password, CMyComPtr<ISequentialOutStream>& out_stream);
 
  private:
   CMyComPtr<IInArchive> in_archive;
