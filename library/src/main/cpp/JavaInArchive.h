@@ -25,7 +25,6 @@ namespace a7zip {
 namespace JavaInArchive {
 
 HRESULT RegisterMethods(JNIEnv* env);
-HRESULT UnregisterMethods(JNIEnv* env);
 
 }
 }

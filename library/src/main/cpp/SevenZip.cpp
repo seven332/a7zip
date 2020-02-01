@@ -25,6 +25,8 @@
 #include "Log.h"
 #include "Utils.h"
 
+#include "OpenVolumeCallback.h"
+
 #ifdef LOG_TAG
 #  undef LOG_TAG
 #  define LOG_TAG "P7Zip"
@@ -148,7 +150,7 @@ class ArchiveOpenCallback :
   }
 
  public:
-  MY_UNKNOWN_IMP1(ICryptoGetTextPassword)
+  MY_UNKNOWN_IMP2(IArchiveOpenCallback, ICryptoGetTextPassword)
   INTERFACE_IArchiveOpenCallback({ return S_OK; });
 
   STDMETHOD(CryptoGetTextPassword)(BSTR *password) {
@@ -174,6 +176,47 @@ class ArchiveOpenCallback :
  private:
   BSTR password;
   bool has_asked_password;
+};
+
+class ArchiveOpenCallback2 :
+    public ArchiveOpenCallback,
+    public IArchiveOpenVolumeCallback {
+
+ public:
+  ArchiveOpenCallback2(
+      BSTR password,
+      BSTR filename,
+      CMyComPtr<OpenVolumeCallback>& callback
+  ):
+      ArchiveOpenCallback(password),
+      filename(filename),
+      callback(callback) { }
+
+ public:
+  MY_UNKNOWN_IMP3(
+      IArchiveOpenCallback,
+      IArchiveOpenVolumeCallback,
+      ICryptoGetTextPassword)
+
+  STDMETHOD(GetProperty)(PROPID propID, PROPVARIANT *value) {
+    NWindows::NCOM::CPropVariant prop;
+    if (propID == kpidName) {
+      prop = filename;
+    }
+    prop.Detach(value);
+    return S_OK;
+  }
+
+  STDMETHOD(GetStream)(const wchar_t *name, IInStream **inStream) {
+    CMyComPtr<IInStream> stream = nullptr;
+    HRESULT result = callback->OpenVolume(name, stream);
+    *inStream = stream.Detach();
+    return result != S_OK ? S_FALSE : S_OK;
+  }
+
+ private:
+  UString filename;
+  CMyComPtr<OpenVolumeCallback> callback;
 };
 
 #define GET_PROP_METHOD(METHOD_NAME, PROP_TYPE, VALUE_TYPE, CONVERTER)         \
@@ -218,7 +261,7 @@ static HRESULT LoadMethods() {
     Method& method = methods.AddNew();
 
 #   define GET_PROP(METHOD, PROP, VALUE, ASSIGNED)                              \
-    if (METHOD(GetMethodProperty, i, PROP, VALUE, ASSIGNED) != S_OK) {        \
+    if (METHOD(GetMethodProperty, i, PROP, VALUE, ASSIGNED) != S_OK) {          \
       methods.DeleteBack();                                                     \
       continue;                                                                 \
     }
@@ -334,6 +377,8 @@ static HRESULT OpenInArchive(
     GUID& class_id,
     CMyComPtr<IInStream>& in_stream,
     BSTR password,
+    BSTR filename,
+    CMyComPtr<OpenVolumeCallback>& open_volume_callback,
     CMyComPtr<IInArchive>& in_archive
 ) {
   RETURN_SAME_IF_NOT_ZERO(CreateObject(&class_id, &IID_IInArchive, reinterpret_cast<void **>(&in_archive)));
@@ -347,7 +392,15 @@ static HRESULT OpenInArchive(
   }
 
   UInt64 maxCheckStartPosition = 1 << 22;
-  CMyComPtr<ArchiveOpenCallback> callback(new ArchiveOpenCallback(password));
+
+  ArchiveOpenCallback* callback_ptr = nullptr;
+  if (filename != nullptr && open_volume_callback != nullptr) {
+    callback_ptr = new ArchiveOpenCallback2(password, filename, open_volume_callback);
+  } else {
+    callback_ptr = new ArchiveOpenCallback(password);
+  }
+  CMyComPtr<ArchiveOpenCallback> callback(callback_ptr);
+
   result = in_archive->Open(in_stream, &maxCheckStartPosition, callback);
   result = callback->GetBetterResult(result);
   if (result != S_OK) {
@@ -362,6 +415,8 @@ static HRESULT OpenInArchive(
 static HRESULT OpenInArchive(
     CMyComPtr<IInStream>& in_stream,
     BSTR password,
+    BSTR filename,
+    CMyComPtr<OpenVolumeCallback>& open_volume_callback,
     CMyComPtr<IInArchive>& in_archive,
     AString& format_name
 ) {
@@ -375,9 +430,6 @@ static HRESULT OpenInArchive(
     if (format.signatures.Size() == 0) {
       continue;
     }
-
-    // Mark the format
-    formats_checked[i] = true;
 
     // Check each signature
     for (int j = 0; j < format.signatures.Size(); j++) {
@@ -393,7 +445,10 @@ static HRESULT OpenInArchive(
       if (processedSize != signature.Size() || bytes != signature) continue;
 
       // The signature matched, try to open it
-      HRESULT result = OpenInArchive(format.class_id, in_stream, password, in_archive);
+      HRESULT result = OpenInArchive(format.class_id, in_stream, password, filename, open_volume_callback, in_archive);
+
+      // Mark the format
+      formats_checked[i] = true;
 
       if (result == S_OK) {
         format_name = format.name;
@@ -415,7 +470,7 @@ static HRESULT OpenInArchive(
   for (int i = 0; i < formats.Size(); i++) {
     if (!formats_checked[i]) {
       Format& format = formats[i];
-      HRESULT result = OpenInArchive(format.class_id, in_stream, password, in_archive);
+      HRESULT result = OpenInArchive(format.class_id, in_stream, password, filename, open_volume_callback, in_archive);
 
       if (result == S_OK) {
         format_name = format.name;
@@ -432,11 +487,17 @@ static HRESULT OpenInArchive(
   return E_UNKNOWN_FORMAT;
 }
 
-HRESULT SevenZip::OpenArchive(CMyComPtr<IInStream> in_stream, BSTR password, InArchive** archive) {
+HRESULT SevenZip::OpenArchive(
+    CMyComPtr<IInStream>& in_stream,
+    BSTR password,
+    BSTR filename,
+    CMyComPtr<OpenVolumeCallback>& open_volume_callback,
+    InArchive** archive
+) {
   CMyComPtr<IInArchive> in_archive = nullptr;
   AString format_name;
 
-  HRESULT result = OpenInArchive(in_stream, password, in_archive, format_name);
+  HRESULT result = OpenInArchive(in_stream, password, filename, open_volume_callback, in_archive, format_name);
 
   if (result == S_OK && in_archive != nullptr) {
     *archive = new InArchive(in_archive, format_name);

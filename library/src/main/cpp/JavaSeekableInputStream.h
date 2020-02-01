@@ -28,7 +28,6 @@ namespace JavaSeekableInputStream {
 HRESULT Initialize(JNIEnv* env);
 
 HRESULT RegisterMethods(JNIEnv* env);
-HRESULT UnregisterMethods(JNIEnv* env);
 
 HRESULT NewInstance(JNIEnv* env, IInStream* stream, jobject* object);
 

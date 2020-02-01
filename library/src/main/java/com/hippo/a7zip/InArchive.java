@@ -16,6 +16,7 @@
 
 package com.hippo.a7zip;
 
+import android.support.annotation.Keep;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import java.io.Closeable;
@@ -337,24 +338,26 @@ public class InArchive implements Closeable {
   @NonNull
   public static InArchive open(File file) throws ArchiveException {
     try {
-      return open(new FileSeekableInputStream(file));
+      return open(new FileSeekableInputStream(file), null, null, file.getName(), new OpenVolumeInDirCallback(file.getParentFile()));
     } catch (FileNotFoundException e) {
-      throw new ArchiveException("Can't open the archive: " + file.getAbsolutePath(), e);
+      throw new ArchiveException("Can't open the archive: " + file.getPath(), e);
     }
   }
 
   @NonNull
   public static InArchive open(SeekableInputStream stream) throws ArchiveException {
-    return open(stream, null, null);
+    return open(stream, null, null, null, null);
   }
 
   @NonNull
   public static InArchive open(
       SeekableInputStream stream,
       @Nullable Charset charset,
-      @Nullable String password
+      @Nullable String password,
+      @Nullable String filename,
+      @Nullable OpenVolumeCallback openVolumeCallback
   ) throws ArchiveException {
-    long nativePtr = nativeOpen(stream, password);
+    long nativePtr = nativeOpen(stream, password, filename, openVolumeCallback);
 
     if (nativePtr == 0) {
       // It should not be 0
@@ -364,7 +367,37 @@ public class InArchive implements Closeable {
     return new InArchive(nativePtr, charset, password);
   }
 
-  private static native long nativeOpen(SeekableInputStream stream, String password) throws ArchiveException;
+  @Keep
+  public interface OpenVolumeCallback {
+    @NonNull
+    SeekableInputStream openVolume(String filename) throws ArchiveException;
+  }
+
+  public static class OpenVolumeInDirCallback implements OpenVolumeCallback {
+
+    private File dir;
+
+    public OpenVolumeInDirCallback(File dir) {
+      this.dir = dir;
+    }
+
+    @NonNull
+    @Override
+    public SeekableInputStream openVolume(String filename) throws ArchiveException {
+      try {
+        return new FileSeekableInputStream(new File(dir, filename));
+      } catch (FileNotFoundException e) {
+        throw new ArchiveException("Can't find the file<" + filename + "> in dir<" + dir.getPath() + ">", e);
+      }
+    }
+  }
+
+  private static native long nativeOpen(
+      SeekableInputStream stream,
+      String password,
+      String filename,
+      OpenVolumeCallback openVolumeCallback
+  ) throws ArchiveException;
 
   private static native String nativeGetFormatName(long nativePtr);
 

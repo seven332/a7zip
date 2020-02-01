@@ -16,6 +16,7 @@ set(A_SEVEN_ZIP_SOURCES
         src/main/cpp/JavaInitA7Zip.cpp
         src/main/cpp/JavaInputStream.cpp
         src/main/cpp/JavaSeekableInputStream.cpp
+        src/main/cpp/OpenVolumeCallback.cpp
         src/main/cpp/OutputStream.cpp
         src/main/cpp/SeekableInputStream.cpp
         src/main/cpp/SevenZip.cpp

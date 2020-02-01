@@ -21,6 +21,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import android.support.annotation.NonNull;
+import android.util.Log;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -103,6 +105,13 @@ public class InArchiveTest extends BaseTestCase {
         paths[i] = archive.getEntryPath(i);
       }
       Arrays.sort(paths);
+
+      Log.d("TAG", Arrays.toString(paths));
+//      Log.d("TAG", "0: " + archive.getEntryPath(0));
+//      Log.d("TAG", "1: " + archive.getEntryPath(1));
+//      Log.d("TAG", "2: " + archive.getEntryPath(2));
+
+
       assertArrayEquals(new String[] {
           "dump.txt",
           "empty.txt",
@@ -373,11 +382,29 @@ public class InArchiveTest extends BaseTestCase {
     }
   }
 
+  @Test
+  public void testMultiVolumeZip() throws IOException, ArchiveException {
+    checkFormat("zip");
+    testArchive("multi-volume.zip.001", "zip");
+  }
+
   private InArchive openInArchiveFromAsset(String name) throws IOException, ArchiveException {
-    return InArchive.open(new FileSeekableInputStream(getAsset(name)));
+    return openInArchiveFromAsset(name, null, null);
   }
 
   private InArchive openInArchiveFromAsset(String name, Charset charset, String password) throws IOException, ArchiveException {
-    return InArchive.open(new FileSeekableInputStream(getAsset(name)), charset, password);
+    return InArchive.open(new FileSeekableInputStream(getAsset(name)), charset, password, name, new OpenVolumeInAssetCallback());
+  }
+
+  private static class OpenVolumeInAssetCallback implements InArchive.OpenVolumeCallback {
+    @NonNull
+    @Override
+    public SeekableInputStream openVolume(String filename) throws ArchiveException {
+      try {
+        return new FileSeekableInputStream(getAsset(filename));
+      } catch (IOException e) {
+        throw new ArchiveException("Can't open asset: " + filename, e);
+      }
+    }
   }
 }

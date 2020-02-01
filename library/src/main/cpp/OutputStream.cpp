@@ -18,6 +18,7 @@
 
 #include "JavaEnv.h"
 #include "Utils.h"
+#include "Log.h"
 
 #define ARRAY_SIZE DEFAULT_BUFFER_SIZE
 
@@ -27,10 +28,12 @@ bool OutputStream::initialized = false;
 jmethodID OutputStream::method_write = nullptr;
 jmethodID OutputStream::method_close = nullptr;
 
-OutputStream::OutputStream(jobject stream, jbyteArray array) {
-  this->stream = stream;
-  this->array = array;
-}
+OutputStream::OutputStream(
+    jobject stream,
+    jbyteArray array
+) :
+    stream(stream),
+    array(array) { }
 
 OutputStream::~OutputStream() {
   JavaEnv env;
@@ -41,6 +44,8 @@ OutputStream::~OutputStream() {
 
   env->DeleteGlobalRef(stream);
   env->DeleteGlobalRef(array);
+  stream = nullptr;
+  array = nullptr;
 }
 
 HRESULT OutputStream::Write(const void* data, UInt32 size, UInt32* processedSize) {

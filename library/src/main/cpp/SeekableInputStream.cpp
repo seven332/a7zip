@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
+#include <assert.h>
 #include "SeekableInputStream.h"
 
 #include "JavaEnv.h"
 #include "Utils.h"
+#include "Log.h"
 
 #define ARRAY_SIZE DEFAULT_BUFFER_SIZE
 
@@ -30,10 +32,12 @@ jmethodID SeekableInputStream::method_tell = nullptr;
 jmethodID SeekableInputStream::method_size = nullptr;
 jmethodID SeekableInputStream::method_close = nullptr;
 
-SeekableInputStream::SeekableInputStream(jobject stream, jbyteArray array) {
-  this->stream = stream;
-  this->array = array;
-}
+SeekableInputStream::SeekableInputStream(
+    jobject stream,
+    jbyteArray array
+) :
+    stream(stream),
+    array(array) { }
 
 SeekableInputStream::~SeekableInputStream() {
   JavaEnv env;
@@ -44,6 +48,8 @@ SeekableInputStream::~SeekableInputStream() {
 
   env->DeleteGlobalRef(stream);
   env->DeleteGlobalRef(array);
+  stream = nullptr;
+  array = nullptr;
 }
 
 HRESULT SeekableInputStream::Read(void* data, UInt32 size, UInt32* processedSize) {

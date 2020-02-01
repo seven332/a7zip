@@ -22,6 +22,7 @@
 #include <include_windows/windows.h>
 #include <7zip/Archive/IArchive.h>
 
+#include "OpenVolumeCallback.h"
 #include "SeekableInputStream.h"
 #include "JavaHelper.h"
 #include "JavaSeekableInputStream.h"
@@ -45,11 +46,25 @@ static void CopyJStringToBSTR(BSTR bstr, const jchar* jstr, int length) {
   *bstr = 0;
 }
 
+static BSTR JStringToBSTR(JNIEnv* env, jstring jstr) {
+  BSTR bstr = nullptr;
+  if (jstr != nullptr) {
+    jsize length = env->GetStringLength(jstr);
+    const jchar* jchars = env->GetStringChars(jstr, nullptr);
+    bstr = ::SysAllocStringLen(nullptr, static_cast<UINT>(length));
+    CopyJStringToBSTR(bstr, jchars, length);
+    env->ReleaseStringChars(jstr, jchars);
+  }
+  return bstr;
+}
+
 static jlong NativeOpen(
     JNIEnv* env,
     jclass,
     jobject stream,
-    jstring password
+    jstring password,
+    jstring filename,
+    jobject open_volume_callback
 ) {
   CMyComPtr<IInStream> in_stream = nullptr;
   HRESULT result = SeekableInputStream::Create(env, stream, in_stream);
@@ -61,22 +76,28 @@ static jlong NativeOpen(
     THROW_ARCHIVE_EXCEPTION_RET(env, 0, result);
   }
 
-  const jchar* j_password = nullptr;
   BSTR bstr_password = nullptr;
-  if (password != nullptr) {
-    jsize length = env->GetStringLength(password);
-    j_password = env->GetStringChars(password, nullptr);
-    bstr_password = ::SysAllocStringLen(nullptr, static_cast<UINT>(length));
-    CopyJStringToBSTR(bstr_password, j_password, length);
+  BSTR bstr_filename = nullptr;
+  CMyComPtr<OpenVolumeCallback> open_volume_callback_wrapper = nullptr;
+
+  if (filename != nullptr && open_volume_callback != nullptr) {
+    result = OpenVolumeCallback::Create(env, open_volume_callback, open_volume_callback_wrapper);
+    if (result != S_OK) {
+      // Call java methods before throw exception
+      if (in_stream != nullptr) {
+        in_stream.Release();
+      }
+      THROW_ARCHIVE_EXCEPTION_RET(env, 0, result);
+    }
+    bstr_filename = JStringToBSTR(env, filename);
   }
+  bstr_password = JStringToBSTR(env, password);
 
   InArchive* archive = nullptr;
-  result = SevenZip::OpenArchive(in_stream, bstr_password, &archive);
+  result = SevenZip::OpenArchive(in_stream, bstr_password, bstr_filename, open_volume_callback_wrapper, &archive);
 
-  if (password != nullptr) {
-    ::SysFreeString(bstr_password);
-    env->ReleaseStringChars(password, j_password);
-  }
+  ::SysFreeString(bstr_password);
+  ::SysFreeString(bstr_filename);
 
   if (result != S_OK || archive == nullptr) {
     // Call java methods before throw exception
@@ -314,7 +335,7 @@ static void NativeClose(
 
 static JNINativeMethod archive_methods[] = {
     { "nativeOpen",
-      "(Lcom/hippo/a7zip/SeekableInputStream;Ljava/lang/String;)J",
+      "(Lcom/hippo/a7zip/SeekableInputStream;Ljava/lang/String;Ljava/lang/String;Lcom/hippo/a7zip/InArchive$OpenVolumeCallback;)J",
       reinterpret_cast<void *>(NativeOpen) },
     { "nativeGetFormatName",
       "(J)Ljava/lang/String;",

@@ -21,6 +21,7 @@
 #include "JavaInArchive.h"
 #include "JavaSeekableInputStream.h"
 #include "JavaInputStream.h"
+#include "OpenVolumeCallback.h"
 #include "OutputStream.h"
 #include "SevenZip.h"
 #include "Utils.h"
@@ -38,6 +39,7 @@ jint JNI_OnLoad(JavaVM* vm, void*) {
   RETURN_JNI_ERR_IF_NOT_ZERO(SeekableInputStream::Initialize(env));
   RETURN_JNI_ERR_IF_NOT_ZERO(JavaSeekableInputStream::Initialize(env));
   RETURN_JNI_ERR_IF_NOT_ZERO(JavaInputStream::Initialize(env));
+  RETURN_JNI_ERR_IF_NOT_ZERO(OpenVolumeCallback::Initialize(env));
   RETURN_JNI_ERR_IF_NOT_ZERO(OutputStream::Initialize(env));
   RETURN_JNI_ERR_IF_NOT_ZERO(SevenZip::Initialize());
 
