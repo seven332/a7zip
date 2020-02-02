@@ -14,6 +14,7 @@ set(P_SEVEN_ZIP_EXTRACT_LITE_SOURCES
         p7zip/CPP/7zip/Archive/Common/FindSignature.cpp
         p7zip/CPP/7zip/Archive/Common/InStreamWithCRC.cpp
         p7zip/CPP/7zip/Archive/Common/ItemNameUtils.cpp
+        p7zip/CPP/7zip/Archive/Common/MultiStream.cpp
         p7zip/CPP/7zip/Archive/Common/OutStreamWithCRC.cpp
         p7zip/CPP/7zip/Archive/Rar/RarHandler.cpp
         p7zip/CPP/7zip/Archive/Rar/Rar5Handler.cpp
@@ -24,6 +25,7 @@ set(P_SEVEN_ZIP_EXTRACT_LITE_SOURCES
         p7zip/CPP/7zip/Archive/ArchiveExports.cpp
         p7zip/CPP/7zip/Archive/DllExports2.cpp
         p7zip/CPP/7zip/Archive/HandlerCont.cpp
+        p7zip/CPP/7zip/Archive/SplitHandler.cpp
         p7zip/CPP/7zip/Archive/XzHandler.cpp
         p7zip/CPP/7zip/Common/CWrappers.cpp
         p7zip/CPP/7zip/Common/CreateCoder.cpp
@@ -138,7 +140,6 @@ set(P_SEVEN_ZIP_EXTRACT_SOURCES
         p7zip/CPP/7zip/Archive/Chm/ChmHandler.cpp
         p7zip/CPP/7zip/Archive/Chm/ChmIn.cpp
         p7zip/CPP/7zip/Archive/Common/DummyOutStream.cpp
-        p7zip/CPP/7zip/Archive/Common/MultiStream.cpp
         p7zip/CPP/7zip/Archive/Common/OutStreamWithSha1.cpp
         p7zip/CPP/7zip/Archive/Iso/IsoHandler.cpp
         p7zip/CPP/7zip/Archive/Iso/IsoHeader.cpp
@@ -184,7 +185,6 @@ set(P_SEVEN_ZIP_EXTRACT_SOURCES
         p7zip/CPP/7zip/Archive/PpmdHandler.cpp
         p7zip/CPP/7zip/Archive/QcowHandler.cpp
         p7zip/CPP/7zip/Archive/RpmHandler.cpp
-        p7zip/CPP/7zip/Archive/SplitHandler.cpp
         p7zip/CPP/7zip/Archive/SquashfsHandler.cpp
         p7zip/CPP/7zip/Archive/SwfHandler.cpp
         p7zip/CPP/7zip/Archive/UefiHandler.cpp

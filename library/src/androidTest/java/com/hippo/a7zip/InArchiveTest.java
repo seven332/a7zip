@@ -22,7 +22,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -106,24 +105,28 @@ public class InArchiveTest extends BaseTestCase {
       }
       Arrays.sort(paths);
 
-      Log.d("TAG", Arrays.toString(paths));
-//      Log.d("TAG", "0: " + archive.getEntryPath(0));
-//      Log.d("TAG", "1: " + archive.getEntryPath(1));
-//      Log.d("TAG", "2: " + archive.getEntryPath(2));
-
-
-      assertArrayEquals(new String[] {
-          "dump.txt",
-          "empty.txt",
-          "folder",
-          "folder/dump.txt",
-          "folder/empty.txt",
-      }, paths);
+      try {
+        assertArrayEquals(new String[] {
+            "dump.txt",
+            "empty.txt",
+            "folder",
+            "folder/dump.txt",
+            "folder/empty.txt",
+        }, paths);
+      } catch (AssertionError e) {
+        assertArrayEquals(new String[] {
+            "dump.txt",
+            "empty.txt",
+            "folder/",
+            "folder/dump.txt",
+            "folder/empty.txt",
+        }, paths);
+      }
 
       // Check content
       for (int i = 0; i < size; i++) {
         String path = archive.getEntryPath(i);
-        if ("folder".equals(path)) {
+        if ("folder".equals(path) || "folder/".equals(path)) {
           assertTrue(archive.getEntryBooleanProperty(i, PropID.IS_DIR));
           continue;
         }
@@ -386,6 +389,12 @@ public class InArchiveTest extends BaseTestCase {
   public void testMultiVolumeZip() throws IOException, ArchiveException {
     checkFormat("zip");
     testArchive("multi-volume.zip.001", "zip");
+  }
+
+  @Test
+  public void testMultiVolume7z() throws IOException, ArchiveException {
+    checkFormat("7z");
+    testArchive("multi-volume.7z.001", "7z");
   }
 
   private InArchive openInArchiveFromAsset(String name) throws IOException, ArchiveException {

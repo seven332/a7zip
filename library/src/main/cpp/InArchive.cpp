@@ -156,14 +156,20 @@ HRESULT ArchiveExtractCallback::GetBetterResult(HRESULT result) {
 }
 
 InArchive::InArchive(
+    InArchive* parent,
     CMyComPtr<IInArchive>& in_archive,
     AString& format_name
 ) :
+    parent(parent),
     in_archive(in_archive),
     format_name(format_name) { }
 
 InArchive::~InArchive() {
   this->in_archive->Close();
+  if (parent != nullptr) {
+    delete parent;
+    parent = nullptr;
+  }
 }
 
 const AString& InArchive::GetFormatName() {

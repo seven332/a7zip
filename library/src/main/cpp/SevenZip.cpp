@@ -494,24 +494,74 @@ HRESULT SevenZip::OpenArchive(
     CMyComPtr<OpenVolumeCallback>& open_volume_callback,
     InArchive** archive
 ) {
-  CMyComPtr<IInArchive> in_archive = nullptr;
-  AString format_name;
+  HRESULT result = S_FALSE;
+  InArchive* previous_archive = nullptr;
 
-  HRESULT result = OpenInArchive(in_stream, password, filename, open_volume_callback, in_archive, format_name);
+  CMyComPtr<IInStream> arg_in_stream = in_stream;
+  BSTR arg_password = password;
+  BSTR arg_filename = filename;
+  CMyComPtr<OpenVolumeCallback> arg_open_volume_callback = open_volume_callback;
 
-  if (result == S_OK && in_archive != nullptr) {
-    *archive = new InArchive(in_archive, format_name);
-    return S_OK;
+  while (true) {
+    CMyComPtr<IInArchive> in_archive = nullptr;
+    AString format_name;
+
+    result = OpenInArchive(
+        arg_in_stream,
+        arg_password,
+        arg_filename,
+        arg_open_volume_callback,
+        in_archive,
+        format_name
+    );
+
+    if (result != S_OK || in_archive == nullptr) {
+      if (in_archive != nullptr) {
+        in_archive->Close();
+        in_archive = nullptr;
+      }
+      if (result == S_OK) {
+        result = E_INTERNAL;
+      }
+      break;
+    }
+
+    previous_archive = new InArchive(previous_archive, in_archive, format_name);
+
+    // Break if it has no entry or more than one entry
+    UInt32 number = 0;
+    previous_archive->GetNumberOfEntries(number);
+    if (number != 1) {
+      break;
+    }
+
+    // Break if it's not IInArchiveGetStream
+    CMyComPtr<IInArchiveGetStream> archive_get_stream;
+    in_archive->QueryInterface(IID_IInArchiveGetStream, (void**)&archive_get_stream);
+    if (archive_get_stream == nullptr) {
+      break;
+    }
+
+    // Break if GetStream returns null
+    CMyComPtr<ISequentialInStream> sequential_in_stream;
+    archive_get_stream->GetStream(0, &sequential_in_stream);
+    if (sequential_in_stream == nullptr) {
+      break;
+    }
+
+    // Break if the stream is not IInStream
+    arg_in_stream = nullptr;
+    sequential_in_stream->QueryInterface(IID_IInStream, (void**)&arg_in_stream);
+    if (arg_in_stream == nullptr) {
+      break;
+    }
+
+    // Clear arguments for the first archive
+    arg_password = nullptr;
+    arg_filename = nullptr;
+    arg_open_volume_callback = nullptr;
   }
 
-  if (in_archive != nullptr) {
-    in_archive->Close();
-    in_archive = nullptr;
-  }
-
-  if (result != S_OK) {
-    return result;
-  } else {
-    return E_INTERNAL;
-  }
+  *archive = previous_archive;
+  return *archive != nullptr ? S_OK : result;
 }
