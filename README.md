@@ -2,7 +2,7 @@
 
 An Android wrapper for 7-Zip (P7ZIP).
 
-Only single volume archive extraction is supported now.
+Writing archives is not supported.
 
 ## Download
 
