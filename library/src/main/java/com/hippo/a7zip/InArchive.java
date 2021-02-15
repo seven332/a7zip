@@ -53,7 +53,7 @@ public class InArchive implements Closeable {
   // But if every char in the string is smaller than 0xFF,
   // it's hard to tell the string is in utf-16 or the original charset.
   // TODO Let p7zip tell whether it have encoded the string.
-  private String applyCharsetToString(String str, Charset charset) {
+  private static String applyCharsetToString(String str, Charset charset) {
     if (str == null || charset == null) {
       return str;
     }
@@ -73,6 +73,19 @@ public class InArchive implements Closeable {
     }
 
     return new String(bytes, charset);
+  }
+
+  private static String applyCharsetToPassword(String str, Charset charset) {
+    if (str == null || charset == null) {
+      return str;
+    }
+
+    byte[] bytes = str.getBytes(charset);
+    char[] chars = new char[bytes.length];
+    for (int i = 0; i < chars.length; i++) {
+      chars[i] = (char) (bytes[i] & 0xFF);
+    }
+    return new String(chars);
   }
 
   /**
@@ -349,6 +362,13 @@ public class InArchive implements Closeable {
     return open(stream, null, null, null, null);
   }
 
+  /**
+   * Opens an archive to read from the specified stream.
+   *
+   * {@code charset} is for password and string property.
+   * The charset of string property can reset in
+   * {@link InArchive#getArchiveStringProperty(PropID, Charset)}.
+   */
   @NonNull
   public static InArchive open(
       SeekableInputStream stream,
@@ -357,6 +377,7 @@ public class InArchive implements Closeable {
       @Nullable String filename,
       @Nullable OpenVolumeCallback openVolumeCallback
   ) throws ArchiveException {
+    password = applyCharsetToPassword(password, charset);
     long nativePtr = nativeOpen(stream, password, filename, openVolumeCallback);
 
     if (nativePtr == 0) {
